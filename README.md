@@ -1,5 +1,5 @@
 # backend for volunteers for city projects
-REST API для Проекта Платформа для волонтеров
+REST API для Проекта Платформа для волонтеров!
 
 
 ## Стек технологий:
