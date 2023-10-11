@@ -31,8 +31,11 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
-    'users.apps.UsersConfig',
     'api.apps.ApiConfig',
+    'content.apps.ContentConfig',
+    'notifications.apps.NotificationsConfig',
+    'projects.apps.ProjectsConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
