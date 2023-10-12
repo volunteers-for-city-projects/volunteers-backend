@@ -55,3 +55,12 @@ class Organization(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class Volunteer(models.Model):
+    class Meta:
+        verbose_name = 'Волонтер'
+        verbose_name_plural = 'Волонтеры'
+
+    def __str__(self):
+        return self.name
