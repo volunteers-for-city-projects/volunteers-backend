@@ -64,3 +64,56 @@ class Volunteer(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Project(models.Model):
+    name = models.CharField(
+        max_length=MAX_LEN_NAME,
+        blank=False,
+        verbose_name='Название',
+    )
+    description = models.TextField(
+        blank=False,
+        verbose_name='Описание',
+    )
+    picture = models.ImageField(
+        blank=False,
+        verbose_name='Картинка',
+    )
+    start_datatime = models.DateTimeField(
+        blank=False,
+        auto_now=False,
+        auto_now_add=False,
+        verbose_name='Дата начало мероприятия',
+    )
+    end_datatime = models.DateTimeField(
+        blank=False,
+        auto_now=False,
+        auto_now_add=False,
+        verbose_name='Дата окончания мероприятия',
+    )
+    application_date = models.DateTimeField()
+    event_purpose = models.TextField(
+        blank=False,
+        verbose_name='Цель мероприятия',
+    )
+    # event_card
+    # activities = models.ManyToManyField(
+    #     Activity,
+    #     related_name='projects',
+    #     verbose_name='Активности',
+    # )
+    organization = models
+    # city = models.OneToOneField(
+    #     City,
+    #     on_delete=models.CASCADE,
+    #     related_name='project',
+    #     verbose_name='Город',
+    # )
+
+    class Meta:
+        verbose_name = 'Проект'
+        verbose_name_plural = 'Проекты'
+
+    def __str__(self):
+        return self.name
