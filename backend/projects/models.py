@@ -18,6 +18,10 @@ MESSAGE_PHONE_REGEX = (
 
 
 class Organization(models.Model):
+    """
+    Модель представляет собой информацию об организации-организаторе проектов.
+    """
+
     contact_person = models.OneToOneField(
         # User,
         related_name='organization',
@@ -61,6 +65,7 @@ class Organization(models.Model):
     )
 
     class Meta:
+        ordering = ['title']
         verbose_name = 'Организация'
         verbose_name_plural = 'Организации'
 
@@ -69,6 +74,10 @@ class Organization(models.Model):
 
 
 class Volunteer(models.Model):
+    """
+    Модель представляет собой информацию о волонтере.
+    """
+
     user = models.OneToOneField(
         # User,
         related_name='volunteer',
@@ -132,6 +141,7 @@ class Volunteer(models.Model):
     )
 
     class Meta:
+        ordering = ['user__last_name']
         verbose_name = 'Волонтер'
         verbose_name_plural = 'Волонтеры'
 
@@ -140,6 +150,10 @@ class Volunteer(models.Model):
 
 
 class StatusApprove(models.Model):
+    """
+    Модель представляет собой статус проверки проекта.
+    """
+
     APPROVED = 'approved'
     PENDING = 'pending'
     REJECTED = 'rejected'
@@ -158,6 +172,7 @@ class StatusApprove(models.Model):
     )
 
     class Meta:
+        ordering = ['title']
         verbose_name = 'Статус проверки'
         verbose_name_plural = 'Статусы проверки'
 
@@ -166,6 +181,10 @@ class StatusApprove(models.Model):
 
 
 class Project(models.Model):
+    """
+    Модель представляет собой информацию о проекте.
+    """
+
     name = models.CharField(
         max_length=MAX_LEN_NAME,
         blank=False,
@@ -202,7 +221,13 @@ class Project(models.Model):
     #     related_name='projects',
     #     verbose_name='Активности',
     # )
-    organization = models
+    organization = models.ForeignKey(
+        # Organization,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name='projects',
+        verbose_name='Организация',
+    )
     city = models.OneToOneField(
         # City,
         blank=False,
@@ -241,6 +266,10 @@ class Project(models.Model):
 
 
 class ProjectParticipants(models.Model):
+    """
+    Модель представляет собой список участников(волонтеров) проекта.
+    """
+
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
