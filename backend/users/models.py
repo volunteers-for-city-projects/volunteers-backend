@@ -1,9 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-# from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
-
-# from users.validators import username_validator
 
 USER_ROLES = [
     ('admin', 'Администратор'),
@@ -13,12 +10,6 @@ USER_ROLES = [
 
 
 class User(AbstractUser):
-    # username = models.CharField(
-    #     verbose_name='Пользователь',
-    #     max_length=settings.MAX_LENGTH_USERNAME,
-    #     unique=True,
-    #     validators=(UnicodeUsernameValidator(), username_validator,)
-    # )
     first_name = models.CharField(
         verbose_name='Имя',
         max_length=settings.MAX_LENGTH_NAME,
@@ -36,11 +27,12 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='Электронная почта',
+        max_length=settings.MAX_LENGTH_EMAIL,
         unique=True,
         blank=False
     )
     role = models.CharField(
-        'Роль',
+        verbose_name='Роль',
         choices=USER_ROLES,
         max_length=50,
         default='volunteer'
@@ -52,7 +44,8 @@ class User(AbstractUser):
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ('last_name',)
+        ordering = ('date_joined',)
 
     def __str__(self):
-        return f'{self.last_name} {self.first_name} {self.second_name}'
+        return (f'{self.last_name} {self.first_name} {self.second_name} '
+                f'{self.email}')
