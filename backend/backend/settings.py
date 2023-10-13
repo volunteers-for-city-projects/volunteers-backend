@@ -69,11 +69,7 @@ TEMPLATES = [
             ],
             'libraries': {
                 'staticfiles': 'django.templatetags.static',
-<<<<<<< HEAD
-            }
-=======
             },
->>>>>>> 43fc29021104cbb865b064bc1b75c40dcc9200d4
         },
     },
 ]
@@ -144,15 +140,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-
     'PAGE_SIZE': 10,
-
     # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-
 }
 
 DJOSER = {
