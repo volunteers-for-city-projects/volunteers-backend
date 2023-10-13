@@ -168,14 +168,11 @@ MAX_LENGTH_EMAIL = 70
 
 MAX_LEN_CHAR = 250
 MAX_LEN_PHONE = 12
-MESSAGE_PHONE_REGEX = 'Телефон указан некорректно'
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 200
 LEN_OGRN = 13
-MAX_LEN_PHONE = 11
 MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 или 8 и содержать {} цифр.'
-
 
 ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
 VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
