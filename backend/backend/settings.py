@@ -28,17 +28,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
+
+    'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    'django_filters',
-    'djoser',
+    'rest_framework_swagger',
+    'taggit',
+
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
     'notifications.apps.NotificationsConfig',
     'projects.apps.ProjectsConfig',
     'users.apps.UsersConfig',
-    'taggit',
-    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
