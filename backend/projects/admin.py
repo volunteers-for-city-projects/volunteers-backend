@@ -1,6 +1,6 @@
 from django.contrib.admin import ModelAdmin, register
 
-from projects.models import Organization, Volunteer, Project
+from projects.models import Organization, Volunteer, Project, Category
 
 
 @register(Organization)
@@ -33,7 +33,7 @@ class VolunteerAdmin(ModelAdmin):
         'telegram',
         'skills',
         'photo',
-        'activites',
+        'activities',
         'date_of_birth',
         'phone',
     )
@@ -45,6 +45,15 @@ class VolunteerAdmin(ModelAdmin):
         'city',
         'skills',
     )
+    save_on_top = True
+
+
+@register(Category)
+class CategoryAdmin(ModelAdmin):
+    list_display = ('name', 'slug',)
+    search_fields = ('name', 'slug',)
+    list_filter = ('name',)
+    prepopulated_fields = {'slug': ('name',)}
     save_on_top = True
 
 

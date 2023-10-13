@@ -5,16 +5,22 @@ from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
 )
-
 from django.core.validators import RegexValidator
 from datetime import date
+
+from content.models import City, Skills, Activities
+from users.models import User
 
 MAX_LEN_NAME = 200
 LEN_OGRN = 13
 MAX_LEN_PHONE = 11
-MESSAGE_PHONE_REGEX = (
-    'Номер телефона должен начинаться с +7 или 8 и содержать {} цифр.',
-)
+MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 или 8 и содержать {} цифр.'
+
+
+ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
+VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
+PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
+PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
 
 
 class Organization(models.Model):
@@ -23,7 +29,8 @@ class Organization(models.Model):
     """
 
     contact_person = models.OneToOneField(
-        # User,
+        User,
+        on_delete=models.CASCADE,
         related_name='organization',
         verbose_name='Пользователь',
     )
@@ -58,8 +65,8 @@ class Organization(models.Model):
         verbose_name='Об организации',
     )
     city = models.OneToOneField(
-        # City,
-        # on_delete=models.CASCADE,
+        City,
+        on_delete=models.CASCADE,
         related_name='organization',
         verbose_name='Город',
     )
@@ -70,7 +77,7 @@ class Organization(models.Model):
         verbose_name_plural = 'Организации'
 
     def __str__(self):
-        return self.title
+        return ORGANIZATION.format(self.title, self.ogrn, self.city)
 
 
 class Volunteer(models.Model):
@@ -79,13 +86,14 @@ class Volunteer(models.Model):
     """
 
     user = models.OneToOneField(
-        # User,
+        User,
+        on_delete=models.CASCADE,
         related_name='volunteer',
         verbose_name='Пользователь',
     )
     city = models.OneToOneField(
-        # City,
-        # on_delete=models.CASCADE,
+        City,
+        on_delete=models.CASCADE,
         related_name='volunteer',
         verbose_name='Город',
     )
@@ -104,8 +112,8 @@ class Volunteer(models.Model):
         ],
     )
     skills = models.ForeignKey(
-        # Skills,
-        # on_delete=models.CASCADE,
+        Skills,
+        on_delete=models.CASCADE,
         verbose_name='Навыки',
     )
     photo = models.ImageField(
@@ -113,9 +121,9 @@ class Volunteer(models.Model):
         verbose_name='Фото',
     )
     activities = models.ForeignKey(
-        "app.Model",
+        Activities,
+        on_delete=models.CASCADE,
         verbose_name='Активности',
-        # on_delete=models.CASCADE,
     )
     date_of_birth = models.DateField(
         blank=False,
@@ -146,7 +154,22 @@ class Volunteer(models.Model):
         verbose_name_plural = 'Волонтеры'
 
     def __str__(self):
-        return self.user
+        return VOLUNTEER.format(self.user, self.city, self.skills)
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=MAX_LEN_NAME, verbose_name='Название')
+    slug = models.SlugField(
+        unique=True, max_length=30, verbose_name='Идентификатор'
+    )
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
+    def __str__(self):
+        return self.name
 
 
 class StatusApprove(models.Model):
@@ -210,33 +233,33 @@ class Project(models.Model):
         auto_now_add=False,
         verbose_name='Дата окончания мероприятия',
     )
-    application_date = models.DateTimeField()
+    application_date = models.DateTimeField(verbose_name='Дата подачи заявки')
     event_purpose = models.TextField(
         blank=False,
         verbose_name='Цель мероприятия',
     )
     # event_card
-    # activities = models.ManyToManyField(
-    #     Activity,
-    #     related_name='projects',
-    #     verbose_name='Активности',
-    # )
+    activities = models.ManyToManyField(
+        Activities,
+        related_name='projects',
+        verbose_name='Активности',
+    )
     organization = models.ForeignKey(
-        # Organization,
+        Organization,
         blank=False,
         on_delete=models.CASCADE,
         related_name='projects',
         verbose_name='Организация',
     )
     city = models.OneToOneField(
-        # City,
+        City,
         blank=False,
-        # on_delete=models.CASCADE,
+        on_delete=models.CASCADE,
         related_name='project',
         verbose_name='Город',
     )
     category = models.ForeignKey(
-        # Category,
+        Category,
         blank=False,
         on_delete=models.CASCADE,
         related_name='projects',
@@ -249,7 +272,10 @@ class Project(models.Model):
     # tags =
     participants = models.ForeignKey(
         'ProjectParticipants',
-        verbose_name='',
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='projects',
+        verbose_name='Участники',
     )
     status_approve = models.ForeignKey(
         StatusApprove,
@@ -262,7 +288,9 @@ class Project(models.Model):
         verbose_name_plural = 'Проекты'
 
     def __str__(self):
-        return self.name
+        return PROJECT.format(
+            self.name, self.organization, self.category, self.city
+        )
 
 
 class ProjectParticipants(models.Model):
@@ -278,4 +306,4 @@ class ProjectParticipants(models.Model):
         verbose_name_plural = 'Участники проекта'
 
     def __str__(self):
-        return self.name
+        return PROJECTPARTICIPANTS.format(self.project, self.volunteer)
