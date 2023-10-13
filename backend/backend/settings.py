@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'projects.apps.ProjectsConfig',
     'users.apps.UsersConfig',
+    'taggit',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -67,6 +69,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',
+}
         },
     },
 ]
@@ -122,6 +127,9 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = Path(BASE_DIR, 'collected_static')
 
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -129,20 +137,20 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    # 'DEFAULT_FILTER_BACKENDS': [
-    #     'django_filters.rest_framework.DjangoFilterBackend',
-    # ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
-    # 'DEFAULT_PAGINATION_CLASS': 'api.pagination.CustomPageNumberPagination',
-    # 'PAGE_SIZE': 6,
-    # 'SEARCH_PARAM': 'name',
+    'PAGE_SIZE': 10,
+
+    # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 
 }
 
@@ -165,3 +173,9 @@ MAX_LENGTH_NAME = 50
 MAX_LENGTH_SLUG = 50
 MAX_LENGTH_PASSWORD = 20
 MAX_LENGTH_EMAIL = 70
+
+MAX_LEN_CHAR = 250
+MAX_LEN_PHONE = 12
+MESSAGE_PHONE_REGEX = 'Телефон указан некорректно'
+MAX_LEN_TEXT_IN_ADMIN = 50
+

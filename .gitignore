@@ -167,3 +167,4 @@ cython_debug/
 
 # static
 **/collected_static/
+media/
