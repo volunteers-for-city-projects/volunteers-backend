@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'projects.apps.ProjectsConfig',
     'users.apps.UsersConfig',
+    'taggit',
+    'rest_framework_swagger',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +66,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',
+}
         },
     },
 ]
@@ -122,3 +127,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Это блок от приложения content Оля
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework.authentication.TokenAuthentication',),
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+
+    'PAGE_SIZE': 10,
+
+    # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+
+}
+# Это блок закончился от приложения content Оля
+
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
+MAX_LEN_CHAR = 250
+MAX_LEN_PHONE = 12
+MESSAGE_PHONE_REGEX = 'Телефон указан некорректно'
+MAX_LEN_TEXT_IN_ADMIN = 50
