@@ -4,6 +4,7 @@ from taggit.managers import TaggableManager
 from backend.settings import (MAX_LEN_CHAR,
                               MAX_LEN_PHONE,
                               MESSAGE_PHONE_REGEX)
+from users.models import User
 
 
 class PlatformAbout(models.Model):
@@ -95,13 +96,12 @@ class News(models.Model):
         auto_now_add=True
     )
     tags = TaggableManager()
-    author = models.CharField(max_length=15)
-    # author = models.ForeignKey(
-    #     User,
-    #     verbose_name='Автор новостей',
-    #     on_delete=models.CASCADE,
-    #     related_name='news'
-    # )
+    author = models.ForeignKey(
+        User,
+        verbose_name='Автор новостей',
+        on_delete=models.CASCADE,
+        related_name='news'
+    )
 
     class Meta:
         ordering = ('-created_at',)
