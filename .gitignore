@@ -162,7 +162,9 @@ cython_debug/
 # VS Code
 .vscode
 
-#migrations
+# migrations
 **/migrations/
 
+# static
+**/collected_static/
 media/

@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
+    'django_filters',
+    'djoser',
 
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
@@ -122,20 +125,24 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = Path(BASE_DIR, 'collected_static')
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Это блок от приложения content Оля
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
 
-    # 'DEFAULT_AUTHENTICATION_CLASSES': (
-    #     'rest_framework.authentication.TokenAuthentication',),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
 
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
 
@@ -146,13 +153,29 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 
 }
-# Это блок закончился от приложения content Оля
 
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    # 'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
+    #                 'current_user': 'api.serializers.UserSerializer',
+    #                 'user_create': 'api.serializers.UserCreateSerializer', },
+    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
+}
 
-MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+AUTH_USER_MODEL = 'users.User'
+
+# Constants
+MAX_LENGTH_NAME = 50
+MAX_LENGTH_SLUG = 50
+MAX_LENGTH_PASSWORD = 20
+MAX_LENGTH_EMAIL = 70
 
 MAX_LEN_CHAR = 250
 MAX_LEN_PHONE = 12
 MESSAGE_PHONE_REGEX = 'Телефон указан некорректно'
 MAX_LEN_TEXT_IN_ADMIN = 50
+

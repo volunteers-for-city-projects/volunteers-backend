@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.validators import RegexValidator, MaxLengthValidator
 from taggit.managers import TaggableManager
-
 from backend.settings import (MAX_LEN_CHAR,
                               MAX_LEN_PHONE,
                               MESSAGE_PHONE_REGEX)
@@ -116,3 +115,15 @@ class News(models.Model):
 # class Achievements(models.Model):
 #     title = models.CharField(max_length=250)
 #     description = models.TextField()
+
+
+class City(models.Model):
+    pass
+
+
+class Skills(models.Model):
+    pass
+
+
+class Activities(models.Model):
+    pass
