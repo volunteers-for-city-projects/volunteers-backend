@@ -10,17 +10,16 @@ from datetime import date
 
 from content.models import City, Skills, Activities
 from users.models import User
-
-MAX_LEN_NAME = 200
-LEN_OGRN = 13
-MAX_LEN_PHONE = 11
-MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 или 8 и содержать {} цифр.'
-
-
-ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
-VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
-PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
-PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
+from backend.settings import (
+    MAX_LEN_NAME,
+    LEN_OGRN,
+    MAX_LEN_PHONE,
+    MESSAGE_PHONE_REGEX,
+    ORGANIZATION,
+    VOLUNTEER,
+    PROJECT,
+    PROJECTPARTICIPANTS,
+)
 
 
 class Organization(models.Model):
