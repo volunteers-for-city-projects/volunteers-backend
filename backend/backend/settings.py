@@ -28,12 +28,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
     'djoser',
-
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
     'notifications.apps.NotificationsConfig',
@@ -71,7 +69,7 @@ TEMPLATES = [
             ],
             'libraries': {
                 'staticfiles': 'django.templatetags.static',
-}
+            },
         },
     },
 ]
@@ -139,19 +137,13 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
-
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-
     'PAGE_SIZE': 10,
-
     # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
-
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
-
 }
 
 DJOSER = {
@@ -176,6 +168,13 @@ MAX_LENGTH_EMAIL = 70
 
 MAX_LEN_CHAR = 250
 MAX_LEN_PHONE = 12
-MESSAGE_PHONE_REGEX = 'Телефон указан некорректно'
 MAX_LEN_TEXT_IN_ADMIN = 50
 
+MAX_LEN_NAME = 200
+LEN_OGRN = 13
+MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 или 8 и содержать {} цифр.'
+
+ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
+VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
+PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
+PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
