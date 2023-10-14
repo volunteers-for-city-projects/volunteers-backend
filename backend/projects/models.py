@@ -19,6 +19,8 @@ from backend.settings import (
     VOLUNTEER,
     PROJECT,
     PROJECTPARTICIPANTS,
+    MAX_LEN_TELEGRAM,
+    MIN_LEN_TELEGRAM,
 )
 
 
@@ -38,8 +40,13 @@ class Organization(models.Model):
         blank=False,
         verbose_name='Название',
     )
-    ogrn = models.PositiveIntegerField(
+    ogrn = models.CharField(
+        max_length=LEN_OGRN,
         validators=[
+            RegexValidator(
+                regex=r'^\d+$',
+                message='ОГРН должен состоять только из цифр.',
+            ),
             MaxLengthValidator(LEN_OGRN),
             MinLengthValidator(LEN_OGRN),
         ],
@@ -55,8 +62,8 @@ class Organization(models.Model):
             ),
             MaxLengthValidator(MAX_LEN_PHONE),
         ],
-        max_length=11,
-        blank=True,
+        max_length=MAX_LEN_PHONE,
+        blank=False,
         verbose_name='Телефон',
     )
     about = models.TextField(
@@ -65,6 +72,7 @@ class Organization(models.Model):
     )
     city = models.OneToOneField(
         City,
+        blank=False,
         on_delete=models.CASCADE,
         related_name='organization',
         verbose_name='Город',
@@ -97,7 +105,7 @@ class Volunteer(models.Model):
         verbose_name='Город',
     )
     telegram = models.CharField(
-        max_length=32,
+        max_length=MAX_LEN_TELEGRAM,
         validators=[
             RegexValidator(
                 regex=r'^@[\w]+$',
@@ -106,8 +114,8 @@ class Volunteer(models.Model):
                     'только буквы, цифры и знаки подчеркивания.',
                 ),
             ),
-            MinLengthValidator(5),
-            MaxLengthValidator(32),
+            MinLengthValidator(MIN_LEN_TELEGRAM),
+            MaxLengthValidator(MAX_LEN_TELEGRAM),
         ],
     )
     skills = models.ForeignKey(
@@ -157,6 +165,10 @@ class Volunteer(models.Model):
 
 
 class Category(models.Model):
+    """
+    Модель представляет собой категории проекта.
+    """
+
     name = models.CharField(max_length=MAX_LEN_NAME, verbose_name='Название')
     slug = models.SlugField(
         unique=True, max_length=30, verbose_name='Идентификатор'
@@ -171,41 +183,31 @@ class Category(models.Model):
         return self.name
 
 
-class StatusApprove(models.Model):
+class Project(models.Model):
     """
-    Модель представляет собой статус проверки проекта.
+    Модель представляет собой информацию о проекте.
     """
 
     APPROVED = 'approved'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    OPEN = 'open'
+    READY_FOR_FEEDBACK = 'ready_for_feedback'
+    RECEPTION_OF_RESPONSES_CLOSED = 'Reception_of_responses_closed'
+    PROJECT_COMPLETED = 'project_completed'
+
+    STATUS_PROJECT = [
+        (OPEN, 'Открыт'),
+        (READY_FOR_FEEDBACK, 'Готов к откликам'),
+        (RECEPTION_OF_RESPONSES_CLOSED, 'Прием откликов окончен'),
+        (PROJECT_COMPLETED, 'Проект завершен'),
+    ]
 
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
     ]
-
-    title = models.CharField(
-        max_length=50,
-        choices=STATUS_CHOICES,
-        default=PENDING,
-        verbose_name='Статус проверки',
-    )
-
-    class Meta:
-        ordering = ['title']
-        verbose_name = 'Статус проверки'
-        verbose_name_plural = 'Статусы проверки'
-
-    def __str__(self):
-        return self.title
-
-
-class Project(models.Model):
-    """
-    Модель представляет собой информацию о проекте.
-    """
 
     name = models.CharField(
         max_length=MAX_LEN_NAME,
@@ -264,6 +266,14 @@ class Project(models.Model):
         related_name='projects',
         verbose_name='Категория',
     )
+    status_project = models.CharField(
+        max_length=100,
+        choices=STATUS_PROJECT,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name='Статус проекта',
+    )
     photo_previous_event = models.ImageField(
         blank=False,
         verbose_name='Фото с мероприятия',
@@ -276,9 +286,10 @@ class Project(models.Model):
         related_name='projects',
         verbose_name='Участники',
     )
-    status_approve = models.ForeignKey(
-        StatusApprove,
-        on_delete=models.CASCADE,
+    status_approve = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default=PENDING,
         verbose_name='Статус проверки',
     )
 

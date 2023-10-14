@@ -29,13 +29,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'taggit',
-
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
     'notifications.apps.NotificationsConfig',
@@ -174,6 +172,8 @@ MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 200
 LEN_OGRN = 13
+MAX_LEN_TELEGRAM = 32
+MIN_LEN_TELEGRAM = 5
 MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 или 8 и содержать {} цифр.'
 
 ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
