@@ -62,7 +62,7 @@ jobs:
     needs: 
       # Дождёмся билда всех образов Foodgram
       - build_backend_and_push_to_docker_hub
-      - build_frontend_and_push_to_docker_hub
+      # - build_frontend_and_push_to_docker_hub
     steps:
     - name: Checkout repo
       uses: actions/checkout@v3
