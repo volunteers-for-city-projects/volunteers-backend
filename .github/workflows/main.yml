@@ -90,14 +90,14 @@ jobs:
         script: |
           cd better_together
           # Выполняет pull образов с Docker Hub
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml pull
+          sudo docker compose -f docker-compose.production.yml pull
           # Перезапускает все контейнеры в Docker Compose
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml down
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml up -d
+          sudo docker compose -f docker-compose.production.yml down
+          sudo docker compose -f docker-compose.production.yml up -d
           # Выполняет миграции, загрузку ингредиентов и сбор статики
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml exec backend python manage.py migrate
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
-          echo ${{ secrets.HOST_PASSWORD }} | sudo -S docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+          sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
 
   send_message:
     runs-on: ubuntu-latest
