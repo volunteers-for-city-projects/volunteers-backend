@@ -38,7 +38,7 @@ class VolunteerAdmin(ModelAdmin):
         'telegram',
         'skills',
         'photo',
-        'activities',
+        # 'activities',
         'date_of_birth',
         'phone',
     )

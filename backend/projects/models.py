@@ -8,7 +8,7 @@ from django.core.validators import (
 from django.core.validators import RegexValidator
 from datetime import date
 
-from content.models import City, Skills, Activities
+from content.models import City, Skills  # Activities
 from users.models import User
 from backend.settings import (
     MAX_LEN_NAME,
@@ -127,11 +127,11 @@ class Volunteer(models.Model):
         blank=False,
         verbose_name='Фото',
     )
-    activities = models.ForeignKey(
-        Activities,
-        on_delete=models.CASCADE,
-        verbose_name='Активности',
-    )
+    # activities = models.ForeignKey(
+    #     Activities,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Активности',
+    # )
     date_of_birth = models.DateField(
         blank=False,
         null=False,
@@ -219,7 +219,8 @@ class Project(models.Model):
         verbose_name='Описание',
     )
     picture = models.ImageField(
-        blank=False,
+        null=True,
+        blank=True,
         verbose_name='Картинка',
     )
     start_datatime = models.DateTimeField(
@@ -240,11 +241,11 @@ class Project(models.Model):
         verbose_name='Цель мероприятия',
     )
     # event_card
-    activities = models.ManyToManyField(
-        Activities,
-        related_name='projects',
-        verbose_name='Активности',
-    )
+    # activities = models.ManyToManyField(
+    #     Activities,
+    #     related_name='projects',
+    #     verbose_name='Активности',
+    # )
     organization = models.ForeignKey(
         Organization,
         blank=False,
@@ -252,7 +253,7 @@ class Project(models.Model):
         related_name='projects',
         verbose_name='Организация',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
         blank=False,
         on_delete=models.CASCADE,
@@ -275,13 +276,15 @@ class Project(models.Model):
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
-        blank=False,
+        blank=True,
+        null=True,
         verbose_name='Фото с мероприятия',
     )
     # tags =
     participants = models.ForeignKey(
         'ProjectParticipants',
         on_delete=models.SET_NULL,
+        blank=True,
         null=True,
         related_name='projects',
         verbose_name='Участники',

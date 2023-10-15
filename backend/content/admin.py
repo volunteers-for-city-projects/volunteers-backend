@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
-from .models import Feedback, News, PlatformAbout, Valuation
+from .models import Feedback, News, PlatformAbout, Valuation, City
 
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
@@ -11,10 +11,14 @@ admin.site.site_header = 'Администрирование сайта BETTER-T
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-
     list_display = (
-        'name', 'phone', 'email', 'get_text',
-        'created_at', 'processed_at', 'status'
+        'name',
+        'phone',
+        'email',
+        'get_text',
+        'created_at',
+        'processed_at',
+        'status',
     )
     readonly_fields = ('name', 'phone', 'email', 'text', 'created_at')
     list_filter = ('created_at', 'processed_at', 'status')
@@ -31,10 +35,13 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-
     list_display = (
-        'title', 'get_text', 'created_at',
-        'author', 'get_mini_picture', 'get_tags'
+        'title',
+        'get_text',
+        'created_at',
+        'author',
+        'get_mini_picture',
+        'get_tags',
     )
     readonly_fields = ('created_at', 'author')
     list_filter = ('title', 'created_at', 'author', 'tags')
@@ -68,4 +75,11 @@ class PlatformAboutAdmin(admin.ModelAdmin):
 class Valuation(admin.ModelAdmin):
     list_display = ('title', 'description')
     search_fields = ('title', 'description')
+    ordering = ('-id',)
+
+
+@admin.register(City)
+class City(admin.ModelAdmin):
+    list_display = ('name',)
+    search_fields = ('name',)
     ordering = ('-id',)
