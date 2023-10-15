@@ -1,10 +1,18 @@
 from django.db import models
-from django.core.validators import RegexValidator, MaxLengthValidator
 from taggit.managers import TaggableManager
+
 from backend.settings import (MAX_LEN_CHAR,
-                              MAX_LEN_PHONE,
-                              MESSAGE_PHONE_REGEX)
+                              LEN_PHONE,
+                              MAX_LENGTH_EMAIL,
+                              MAX_LEN_TEXT_FEEDBACK,
+                              MAX_LEN_NAME_FEEDBACK
+                              )
 from users.models import User
+from .validators import (EmailValidator,
+                         NameFeedbackUserkValidator,
+                         PhoneValidator,
+                         TextFeedbackValidator
+                         )
 
 
 class PlatformAbout(models.Model):
@@ -15,7 +23,8 @@ class PlatformAbout(models.Model):
     about_us = models.TextField(verbose_name='Описание раздела "О нас"')
     platform_email = models.EmailField(
         verbose_name='email Платформы',
-        max_length=MAX_LEN_CHAR,
+        max_length=MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email]
     )
 
     class Meta:
@@ -45,28 +54,33 @@ class Feedback(models.Model):
 
     name = models.CharField(
         verbose_name='Имя',
-        max_length=MAX_LEN_CHAR
+        max_length=MAX_LEN_NAME_FEEDBACK,
+        validators=[NameFeedbackUserkValidator.validate_name]
     )
     phone = models.CharField(
         verbose_name='Телефон',
-        max_length=12,
-        validators=[
-            RegexValidator(
-                regex=r'^(?:\+7|8)[0-9]{10}$',
-                message=MESSAGE_PHONE_REGEX.format(MAX_LEN_PHONE),
-            ),
-            MaxLengthValidator(MAX_LEN_PHONE)
-        ]
+        max_length=LEN_PHONE,
+        validators=[PhoneValidator.validate_phone]
     )
-    email = models.EmailField(max_length=MAX_LEN_CHAR)
-    text = models.TextField(verbose_name='Текст обращения')
+    email = models.EmailField(
+        max_length=MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email]
+    )
+    text = models.CharField(
+        verbose_name='Текст обращения',
+        max_length=MAX_LEN_TEXT_FEEDBACK,
+        validators=[TextFeedbackValidator.validate_text]
+
+    )
     created_at = models.DateTimeField(
         verbose_name='Дата и время обращения',
         auto_now_add=True
     )
     processed_at = models.DateTimeField(
         verbose_name='Дата и время обработки',
-        auto_now=True
+        # auto_now=True,
+        null=True,
+        blank=True
     )
     status = models.BooleanField(
         verbose_name='Обработано',
@@ -111,6 +125,7 @@ class News(models.Model):
     def __str__(self):
         return self.title
 
+
 #  Дополнительная возможно фича ачивка для волонтера  #  пока в разработке
 # class Achievements(models.Model):
 #     title = models.CharField(max_length=250)
@@ -118,12 +133,33 @@ class News(models.Model):
 
 
 class City(models.Model):
-    pass
+    '''Справочник городов.'''
+
+    name = models.CharField(
+        verbose_name='Город',
+        max_length=MAX_LEN_CHAR
+    )
 
 
 class Skills(models.Model):
-    pass
+    '''Навыки волонтеров.'''
 
+    name = models.CharField(
+        verbose_name='Навык',
+        max_length=MAX_LEN_CHAR
+    )
+    description = models.TextField(
+        verbose_name='Описание навыка'
+    )
 
-class Activities(models.Model):
-    pass
+# Активности под вопросом, высока вероятность что не будет в проекте
+# class Activities(models.Model):
+#     '''Необходимые активности для реализации проекта.'''
+
+#     name = models.CharField(
+#         verbose_name='Активность',
+#         max_length=MAX_LEN_CHAR
+#     )
+#     description = models.TextField(
+#         verbose_name='Описание активности'
+#     )
