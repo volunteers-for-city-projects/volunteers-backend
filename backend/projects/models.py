@@ -2,10 +2,7 @@ from django.db import models
 from django.core.validators import (
     MinValueValidator,
     MaxValueValidator,
-    MaxLengthValidator,
-    MinLengthValidator,
 )
-from django.core.validators import RegexValidator
 from datetime import date
 
 from content.models import City, Skills  # Activities
@@ -13,15 +10,14 @@ from users.models import User
 from backend.settings import (
     MAX_LEN_NAME,
     LEN_OGRN,
-    MAX_LEN_PHONE,
-    MESSAGE_PHONE_REGEX,
+    LEN_PHONE,
     ORGANIZATION,
     VOLUNTEER,
     PROJECT,
     PROJECTPARTICIPANTS,
     MAX_LEN_TELEGRAM,
-    MIN_LEN_TELEGRAM,
 )
+from .validators import validate_ogrn, validate_phone_number, validate_telegram
 
 
 class Organization(models.Model):
@@ -42,27 +38,14 @@ class Organization(models.Model):
     )
     ogrn = models.CharField(
         max_length=LEN_OGRN,
-        validators=[
-            RegexValidator(
-                regex=r'^\d+$',
-                message='ОГРН должен состоять только из цифр.',
-            ),
-            MaxLengthValidator(LEN_OGRN),
-            MinLengthValidator(LEN_OGRN),
-        ],
+        validators=[validate_ogrn],
         unique=True,
         blank=False,
         verbose_name='ОГРН',
     )
     phone = models.CharField(
-        validators=[
-            RegexValidator(
-                regex=r'^(?:\+7|8)[0-9]{10}$',
-                message=MESSAGE_PHONE_REGEX.format(MAX_LEN_PHONE),
-            ),
-            MaxLengthValidator(MAX_LEN_PHONE),
-        ],
-        max_length=MAX_LEN_PHONE,
+        validators=[validate_phone_number],
+        max_length=LEN_PHONE,
         blank=False,
         verbose_name='Телефон',
     )
@@ -106,17 +89,7 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=MAX_LEN_TELEGRAM,
-        validators=[
-            RegexValidator(
-                regex=r'^@[\w]+$',
-                message=(
-                    'Ник в Telegram должен начинаться с @ и содержать '
-                    'только буквы, цифры и знаки подчеркивания.',
-                ),
-            ),
-            MinLengthValidator(MIN_LEN_TELEGRAM),
-            MaxLengthValidator(MAX_LEN_TELEGRAM),
-        ],
+        validators=[validate_telegram],
     )
     skills = models.ForeignKey(
         Skills,
@@ -143,13 +116,7 @@ class Volunteer(models.Model):
         help_text='Введите дату в формате "ДД.ММ.ГГГГ", пример: "01 01 2000".',
     )
     phone = models.CharField(
-        validators=[
-            RegexValidator(
-                regex=r'^(?:\+7|8)[0-9]{10}$',
-                message=MESSAGE_PHONE_REGEX.format(MAX_LEN_PHONE),
-            ),
-            MaxLengthValidator(MAX_LEN_PHONE),
-        ],
+        validators=[validate_phone_number],
         max_length=11,
         blank=True,
         verbose_name='Телефон',
@@ -280,7 +247,6 @@ class Project(models.Model):
         null=True,
         verbose_name='Фото с мероприятия',
     )
-    # tags =
     participants = models.ForeignKey(
         'ProjectParticipants',
         on_delete=models.SET_NULL,
