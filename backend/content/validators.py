@@ -1,19 +1,23 @@
-from django.core.validators import (MaxLengthValidator,
-                                    MinLengthValidator,
-                                    RegexValidator
-                                    )
-from backend.settings import (LEN_PHONE,
-                              MESSAGE_PHONE_REGEX,
-                              MAX_LENGTH_EMAIL,
-                              MIN_LENGTH_EMAIL,
-                              MESSAGE_EMAIL_VALID,
-                              MIN_LEN_TEXT_FEEDBACK,
-                              MAX_LEN_TEXT_FEEDBACK,
-                              MESSAGE_TEXT_FEEDBACK_VALID,
-                              MAX_LEN_NAME_FEEDBACK,
-                              MIN_LEN_NAME_FEEDBACK,
-                              MESSAGE_NAME_FEEDBACK_VALID,
-                              MESSAGE_NAME_FEEDBACK_CYRILLIC)
+from django.core.validators import (
+    MaxLengthValidator,
+    MinLengthValidator,
+    RegexValidator,
+)
+
+from backend.settings import (
+    LEN_PHONE,
+    MAX_LEN_NAME_FEEDBACK,
+    MAX_LEN_TEXT_FEEDBACK,
+    MAX_LENGTH_EMAIL,
+    MESSAGE_EMAIL_VALID,
+    MESSAGE_NAME_FEEDBACK_CYRILLIC,
+    MESSAGE_NAME_FEEDBACK_VALID,
+    MESSAGE_PHONE_REGEX,
+    MESSAGE_TEXT_FEEDBACK_VALID,
+    MIN_LEN_NAME_FEEDBACK,
+    MIN_LEN_TEXT_FEEDBACK,
+    MIN_LENGTH_EMAIL,
+)
 
 
 class EmailValidator:

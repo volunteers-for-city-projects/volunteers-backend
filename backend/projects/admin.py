@@ -1,11 +1,6 @@
 from django.contrib.admin import ModelAdmin, register
 
-from projects.models import (
-    Organization,
-    Volunteer,
-    Project,
-    Category,
-)
+from projects.models import Category, Organization, Project, Volunteer
 
 
 @register(Organization)
@@ -28,6 +23,7 @@ class OrganizationAdmin(ModelAdmin):
         'city',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'
 
 
 @register(Volunteer)
@@ -51,6 +47,7 @@ class VolunteerAdmin(ModelAdmin):
         'skills',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'
 
 
 @register(Category)
@@ -100,3 +97,4 @@ class ProjectAdmin(ModelAdmin):
         'status_approve',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'

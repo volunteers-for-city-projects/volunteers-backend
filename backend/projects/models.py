@@ -1,22 +1,21 @@
-from django.db import models
-from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
-)
 from datetime import date
 
-from content.models import City, Skills  # Activities
-from users.models import User
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
 from backend.settings import (
-    MAX_LEN_NAME,
     LEN_OGRN,
     LEN_PHONE,
+    MAX_LEN_NAME,
+    MAX_LEN_TELEGRAM,
     ORGANIZATION,
-    VOLUNTEER,
     PROJECT,
     PROJECTPARTICIPANTS,
-    MAX_LEN_TELEGRAM,
+    VOLUNTEER,
 )
+from content.models import City, Skills  # Activities
+from users.models import User
+
 from .validators import validate_ogrn, validate_phone_number, validate_telegram
 
 
@@ -160,7 +159,7 @@ class Project(models.Model):
     REJECTED = 'rejected'
     OPEN = 'open'
     READY_FOR_FEEDBACK = 'ready_for_feedback'
-    RECEPTION_OF_RESPONSES_CLOSED = 'Reception_of_responses_closed'
+    RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
     PROJECT_COMPLETED = 'project_completed'
 
     STATUS_PROJECT = [

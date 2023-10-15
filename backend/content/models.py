@@ -2,13 +2,14 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from backend.settings import (
-    MAX_LEN_CHAR,
     LEN_PHONE,
-    MAX_LENGTH_EMAIL,
-    MAX_LEN_TEXT_FEEDBACK,
+    MAX_LEN_CHAR,
     MAX_LEN_NAME_FEEDBACK,
+    MAX_LEN_TEXT_FEEDBACK,
+    MAX_LENGTH_EMAIL,
 )
 from users.models import User
+
 from .validators import (
     EmailValidator,
     NameFeedbackUserkValidator,

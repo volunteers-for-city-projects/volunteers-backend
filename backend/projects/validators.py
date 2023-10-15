@@ -1,16 +1,16 @@
 from django.core.validators import (
-    RegexValidator,
     MaxLengthValidator,
     MinLengthValidator,
+    RegexValidator,
 )
 
 from backend.settings import (
-    OGRN_ERROR_MESSAGE,
-    MESSAGE_PHONE_REGEX,
     LEN_PHONE,
-    TELEGRAM_ERROR_MESSAGE,
-    MIN_LEN_TELEGRAM,
     MAX_LEN_TELEGRAM,
+    MESSAGE_PHONE_REGEX,
+    MIN_LEN_TELEGRAM,
+    OGRN_ERROR_MESSAGE,
+    TELEGRAM_ERROR_MESSAGE,
 )
 
 
