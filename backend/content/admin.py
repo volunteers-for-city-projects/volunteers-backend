@@ -1,12 +1,18 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
-from .models import (Feedback, News, PlatformAbout,
-                     Valuation, City, Activities, Skills
-                     )
 
+from .models import (
+    Feedback,
+    News,
+    PlatformAbout,
+    Valuation,
+    City,
+    Activities,
+    Skills,
+)
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
 admin.site.site_header = 'Администрирование сайта BETTER-TOGETHER'
@@ -17,12 +23,21 @@ class FeedbackAdmin(admin.ModelAdmin):
     '''Администрирование раздела обращений от пользователей.'''
 
     list_display = (
-        'name', 'phone', 'email', 'get_text',
-        'created_at', 'processed_at', 'status'
+        'name',
+        'phone',
+        'email',
+        'get_text',
+        'created_at',
+        'processed_at',
+        'status',
     )
     readonly_fields = (
-        'name', 'phone', 'email', 'text',
-        'created_at', 'processed_at'
+        'name',
+        'phone',
+        'email',
+        'text',
+        'created_at',
+        'processed_at',
     )
     list_editable = ('status',)
     list_filter = ('created_at', 'processed_at', 'status')
@@ -46,11 +61,16 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
+
     '''Администрирование раздела новостей.'''
 
     list_display = (
-        'title', 'get_text', 'created_at',
-        'author_initials', 'get_mini_picture', 'get_tags'
+        'title',
+        'get_text',
+        'created_at',
+        'author_initials',
+        'get_mini_picture',
+        'get_tags',
     )
     readonly_fields = ('created_at',)
     list_filter = ('title', 'created_at', 'author', 'tags')

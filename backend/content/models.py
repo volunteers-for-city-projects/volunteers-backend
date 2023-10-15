@@ -1,18 +1,21 @@
 from django.db import models
 from taggit.managers import TaggableManager
 
-from backend.settings import (MAX_LEN_CHAR,
-                              LEN_PHONE,
-                              MAX_LENGTH_EMAIL,
-                              MAX_LEN_TEXT_FEEDBACK,
-                              MAX_LEN_NAME_FEEDBACK
-                              )
+from backend.settings import (
+    LEN_PHONE,
+    MAX_LEN_CHAR,
+    MAX_LEN_NAME_FEEDBACK,
+    MAX_LEN_TEXT_FEEDBACK,
+    MAX_LENGTH_EMAIL,
+)
 from users.models import User
-from .validators import (EmailValidator,
-                         NameFeedbackUserkValidator,
-                         PhoneValidator,
-                         TextFeedbackValidator
-                         )
+
+from .validators import (
+    EmailValidator,
+    NameFeedbackUserkValidator,
+    PhoneValidator,
+    TextFeedbackValidator,
+)
 
 
 class PlatformAbout(models.Model):
@@ -24,7 +27,7 @@ class PlatformAbout(models.Model):
     platform_email = models.EmailField(
         verbose_name='email Платформы',
         max_length=MAX_LENGTH_EMAIL,
-        validators=[EmailValidator.validate_email]
+        validators=[EmailValidator.validate_email],
     )
 
     class Meta:
@@ -35,10 +38,7 @@ class PlatformAbout(models.Model):
 class Valuation(models.Model):
     '''Ценности проекта Платформа.'''
 
-    title = models.CharField(
-        verbose_name='Заголовок',
-        max_length=MAX_LEN_CHAR
-    )
+    title = models.CharField(verbose_name='Заголовок', max_length=MAX_LEN_CHAR)
     description = models.TextField(verbose_name='Описание ценности')
 
     class Meta:
@@ -55,37 +55,31 @@ class Feedback(models.Model):
     name = models.CharField(
         verbose_name='Имя',
         max_length=MAX_LEN_NAME_FEEDBACK,
-        validators=[NameFeedbackUserkValidator.validate_name]
+        validators=[NameFeedbackUserkValidator.validate_name],
     )
     phone = models.CharField(
         verbose_name='Телефон',
         max_length=LEN_PHONE,
-        validators=[PhoneValidator.validate_phone]
+        validators=[PhoneValidator.validate_phone],
     )
     email = models.EmailField(
-        max_length=MAX_LENGTH_EMAIL,
-        validators=[EmailValidator.validate_email]
+        max_length=MAX_LENGTH_EMAIL, validators=[EmailValidator.validate_email]
     )
     text = models.CharField(
         verbose_name='Текст обращения',
         max_length=MAX_LEN_TEXT_FEEDBACK,
-        validators=[TextFeedbackValidator.validate_text]
-
+        validators=[TextFeedbackValidator.validate_text],
     )
     created_at = models.DateTimeField(
-        verbose_name='Дата и время обращения',
-        auto_now_add=True
+        verbose_name='Дата и время обращения', auto_now_add=True
     )
     processed_at = models.DateTimeField(
         verbose_name='Дата и время обработки',
         # auto_now=True,
         null=True,
-        blank=True
+        blank=True,
     )
-    status = models.BooleanField(
-        verbose_name='Обработано',
-        default=False
-    )
+    status = models.BooleanField(verbose_name='Обработано', default=False)
 
     class Meta:
         ordering = ('-created_at',)
@@ -96,25 +90,21 @@ class Feedback(models.Model):
 class News(models.Model):
     '''Новости Платформы.'''
 
-    picture = models.ImageField(
-        upload_to='news/%Y/%m/%d/',
-        blank=True
-    )
+    picture = models.ImageField(upload_to='news/%Y/%m/%d/', blank=True)
     title = models.CharField(
         verbose_name='Заголовок',
         max_length=MAX_LEN_CHAR,
     )
     text = models.TextField(verbose_name='Текст новости')
     created_at = models.DateTimeField(
-        verbose_name='Дата публикации',
-        auto_now_add=True
+        verbose_name='Дата публикации', auto_now_add=True
     )
     tags = TaggableManager()
     author = models.ForeignKey(
         User,
         verbose_name='Автор новостей',
         on_delete=models.CASCADE,
-        related_name='news'
+        related_name='news',
     )
 
     class Meta:
@@ -135,10 +125,7 @@ class News(models.Model):
 class City(models.Model):
     '''Справочник городов.'''
 
-    name = models.CharField(
-        verbose_name='Город',
-        max_length=MAX_LEN_CHAR
-    )
+    name = models.CharField(verbose_name='Город', max_length=MAX_LEN_CHAR)
 
     class Meta:
         ordering = ('name',)
@@ -149,13 +136,9 @@ class City(models.Model):
 class Skills(models.Model):
     '''Навыки волонтеров.'''
 
-    name = models.CharField(
-        verbose_name='Навык',
-        max_length=MAX_LEN_CHAR
-    )
-    description = models.TextField(
-        verbose_name='Описание навыка'
-    )
+    name = models.CharField(verbose_name='Навык', max_length=MAX_LEN_CHAR)
+    description = models.TextField(verbose_name='Описание навыка')
+
 
     class Meta:
         ordering = ('name',)
@@ -179,3 +162,4 @@ class Activities(models.Model):
         ordering = ('name',)
         verbose_name = 'Активность'
         verbose_name_plural = 'Активности'
+

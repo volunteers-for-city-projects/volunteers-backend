@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -29,13 +30,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
     'rest_framework_swagger',
     'taggit',
-
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
     'notifications.apps.NotificationsConfig',
@@ -96,7 +95,7 @@ DATABASES = {
         'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
         'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', 5432)
+        'PORT': os.getenv('DB_PORT', 5432),
     }
 }
 
@@ -181,20 +180,20 @@ MAX_LENGTH_EMAIL = 256
 MIN_LENGTH_EMAIL = 5
 
 MAX_LEN_CHAR = 250
-MAX_LEN_PHONE = 12
 LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 200
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 и содержать {} цифр.'
-MESSAGE_EMAIL_VALID = f'"Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов"'
+MESSAGE_EMAIL_VALID = (
+    f'"Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов"'
+)
 
 ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
 VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
 PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
 PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
-
 
 MIN_LEN_TEXT_FEEDBACK = 10
 MAX_LEN_TEXT_FEEDBACK = 750
@@ -204,3 +203,9 @@ MIN_LEN_NAME_FEEDBACK = 2
 MAX_LEN_NAME_FEEDBACK = 40
 MESSAGE_NAME_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_NAME_FEEDBACK} до {MAX_LEN_NAME_FEEDBACK} символов'
 MESSAGE_NAME_FEEDBACK_CYRILLIC = 'Введите имя кириллицей'
+
+OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
+
+MIN_LEN_TELEGRAM = 5
+MAX_LEN_TELEGRAM = 32
+TELEGRAM_ERROR_MESSAGE = 'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. От {} до {} символов.'
