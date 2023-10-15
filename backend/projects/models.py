@@ -106,7 +106,7 @@ class Volunteer(models.Model):
     )
     phone = models.CharField(
         validators=[validate_phone_number],
-        max_length=11,
+        max_length=settings.LEN_PHONE,
         blank=True,
         verbose_name='Телефон',
     )
