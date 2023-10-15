@@ -4,7 +4,16 @@ from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
 
-from .models import City, Feedback, News, PlatformAbout, Valuation
+
+from .models import (
+    Feedback,
+    News,
+    PlatformAbout,
+    Valuation,
+    City,
+    Activities,
+    Skills,
+)
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
 admin.site.site_header = 'Администрирование сайта BETTER-TOGETHER'
