@@ -28,8 +28,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_filters',
 
+    'djoser',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_swagger',
+    'taggit',
+    'taggit_serializer',
 
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
@@ -64,6 +70,9 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+            'libraries': {
+                'staticfiles': 'django.templatetags.static',
+            },
         },
     },
 ]
@@ -74,10 +83,21 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'volunteers'),
+        'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', 5432)
     }
 }
 
@@ -117,8 +137,71 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = Path(BASE_DIR, 'collected_static')
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10,
+    # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+}
+
+DJOSER = {
+    'LOGIN_FIELD': 'email',
+    'HIDE_USERS': False,
+    'USER_CREATE_PASSWORD_RETYPE': True,
+    # 'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
+    #                 'current_user': 'api.serializers.UserSerializer',
+    #                 'user_create': 'api.serializers.UserCreateSerializer', },
+    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
+}
+
+AUTH_USER_MODEL = 'users.User'
+
+# Constants
+MAX_LENGTH_NAME = 50
+MAX_LENGTH_SLUG = 50
+MAX_LENGTH_PASSWORD = 20
+MAX_LENGTH_EMAIL = 256
+MIN_LENGTH_EMAIL = 5
+
+MAX_LEN_CHAR = 250
+MAX_LEN_PHONE = 12
+LEN_PHONE = 12
+MAX_LEN_TEXT_IN_ADMIN = 50
+
+MAX_LEN_NAME = 200
+LEN_OGRN = 13
+MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 и содержать {} цифр.'
+MESSAGE_EMAIL_VALID = f'"Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов"'
+
+ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
+VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
+PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
+PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
+
+
+MIN_LEN_TEXT_FEEDBACK = 10
+MAX_LEN_TEXT_FEEDBACK = 750
+MESSAGE_TEXT_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_TEXT_FEEDBACK} до {MAX_LEN_TEXT_FEEDBACK} символов'
+
+MIN_LEN_NAME_FEEDBACK = 2
+MAX_LEN_NAME_FEEDBACK = 40
+MESSAGE_NAME_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_NAME_FEEDBACK} до {MAX_LEN_NAME_FEEDBACK} символов'
+MESSAGE_NAME_FEEDBACK_CYRILLIC = 'Введите имя кириллицей'
