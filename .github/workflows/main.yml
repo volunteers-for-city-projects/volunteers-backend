@@ -4,7 +4,7 @@ name: Main Volunteers-for-city-projects workflow
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:  
 
