@@ -3,7 +3,9 @@ from django.utils.safestring import mark_safe
 from django.utils import timezone
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
-from .models import Feedback, News, PlatformAbout, Valuation
+from .models import (Feedback, News, PlatformAbout,
+                     Valuation, City, Activities, Skills
+                     )
 
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
@@ -93,8 +95,31 @@ class PlatformAboutAdmin(admin.ModelAdmin):
 
 
 @admin.register(Valuation)
-class Valuation(admin.ModelAdmin):
+class ValuationAdmin(admin.ModelAdmin):
     '''Администрирование раздела Ценности Платформы.'''
+
     list_display = ('title', 'description')
     search_fields = ('title', 'description')
     ordering = ('-id',)
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    '''Администрирование справочника Города.'''
+
+    list_display = ('id', 'name')
+
+
+@admin.register(Skills)
+class SkillsAdmin(admin.ModelAdmin):
+    '''Администрирование справочника с навыками волонтера.'''
+
+    list_display = ('name', 'description')
+
+
+#  возможно активносетй не будет на проекте
+@admin.register(Activities)
+class ActivitiesAdmin(admin.ModelAdmin):
+    '''Администрирование справочника активностей волонтера.'''
+
+    list_display = ('name', 'description')

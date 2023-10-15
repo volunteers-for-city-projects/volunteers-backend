@@ -140,6 +140,11 @@ class City(models.Model):
         max_length=MAX_LEN_CHAR
     )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Город'
+        verbose_name_plural = 'Города'
+
 
 class Skills(models.Model):
     '''Навыки волонтеров.'''
@@ -152,6 +157,12 @@ class Skills(models.Model):
         verbose_name='Описание навыка'
     )
 
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Навык'
+        verbose_name_plural = 'Навыки'
+
+
 # Активности под вопросом, высока вероятность что не будет в проекте
 class Activities(models.Model):
     '''Необходимые активности для реализации проекта.'''
@@ -163,3 +174,8 @@ class Activities(models.Model):
     description = models.TextField(
         verbose_name='Описание активности'
     )
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Активность'
+        verbose_name_plural = 'Активности'
