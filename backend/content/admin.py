@@ -4,6 +4,7 @@ from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
 
+
 from .models import (
     Feedback,
     News,

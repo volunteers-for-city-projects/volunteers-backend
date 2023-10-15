@@ -3,15 +3,7 @@ from django.core.validators import (
     MinLengthValidator,
     RegexValidator,
 )
-
-from backend.settings import (
-    LEN_PHONE,
-    MAX_LEN_TELEGRAM,
-    MESSAGE_PHONE_REGEX,
-    MIN_LEN_TELEGRAM,
-    OGRN_ERROR_MESSAGE,
-    TELEGRAM_ERROR_MESSAGE,
-)
+from django.conf import settings
 
 
 def validate_ogrn(value):
@@ -25,10 +17,14 @@ def validate_ogrn(value):
     None
     """
     regex_validator = RegexValidator(
-        regex=r'^\d{13}$', message=OGRN_ERROR_MESSAGE
+        regex=r'^\d{13}$', message=settings.OGRN_ERROR_MESSAGE
     )
-    ogrn_max_length = MaxLengthValidator(13, message=OGRN_ERROR_MESSAGE)
-    ogrn_min_length = MinLengthValidator(13, message=OGRN_ERROR_MESSAGE)
+    ogrn_max_length = MaxLengthValidator(
+        13, message=settings.OGRN_ERROR_MESSAGE
+    )
+    ogrn_min_length = MinLengthValidator(
+        13, message=settings.OGRN_ERROR_MESSAGE
+    )
 
     regex_validator(value)
     ogrn_max_length(value)
@@ -47,13 +43,16 @@ def validate_phone_number(value):
     None
     """
     regex_validator = RegexValidator(
-        regex=r'^\+7\d{10}$', message=MESSAGE_PHONE_REGEX.format(LEN_PHONE)
+        regex=r'^\+7\d{10}$',
+        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
     )
     phone_max_length = MaxLengthValidator(
-        LEN_PHONE, message=MESSAGE_PHONE_REGEX.format(LEN_PHONE)
+        settings.LEN_PHONE,
+        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
     )
     phone_min_length = MinLengthValidator(
-        LEN_PHONE, message=MESSAGE_PHONE_REGEX.format(LEN_PHONE)
+        settings.LEN_PHONE,
+        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
     )
 
     regex_validator(value)
@@ -76,20 +75,20 @@ def validate_telegram(value):
     """
     regex_validator = RegexValidator(
         regex=r'^@[\w]+$',
-        message=TELEGRAM_ERROR_MESSAGE.format(
-            MIN_LEN_TELEGRAM, MAX_LEN_TELEGRAM
+        message=settings.TELEGRAM_ERROR_MESSAGE.format(
+            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
         ),
     )
     min_length_validator = MinLengthValidator(
-        MIN_LEN_TELEGRAM,
-        message=TELEGRAM_ERROR_MESSAGE.format(
-            MIN_LEN_TELEGRAM, MAX_LEN_TELEGRAM
+        settings.MIN_LEN_TELEGRAM,
+        message=settings.TELEGRAM_ERROR_MESSAGE.format(
+            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
         ),
     )
     max_length_validator = MaxLengthValidator(
-        MAX_LEN_TELEGRAM,
-        message=TELEGRAM_ERROR_MESSAGE.format(
-            MIN_LEN_TELEGRAM, MAX_LEN_TELEGRAM
+        settings.MAX_LEN_TELEGRAM,
+        message=settings.TELEGRAM_ERROR_MESSAGE.format(
+            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
         ),
     )
 

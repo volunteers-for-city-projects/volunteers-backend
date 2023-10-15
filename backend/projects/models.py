@@ -1,18 +1,8 @@
 from datetime import date
-
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.conf import settings
 
-from backend.settings import (
-    LEN_OGRN,
-    LEN_PHONE,
-    MAX_LEN_NAME,
-    MAX_LEN_TELEGRAM,
-    ORGANIZATION,
-    PROJECT,
-    PROJECTPARTICIPANTS,
-    VOLUNTEER,
-)
 from content.models import City, Skills  # Activities
 from users.models import User
 
@@ -31,12 +21,12 @@ class Organization(models.Model):
         verbose_name='Пользователь',
     )
     title = models.CharField(
-        max_length=MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME,
         blank=False,
         verbose_name='Название',
     )
     ogrn = models.CharField(
-        max_length=LEN_OGRN,
+        max_length=settings.LEN_OGRN,
         validators=[validate_ogrn],
         unique=True,
         blank=False,
@@ -44,7 +34,7 @@ class Organization(models.Model):
     )
     phone = models.CharField(
         validators=[validate_phone_number],
-        max_length=LEN_PHONE,
+        max_length=settings.LEN_PHONE,
         blank=False,
         verbose_name='Телефон',
     )
@@ -66,7 +56,7 @@ class Organization(models.Model):
         verbose_name_plural = 'Организации'
 
     def __str__(self):
-        return ORGANIZATION.format(self.title, self.ogrn, self.city)
+        return settings.ORGANIZATION.format(self.title, self.ogrn, self.city)
 
 
 class Volunteer(models.Model):
@@ -87,7 +77,7 @@ class Volunteer(models.Model):
         verbose_name='Город',
     )
     telegram = models.CharField(
-        max_length=MAX_LEN_TELEGRAM,
+        max_length=settings.MAX_LEN_TELEGRAM,
         validators=[validate_telegram],
     )
     skills = models.ForeignKey(
@@ -116,7 +106,7 @@ class Volunteer(models.Model):
     )
     phone = models.CharField(
         validators=[validate_phone_number],
-        max_length=11,
+        max_length=settings.LEN_PHONE,
         blank=True,
         verbose_name='Телефон',
     )
@@ -127,7 +117,7 @@ class Volunteer(models.Model):
         verbose_name_plural = 'Волонтеры'
 
     def __str__(self):
-        return VOLUNTEER.format(self.user, self.city, self.skills)
+        return settings.VOLUNTEER.format(self.user, self.city, self.skills)
 
 
 class Category(models.Model):
@@ -135,9 +125,14 @@ class Category(models.Model):
     Модель представляет собой категории проекта.
     """
 
-    name = models.CharField(max_length=MAX_LEN_NAME, verbose_name='Название')
+    name = models.CharField(
+        max_length=settings.MAX_LEN_NAME,
+        verbose_name='Название',
+    )
     slug = models.SlugField(
-        unique=True, max_length=30, verbose_name='Идентификатор'
+        unique=True,
+        max_length=30,
+        verbose_name='Идентификатор',
     )
 
     class Meta:
@@ -176,7 +171,7 @@ class Project(models.Model):
     ]
 
     name = models.CharField(
-        max_length=MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME,
         blank=False,
         verbose_name='Название',
     )
@@ -266,7 +261,7 @@ class Project(models.Model):
         verbose_name_plural = 'Проекты'
 
     def __str__(self):
-        return PROJECT.format(
+        return settings.PROJECT.format(
             self.name, self.organization, self.category, self.city
         )
 
@@ -284,4 +279,6 @@ class ProjectParticipants(models.Model):
         verbose_name_plural = 'Участники проекта'
 
     def __str__(self):
-        return PROJECTPARTICIPANTS.format(self.project, self.volunteer)
+        return settings.PROJECTPARTICIPANTS.format(
+            self.project, self.volunteer
+        )
