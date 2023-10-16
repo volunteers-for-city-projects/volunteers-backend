@@ -132,13 +132,15 @@ class City(models.Model):
         verbose_name = 'Город'
         verbose_name_plural = 'Города'
 
+    def __str__(self):
+        return self.name
+
 
 class Skills(models.Model):
     '''Навыки волонтеров.'''
 
     name = models.CharField(verbose_name='Навык', max_length=MAX_LEN_CHAR)
     description = models.TextField(verbose_name='Описание навыка')
-
 
     class Meta:
         ordering = ('name',)
@@ -150,16 +152,10 @@ class Skills(models.Model):
 class Activities(models.Model):
     '''Необходимые активности для реализации проекта.'''
 
-    name = models.CharField(
-        verbose_name='Активность',
-        max_length=MAX_LEN_CHAR
-    )
-    description = models.TextField(
-        verbose_name='Описание активности'
-    )
+    name = models.CharField(verbose_name='Активность', max_length=MAX_LEN_CHAR)
+    description = models.TextField(verbose_name='Описание активности')
 
     class Meta:
         ordering = ('name',)
         verbose_name = 'Активность'
         verbose_name_plural = 'Активности'
-
