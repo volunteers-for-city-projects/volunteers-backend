@@ -132,6 +132,9 @@ class City(models.Model):
         verbose_name = 'Город'
         verbose_name_plural = 'Города'
 
+    def __str__(self):
+        return self.name
+
 
 class Skills(models.Model):
     '''Навыки волонтеров.'''
@@ -146,18 +149,14 @@ class Skills(models.Model):
 
 
 # # Активности под вопросом, высока вероятность что не будет в проекте
-# class Activities(models.Model):
-#     '''Необходимые активности для реализации проекта.'''
+class Activities(models.Model):
+    '''Необходимые активности для реализации проекта.'''
 
-#     name = models.CharField(
-#         verbose_name='Активность',
-#         max_length=MAX_LEN_CHAR
-#     )
-#     description = models.TextField(
-#         verbose_name='Описание активности'
-#     )
 
-#     class Meta:
-#         ordering = ('name',)
-#         verbose_name = 'Активность'
-#         verbose_name_plural = 'Активности'
+    name = models.CharField(verbose_name='Активность', max_length=MAX_LEN_CHAR)
+    description = models.TextField(verbose_name='Описание активности')
+
+    class Meta:
+        ordering = ('name',)
+        verbose_name = 'Активность'
+        verbose_name_plural = 'Активности'
