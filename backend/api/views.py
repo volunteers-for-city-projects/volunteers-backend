@@ -11,6 +11,7 @@ from .serializers import (
     PreviewNewsSerializer,
     ProjectSerializer,
 )
+from .permissions import IsOrganizerPermission
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -44,6 +45,7 @@ class FeedbackCreateView(generics.CreateAPIView):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    permission_classes = [IsOrganizerPermission]
 
     def get_success_message(self, action, project_name):
         messages = {
