@@ -1,15 +1,25 @@
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
+from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 
-from content.models import Feedback, News, PlatformAbout, Valuation
+from content.models import (City,
+                            Feedback,
+                            News,
+                            PlatformAbout,
+                            Valuation,
+                            Skills
+                            )
 from projects.models import Project
 
+from .filters import CityFilter, SkillsFilter
 from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectSerializer,
+    CitySerializer,
+    SkillsSerializer
 )
 
 
@@ -18,7 +28,7 @@ class PlatformAboutView(generics.RetrieveAPIView):
 
     def get_object(self):
         platform_about = PlatformAbout.objects.latest('id')
-        valuations = Valuation.objects.all()[:4]
+        valuations = Valuation.objects.all()[:VALUATIONS_ON_PAGE_ABOUT_US]
         return {
             'about_us': platform_about.about_us,
             'platform_email': platform_about.platform_email,
@@ -104,3 +114,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
             {'message': self.get_success_message('destroy', instance.name)},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class CityViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    pagination_class = None
+    filterset_class = CityFilter
+
+
+class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Skills.objects.all()
+    serializer_class = SkillsSerializer
+    pagination_class = None
+    filterset_class = SkillsFilter

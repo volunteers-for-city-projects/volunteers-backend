@@ -1,8 +1,15 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from content.models import Feedback, News, PlatformAbout, Valuation
+from content.models import (City,
+                            Feedback,
+                            News,
+                            PlatformAbout,
+                            Valuation,
+                            Skills
+                            )
 from projects.models import Project
+from users.models import User
 
 
 class ValuationSerializer(serializers.ModelSerializer):
@@ -17,10 +24,25 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
     '''Сериалзиатор для отображения информации о платформе.'''
 
     valuations = ValuationSerializer(many=True)
+    projects_count = serializers.SerializerMethodField()
+    volunteers_count = serializers.SerializerMethodField()
+    organizers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = PlatformAbout
-        fields = ('about_us', 'platform_email', 'valuations')
+        fields = (
+            'about_us', 'platform_email', 'valuations',
+            'projects_count', 'volunteers_count', 'organizers_count'
+        )
+
+    def get_projects_count(self, obj):
+        return Project.objects.count()
+
+    def get_volunteers_count(self, obj):
+        return User.objects.filter(role='volunteer').count()
+
+    def get_organizers_count(self, obj):
+        return User.objects.filter(role='organizer').count()
 
 
 class TagListSerializerField(serializers.Serializer):
@@ -133,3 +155,19 @@ class ProjectSerializer(serializers.ModelSerializer):
             'participants',
             'status_approve',
         )
+
+
+class CitySerializer(serializers.ModelSerializer):
+    '''Сериализатор для отображения городов.'''
+
+    class Meta:
+        model = City
+        fields = ('id', 'name')
+
+
+class SkillsSerializer(serializers.ModelSerializer):
+    '''Сериализатор для отображения ингредиетов.'''
+
+    class Meta:
+        model = Skills
+        fields = ('id', 'name', 'description')
