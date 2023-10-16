@@ -1,4 +1,5 @@
 import csv
+# import os # путь локально расскоментировать
 
 from django.core.management.base import BaseCommand
 
@@ -8,7 +9,10 @@ from content.models import City
 def load_cities():
     print('loading cities...')
     cities = []
-    with open("/app/data/cities.csv", encoding="utf-8-sig") as file:
+    #  путь для заливки на сервер не проверен
+    file_path = "/app/data/cities.csv"  # путь для заливки на сервер
+    # file_path = os.path.join(os.getcwd(), '..', 'data', 'cities.csv')  # путь локально расскомментировать
+    with open(file_path, encoding="utf-8-sig") as file:
         reader = csv.reader(file)
         for row in reader:
             city = City(

@@ -11,7 +11,7 @@ from .models import (
     PlatformAbout,
     Valuation,
     City,
-    Activities,
+    # Activities,
     Skills,
 )
 
@@ -139,8 +139,8 @@ class SkillsAdmin(admin.ModelAdmin):
 
 
 #  возможно активносетй не будет на проекте
-@admin.register(Activities)
-class ActivitiesAdmin(admin.ModelAdmin):
-    '''Администрирование справочника активностей волонтера.'''
+# @admin.register(Activities)
+# class ActivitiesAdmin(admin.ModelAdmin):
+#     '''Администрирование справочника активностей волонтера.'''
 
-    list_display = ('name', 'description')
+#     list_display = ('name', 'description')
