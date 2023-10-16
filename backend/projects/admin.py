@@ -1,6 +1,8 @@
-from django.contrib.admin import ModelAdmin, register
+from django.contrib.admin import ModelAdmin, register, TabularInline
 
-from projects.models import Category, Organization, Project, Volunteer
+from projects.models import (
+    Category, Organization, Project, Volunteer, VolunteerSkills
+)
 
 
 @register(Organization)
@@ -26,18 +28,24 @@ class OrganizationAdmin(ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+class VolunteerSkillsInline(TabularInline):
+    model = VolunteerSkills
+    verbose_name = 'Навык'
+    verbose_name_plural = 'Навыки'
+
+
 @register(Volunteer)
 class VolunteerAdmin(ModelAdmin):
     list_display = (
         'user',
         'city',
         'telegram',
-        'skills',
         'photo',
         # 'activities',
         'date_of_birth',
         'phone',
     )
+    inlines = (VolunteerSkillsInline,)
     search_fields = (
         'telegram',
         'phone',

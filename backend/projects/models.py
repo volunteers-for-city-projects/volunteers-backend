@@ -67,26 +67,27 @@ class Volunteer(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='volunteer',
+        related_name='volunteers',
         verbose_name='Пользователь',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
         on_delete=models.CASCADE,
-        related_name='volunteer',
+        related_name='volunteers',
         verbose_name='Город',
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
         validators=[validate_telegram],
     )
-    skills = models.ForeignKey(
+    skills = models.ManyToManyField(
         Skills,
-        on_delete=models.CASCADE,
+        through='VolunteerSkills',
+        related_name='volunteers',
         verbose_name='Навыки',
     )
     photo = models.ImageField(
-        blank=False,
+        blank=True,
         verbose_name='Фото',
     )
     # activities = models.ForeignKey(
@@ -118,6 +119,26 @@ class Volunteer(models.Model):
 
     def __str__(self):
         return settings.VOLUNTEER.format(self.user, self.city, self.skills)
+
+
+class VolunteerSkills(models.Model):
+    """
+    Модель представляет собой список навыков волонтеров.
+    """
+
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('volunteer', 'skill'),
+                name='unique_volunteer_skills',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.volunteer} {self.skill}'
 
 
 class Category(models.Model):
