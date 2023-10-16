@@ -6,11 +6,13 @@ from .views import (
     NewsViewSet,
     PlatformAboutView,
     ProjectViewSet,
+    VolunteerViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'news', NewsViewSet, basename='news')
 router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
 
 urlpatterns = [
     path('', include(router.urls)),

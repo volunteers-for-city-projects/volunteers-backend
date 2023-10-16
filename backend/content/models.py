@@ -132,6 +132,9 @@ class City(models.Model):
         verbose_name = 'Город'
         verbose_name_plural = 'Города'
 
+    def __str__(self):
+        return self.name
+
 
 class Skills(models.Model):
     '''Навыки волонтеров.'''
@@ -143,6 +146,9 @@ class Skills(models.Model):
         ordering = ('name',)
         verbose_name = 'Навык'
         verbose_name_plural = 'Навыки'
+
+    def __str__(self):
+        return self.name
 
 
 # # Активности под вопросом, высока вероятность что не будет в проекте

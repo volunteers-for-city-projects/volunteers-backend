@@ -1,8 +1,11 @@
+# from dataclasses import fields
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from content.models import Feedback, News, PlatformAbout, Valuation
-from projects.models import Project
+from content.models import Feedback, News, PlatformAbout, Valuation, Skills
+from projects.models import Project, Volunteer, VolunteerSkills
+from users.models import User
 
 
 class ValuationSerializer(serializers.ModelSerializer):
@@ -133,3 +136,67 @@ class ProjectSerializer(serializers.ModelSerializer):
             'participants',
             'status_approve',
         )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для получения пользователя.
+    """
+    class Meta:
+        model = User
+        fields = ('id', 'first_name', 'second_name', 'last_name', 'email',)
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания пользователя.
+    """
+
+    class Meta:
+        model = User
+        fields = ('first_name', 'second_name', 'last_name',
+                  'email', 'password',)
+
+
+class VolunteerGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения волонтера.
+    """
+    user = UserSerializer()
+    # skills = SkillsSerializer(many=True)
+
+    class Meta:
+        model = Volunteer
+        fields = '__all__'
+
+
+class VolunteerCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания волонтера.
+    """
+    user = UserCreateSerializer()
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skills.objects.all(),
+        many=True
+    )
+
+    def create_skills(self, skills, volunteer):
+        data = []
+        for skill in skills:
+            data.append(VolunteerSkills(volunteer=volunteer, skill=skill))
+        VolunteerSkills.objects.bulk_create(data)
+
+    @transaction.atomic
+    def create(self, validated_data):
+        skills = validated_data.pop('skills')
+        user_data = validated_data.pop('user')
+
+        user = User.objects.get_or_create(role=User.VOLUNTEER, **user_data)
+        volunteer = Volunteer.objects.create(user=user, **validated_data)
+        self.create_skills(skills, volunteer)
+
+        return volunteer
+
+    class Meta:
+        model = Volunteer
+        exclude = ('id',)
