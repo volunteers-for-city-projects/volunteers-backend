@@ -154,7 +154,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
-    # 'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
@@ -209,3 +209,5 @@ OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
 MIN_LEN_TELEGRAM = 5
 MAX_LEN_TELEGRAM = 32
 TELEGRAM_ERROR_MESSAGE = 'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. От {} до {} символов.'
+
+VALUATIONS_ON_PAGE_ABOUT_US = 4
