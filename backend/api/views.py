@@ -34,12 +34,11 @@ from .serializers import (
     VolunteerCreateSerializer,
     OrganizationGetSerializer,
     OgranizationCreateSerializer,
-
     CitySerializer,
     SkillsSerializer,
 )
 
-# from .permissions import IsOrganizerPermission
+from .permissions import IsOrganizerPermission
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -75,11 +74,11 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    # permission_classes_by_action = {
-    #     'create': [IsOrganizerPermission],
-    #     'update': [IsOrganizerPermission],
-    #     'destroy': [IsOrganizerPermission],
-    # }
+    permission_classes_by_action = {
+        'create': [IsOrganizerPermission],
+        'update': [IsOrganizerPermission],
+        'destroy': [IsOrganizerPermission],
+    }
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
