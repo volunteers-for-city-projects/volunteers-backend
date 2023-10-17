@@ -1,4 +1,5 @@
 from rest_framework import generics, status, viewsets
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 
@@ -8,7 +9,6 @@ from rest_framework import filters, viewsets
 # from .filters import SearchFilter
 # from django.db.models import Q
 
-
 from content.models import (City,
                             Feedback,
                             News,
@@ -16,7 +16,7 @@ from content.models import (City,
                             Valuation,
                             Skills
                             )
-from projects.models import Project
+from projects.models import Project, Volunteer
 
 from .filters import CityFilter, SkillsFilter
 from .serializers import (
@@ -24,9 +24,12 @@ from .serializers import (
     NewsSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
+
     ProjectSerializer,
+    VolunteerGetSerializer,
+    VolunteerCreateSerializer,
     CitySerializer,
-    SkillsSerializer
+    SkillsSerializer,
 )
 
 
@@ -121,6 +124,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
             {'message': self.get_success_message('destroy', instance.name)},
             status=status.HTTP_204_NO_CONTENT,
         )
+
+
+class VolunteerViewSet(viewsets.ModelViewSet):
+    queryset = Volunteer.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return VolunteerGetSerializer
+        return VolunteerCreateSerializer
 
 
 class CityViewSet(viewsets.ReadOnlyModelViewSet):
