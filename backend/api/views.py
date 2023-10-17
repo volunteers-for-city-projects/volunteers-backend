@@ -2,6 +2,13 @@ from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets
+
+# from .filters import SearchFilter
+# from django.db.models import Q
+
+
 from content.models import (City,
                             Feedback,
                             News,
@@ -128,3 +135,11 @@ class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SkillsSerializer
     pagination_class = None
     filterset_class = SkillsFilter
+
+
+class SearchListView(generics.ListAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    # filterset_class = SearchFilter
+    search_fields = ['name', 'description']     # 'category'

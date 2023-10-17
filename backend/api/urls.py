@@ -7,7 +7,8 @@ from .views import (
     NewsViewSet,
     PlatformAboutView,
     ProjectViewSet,
-    SkillsViewSet
+    SkillsViewSet,
+    SearchListView
 )
 
 router = DefaultRouter()
@@ -22,4 +23,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
+    path('search/', SearchListView.as_view()),
 ]

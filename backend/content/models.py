@@ -5,7 +5,6 @@ from django.conf import settings
 from users.models import User
 
 from .validators import (
-    EmailValidator,
     NameFeedbackUserkValidator,
     PhoneValidator,
     TextFeedbackValidator,
@@ -20,8 +19,7 @@ class PlatformAbout(models.Model):
     about_us = models.TextField(verbose_name='Описание раздела "О нас"')
     platform_email = models.EmailField(
         verbose_name='email Платформы',
-        max_length=settings.MAX_LENGTH_EMAIL,
-        validators=[EmailValidator.validate_email],
+        max_length=settings.MAX_LENGTH_EMAIL
     )
 
     class Meta:
@@ -60,8 +58,7 @@ class Feedback(models.Model):
         validators=[PhoneValidator.validate_phone],
     )
     email = models.EmailField(
-        max_length=settings.MAX_LENGTH_EMAIL,
-        validators=[EmailValidator.validate_email]
+        max_length=settings.MAX_LENGTH_EMAIL
     )
     text = models.CharField(
         verbose_name='Текст обращения',
