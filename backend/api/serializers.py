@@ -15,7 +15,9 @@ from users.models import User
 
 
 class ValuationSerializer(serializers.ModelSerializer):
-    '''Сериализатор для отображения ценностей платформы.'''
+    """
+    Сериализатор для отображения ценностей платформы.
+    """
 
     class Meta:
         model = Valuation
@@ -48,14 +50,18 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
 
 
 class TagListSerializerField(serializers.Serializer):
-    '''Возвращает список хештегов для новостей.'''
+    """
+    Возвращает список хештегов для новостей.
+    """
 
     def to_representation(self, value):
         return [tag.name for tag in value.all()]
 
 
 class NewsSerializer(serializers.ModelSerializer):
-    '''Сериализатор для просмотра новости в детализации.'''
+    """
+    Сериализатор для просмотра новости в детализации.
+    """
 
     tags = TagListSerializerField()
     author = serializers.SerializerMethodField()
@@ -69,7 +75,9 @@ class NewsSerializer(serializers.ModelSerializer):
 
 
 class PreviewNewsSerializer(serializers.ModelSerializer):
-    '''Сериализатор для просмотра новостей списком.'''
+    """
+    Сериализатор для просмотра новостей списком
+    """
 
     tags = TagListSerializerField()
 
@@ -79,7 +87,9 @@ class PreviewNewsSerializer(serializers.ModelSerializer):
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
-    '''Сериализатор для формы обратной связи.'''
+    """
+    Сериализатор для формы обратной связи.
+    """
 
     class Meta:
         model = Feedback
@@ -174,7 +184,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class CitySerializer(serializers.ModelSerializer):
-    '''Сериализатор для отображения городов.'''
+    """
+    Сериализатор для отображения городов.
+    """
 
     class Meta:
         model = City
@@ -182,11 +194,13 @@ class CitySerializer(serializers.ModelSerializer):
 
 
 class SkillsSerializer(serializers.ModelSerializer):
-    '''Сериализатор для отображения ингредиетов.'''
+    """
+    Сериализатор для отображения навыков.
+    """
 
     class Meta:
         model = Skills
-        fields = ('id', 'name', 'description')
+        fields = ('id', 'name')
 
 
 class UserSerializer(serializers.ModelSerializer):

@@ -144,4 +144,4 @@ class SearchListView(generics.ListAPIView):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
-    search_fields = ['name', 'description']  # 'category'
+    search_fields = ['name', 'description', 'event_purpose']
