@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'notifications.apps.NotificationsConfig',
     'projects.apps.ProjectsConfig',
     'users.apps.UsersConfig',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     # 'rest_framework.middleware.AuthenticationMiddleware',
     # 'rest_framework.middleware.AuthorizationMiddleware',
 ]
@@ -173,6 +176,15 @@ DJOSER = {
     #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
     #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://80.87.109.180:3000',
+    'http://better-together.acceleratorpracticum.ru',
+    'https://better-together.acceleratorpracticum.ru',
+]
+
+CORS_ORIGIN_ALLOW_ALL = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 
 AUTH_USER_MODEL = 'users.User'
 
