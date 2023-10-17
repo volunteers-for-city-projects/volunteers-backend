@@ -1,9 +1,9 @@
+from django.conf import settings
 from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
     RegexValidator,
 )
-from django.conf import settings
 
 
 def validate_ogrn(value):

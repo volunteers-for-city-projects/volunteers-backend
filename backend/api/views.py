@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
@@ -6,16 +7,20 @@ from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 
+
+from .filters import CityFilter, SkillsFilter, ProjectFilter
+
 # from .filters import SearchFilter
 # from django.db.models import Q
 
-from content.models import (City,
-                            Feedback,
-                            News,
-                            PlatformAbout,
-                            Valuation,
-                            Skills
-                            )
+from content.models import (
+    City,
+    Feedback,
+    News,
+    PlatformAbout,
+    Valuation,
+    Skills,
+)
 from projects.models import Organization, Project, Volunteer
 
 from .filters import CityFilter, SkillsFilter
@@ -24,7 +29,6 @@ from .serializers import (
     NewsSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
-
     ProjectSerializer,
     VolunteerGetSerializer,
     VolunteerCreateSerializer,
@@ -34,6 +38,8 @@ from .serializers import (
     CitySerializer,
     SkillsSerializer,
 )
+
+# from .permissions import IsOrganizerPermission
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -67,41 +73,20 @@ class FeedbackCreateView(generics.CreateAPIView):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
-
-    def get_success_message(self, action, project_name):
-        messages = {
-            'create': f'Проект "{project_name}" успешно создан.',
-            'update': f'Проект "{project_name}" успешно обновлен.',
-            'destroy': f'Проект "{project_name}" успешно удален.',
-        }
-        return messages.get(action)
-
-    @staticmethod
-    def get_error_message(action, project_name):
-        messages = {
-            'create': f'Не удалось создать проект "{project_name}".',
-            'update': f'Не удалось обновить проект "{project_name}".',
-            'destroy': f'Не удалось удалить проект "{project_name}".',
-        }
-        return messages.get(action)
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProjectFilter
+    # permission_classes_by_action = {
+    #     'create': [IsOrganizerPermission],
+    #     'update': [IsOrganizerPermission],
+    #     'destroy': [IsOrganizerPermission],
+    # }
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
-            project_name = serializer.validated_data.get('name')
-            return Response(
-                {'message': self.get_success_message('create', project_name)},
-                status=status.HTTP_201_CREATED,
-            )
-        return Response(
-            {
-                'message': self.get_error_message(
-                    'create', request.data.get('name')
-                )
-            },
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+            return Response(status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -109,24 +94,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial
         )
-        project_name = instance.name
         if serializer.is_valid():
             self.perform_update(serializer)
-            return Response(
-                {'message': self.get_success_message('update', project_name)}
-            )
+            return Response(status=status.HTTP_200_OK)
         return Response(
-            {'message': self.get_error_message('update', project_name)},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response(
-            {'message': self.get_success_message('destroy', instance.name)},
-            status=status.HTTP_204_NO_CONTENT,
-        )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class VolunteerViewSet(viewsets.ModelViewSet):
@@ -166,4 +144,4 @@ class SearchListView(generics.ListAPIView):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
-    search_fields = ['name', 'description']     # 'category'
+    search_fields = ['name', 'description']  # 'category'
