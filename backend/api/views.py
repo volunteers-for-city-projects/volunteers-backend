@@ -1,17 +1,37 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
+from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 
-from content.models import Feedback, News, PlatformAbout, Valuation
-from projects.models import Project
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, viewsets
 
-from .filters import ProjectFilter
+
+from .filters import CityFilter, SkillsFilter, ProjectFilter
+
+# from .filters import SearchFilter
+# from django.db.models import Q
+
+from content.models import (
+    City,
+    Feedback,
+    News,
+    PlatformAbout,
+    Valuation,
+    Skills,
+)
+from projects.models import Project, Volunteer
 from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectSerializer,
+    VolunteerGetSerializer,
+    VolunteerCreateSerializer,
+    CitySerializer,
+    SkillsSerializer,
 )
 
 # from .permissions import IsOrganizerPermission
@@ -22,7 +42,7 @@ class PlatformAboutView(generics.RetrieveAPIView):
 
     def get_object(self):
         platform_about = PlatformAbout.objects.latest('id')
-        valuations = Valuation.objects.all()[:4]
+        valuations = Valuation.objects.all()[:VALUATIONS_ON_PAGE_ABOUT_US]
         return {
             'about_us': platform_about.about_us,
             'platform_email': platform_about.platform_email,
@@ -80,3 +100,34 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class VolunteerViewSet(viewsets.ModelViewSet):
+    queryset = Volunteer.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return VolunteerGetSerializer
+        return VolunteerCreateSerializer
+
+
+class CityViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+    pagination_class = None
+    filterset_class = CityFilter
+
+
+class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Skills.objects.all()
+    serializer_class = SkillsSerializer
+    pagination_class = None
+    filterset_class = SkillsFilter
+
+
+class SearchListView(generics.ListAPIView):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    # filterset_class = SearchFilter
+    search_fields = ['name', 'description']  # 'category'

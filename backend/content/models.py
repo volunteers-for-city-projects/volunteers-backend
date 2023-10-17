@@ -1,17 +1,10 @@
 from django.db import models
 from taggit.managers import TaggableManager
+from django.conf import settings
 
-from backend.settings import (
-    LEN_PHONE,
-    MAX_LEN_CHAR,
-    MAX_LEN_NAME_FEEDBACK,
-    MAX_LEN_TEXT_FEEDBACK,
-    MAX_LENGTH_EMAIL,
-)
 from users.models import User
 
 from .validators import (
-    EmailValidator,
     NameFeedbackUserkValidator,
     PhoneValidator,
     TextFeedbackValidator,
@@ -25,9 +18,7 @@ class PlatformAbout(models.Model):
     # # еще не определились надо ли менять фото из админки
     about_us = models.TextField(verbose_name='Описание раздела "О нас"')
     platform_email = models.EmailField(
-        verbose_name='email Платформы',
-        max_length=MAX_LENGTH_EMAIL,
-        validators=[EmailValidator.validate_email],
+        verbose_name='email Платформы', max_length=settings.MAX_LENGTH_EMAIL
     )
 
     class Meta:
@@ -38,7 +29,9 @@ class PlatformAbout(models.Model):
 class Valuation(models.Model):
     '''Ценности проекта Платформа.'''
 
-    title = models.CharField(verbose_name='Заголовок', max_length=MAX_LEN_CHAR)
+    title = models.CharField(
+        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
+    )
     description = models.TextField(verbose_name='Описание ценности')
 
     class Meta:
@@ -54,20 +47,18 @@ class Feedback(models.Model):
 
     name = models.CharField(
         verbose_name='Имя',
-        max_length=MAX_LEN_NAME_FEEDBACK,
+        max_length=settings.MAX_LEN_NAME_FEEDBACK,
         validators=[NameFeedbackUserkValidator.validate_name],
     )
     phone = models.CharField(
         verbose_name='Телефон',
-        max_length=LEN_PHONE,
+        max_length=settings.LEN_PHONE,
         validators=[PhoneValidator.validate_phone],
     )
-    email = models.EmailField(
-        max_length=MAX_LENGTH_EMAIL, validators=[EmailValidator.validate_email]
-    )
+    email = models.EmailField(max_length=settings.MAX_LENGTH_EMAIL)
     text = models.CharField(
         verbose_name='Текст обращения',
-        max_length=MAX_LEN_TEXT_FEEDBACK,
+        max_length=settings.MAX_LEN_TEXT_FEEDBACK,
         validators=[TextFeedbackValidator.validate_text],
     )
     created_at = models.DateTimeField(
@@ -93,7 +84,7 @@ class News(models.Model):
     picture = models.ImageField(upload_to='news/%Y/%m/%d/', blank=True)
     title = models.CharField(
         verbose_name='Заголовок',
-        max_length=MAX_LEN_CHAR,
+        max_length=settings.MAX_LEN_CHAR,
     )
     text = models.TextField(verbose_name='Текст новости')
     created_at = models.DateTimeField(
@@ -125,7 +116,9 @@ class News(models.Model):
 class City(models.Model):
     '''Справочник городов.'''
 
-    name = models.CharField(verbose_name='Город', max_length=MAX_LEN_CHAR)
+    name = models.CharField(
+        verbose_name='Город', max_length=settings.MAX_LEN_CHAR
+    )
 
     class Meta:
         ordering = ('name',)
@@ -139,22 +132,34 @@ class City(models.Model):
 class Skills(models.Model):
     '''Навыки волонтеров.'''
 
-    name = models.CharField(verbose_name='Навык', max_length=MAX_LEN_CHAR)
+    name = models.CharField(
+        verbose_name='Навык', max_length=settings.MAX_LEN_CHAR
+    )
 
     class Meta:
         ordering = ('name',)
         verbose_name = 'Навык'
         verbose_name_plural = 'Навыки'
 
+    def __str__(self):
+        return self.name
+
 
 # # Активности под вопросом, высока вероятность что не будет в проекте
-class Activities(models.Model):
-    '''Необходимые активности для реализации проекта.'''
+# class Activities(models.Model):
+#     '''Необходимые активности для реализации проекта.'''
 
-    name = models.CharField(verbose_name='Активность', max_length=MAX_LEN_CHAR)
-    description = models.TextField(verbose_name='Описание активности')
+#     name = models.CharField(
+#         verbose_name='Активность',
+#         max_length=settings.MAX_LEN_CHAR
+#     )
+#     description = models.TextField(
+#         verbose_name='Описание активности'
+#     )
 
-    class Meta:
-        ordering = ('name',)
-        verbose_name = 'Активность'
-        verbose_name_plural = 'Активности'
+#     class Meta:
+#         ordering = ('name',)
+#         verbose_name = 'Активность'
+#         verbose_name_plural = 'Активности'
+# def __str__(self):
+#     return self.name

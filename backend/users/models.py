@@ -3,12 +3,6 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-USER_ROLES = [
-    ('admin', 'Администратор'),
-    ('organizer', 'Организатор'),
-    ('volunteer', 'Волонтер'),
-]
-
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -40,6 +34,16 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
+    ADMIN = 'admin'
+    ORGANIZER = 'organizer'
+    VOLUNTEER = 'volunteer'
+
+    USER_ROLES = [
+        (ADMIN, 'Администратор'),
+        (ORGANIZER, 'Организатор'),
+        (VOLUNTEER, 'Волонтер'),
+    ]
+
     username = None
     first_name = models.CharField(
         verbose_name='Имя',
@@ -66,7 +70,7 @@ class User(AbstractUser):
         verbose_name='Роль',
         choices=USER_ROLES,
         max_length=50,
-        default='admin'
+        default=ADMIN
     )
 
     objects = UserManager()
