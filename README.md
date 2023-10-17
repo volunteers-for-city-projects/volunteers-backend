@@ -1,6 +1,8 @@
 # backend for volunteers for city projects
 REST API для Проекта Платформа для волонтеров
 
+![example workflow](https://github.com/volunteers-for-city-projects/volunteers-backend/actions/workflows/main.yml/badge.svg)
+
 [http://better-together.acceleratorpracticum.ru/](http://better-together.acceleratorpracticum.ru/)
 
 Админ панель доступна по ссылке [http://better-together.acceleratorpracticum.ru/admin/](http://better-together.acceleratorpracticum.ru/admin/)
