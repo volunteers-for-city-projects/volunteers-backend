@@ -8,6 +8,7 @@ from .views import (
     PlatformAboutView,
     ProjectViewSet,
     SkillsViewSet,
+    SearchListView
     VolunteerViewSet,
 )
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
+    path('search/', SearchListView.as_view()),
 ]
