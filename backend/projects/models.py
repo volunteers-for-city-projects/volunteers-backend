@@ -42,7 +42,7 @@ class Organization(models.Model):
         blank=False,
         verbose_name='Об организации',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
         blank=False,
         on_delete=models.CASCADE,
