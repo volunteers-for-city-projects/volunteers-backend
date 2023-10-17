@@ -8,7 +8,7 @@ from .views import (
     PlatformAboutView,
     ProjectViewSet,
     SkillsViewSet,
-    SearchListView
+    SearchListView,
     VolunteerViewSet,
 )
 

@@ -18,8 +18,7 @@ class PlatformAbout(models.Model):
     # # еще не определились надо ли менять фото из админки
     about_us = models.TextField(verbose_name='Описание раздела "О нас"')
     platform_email = models.EmailField(
-        verbose_name='email Платформы',
-        max_length=settings.MAX_LENGTH_EMAIL
+        verbose_name='email Платформы', max_length=settings.MAX_LENGTH_EMAIL
     )
 
     class Meta:
@@ -31,8 +30,7 @@ class Valuation(models.Model):
     '''Ценности проекта Платформа.'''
 
     title = models.CharField(
-        verbose_name='Заголовок',
-        max_length=settings.MAX_LEN_CHAR
+        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
     )
     description = models.TextField(verbose_name='Описание ценности')
 
@@ -57,9 +55,7 @@ class Feedback(models.Model):
         max_length=settings.LEN_PHONE,
         validators=[PhoneValidator.validate_phone],
     )
-    email = models.EmailField(
-        max_length=settings.MAX_LENGTH_EMAIL
-    )
+    email = models.EmailField(max_length=settings.MAX_LENGTH_EMAIL)
     text = models.CharField(
         verbose_name='Текст обращения',
         max_length=settings.MAX_LEN_TEXT_FEEDBACK,
@@ -121,8 +117,7 @@ class City(models.Model):
     '''Справочник городов.'''
 
     name = models.CharField(
-        verbose_name='Город',
-        max_length=settings.MAX_LEN_CHAR
+        verbose_name='Город', max_length=settings.MAX_LEN_CHAR
     )
 
     class Meta:
@@ -138,10 +133,8 @@ class Skills(models.Model):
     '''Навыки волонтеров.'''
 
     name = models.CharField(
-        verbose_name='Навык',
-        max_length=settings.MAX_LEN_CHAR
+        verbose_name='Навык', max_length=settings.MAX_LEN_CHAR
     )
-    description = models.TextField(verbose_name='Описание навыка')
 
     class Meta:
         ordering = ('name',)
@@ -168,5 +161,5 @@ class Skills(models.Model):
 #         ordering = ('name',)
 #         verbose_name = 'Активность'
 #         verbose_name_plural = 'Активности'
-    # def __str__(self):
-    #     return self.name
+# def __str__(self):
+#     return self.name
