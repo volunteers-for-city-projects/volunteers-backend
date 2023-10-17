@@ -133,7 +133,7 @@ class CityAdmin(admin.ModelAdmin):
 class SkillsAdmin(admin.ModelAdmin):
     '''Администрирование справочника с навыками волонтера.'''
 
-    list_display = ('name', 'description')
+    list_display = ('name',)
 
 
 #  возможно активносетй не будет на проекте
