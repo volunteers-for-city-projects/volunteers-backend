@@ -10,7 +10,7 @@ from content.models import (City,
                             Valuation,
                             Skills
                             )
-from projects.models import Project, Volunteer, VolunteerSkills
+from projects.models import Organization, Project, Volunteer, VolunteerSkills
 from users.models import User
 
 
@@ -173,6 +173,22 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
 
+class CitySerializer(serializers.ModelSerializer):
+    '''Сериализатор для отображения городов.'''
+
+    class Meta:
+        model = City
+        fields = ('id', 'name')
+
+
+class SkillsSerializer(serializers.ModelSerializer):
+    '''Сериализатор для отображения ингредиетов.'''
+
+    class Meta:
+        model = Skills
+        fields = ('id', 'name', 'description')
+
+
 class UserSerializer(serializers.ModelSerializer):
     """
     Сериализатор для получения пользователя.
@@ -198,7 +214,7 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
     Сериализатор для отображения волонтера.
     """
     user = UserSerializer()
-    # skills = SkillsSerializer(many=True)
+    skills = SkillsSerializer(many=True)
 
     class Meta:
         model = Volunteer
@@ -226,7 +242,7 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
         skills = validated_data.pop('skills')
         user_data = validated_data.pop('user')
 
-        user = User.objects.get_or_create(role=User.VOLUNTEER, **user_data)
+        user = User.objects.create_user(role=User.VOLUNTEER, **user_data)
         volunteer = Volunteer.objects.create(user=user, **validated_data)
         self.create_skills(skills, volunteer)
 
@@ -237,17 +253,34 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class CitySerializer(serializers.ModelSerializer):
-    '''Сериализатор для отображения городов.'''
+class OrganizationGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения организации-организатора.
+    """
+    contact_person = UserSerializer()
 
     class Meta:
-        model = City
-        fields = ('id', 'name')
+        model = Organization
+        fields = '__all__'
 
 
-class SkillsSerializer(serializers.ModelSerializer):
-    '''Сериализатор для отображения ингредиетов.'''
+class OgranizationCreateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для создания организации-организатора.
+    """
+    contact_person = UserCreateSerializer()
+
+    @transaction.atomic
+    def create(self, validated_data):
+        user_data = validated_data.pop('contact_person')
+        user = User.objects.create_user(role=User.ORGANIZER, **user_data)
+        organization = Organization.objects.create(
+            contact_person=user,
+            **validated_data
+        )
+
+        return organization
 
     class Meta:
-        model = Skills
-        fields = ('id', 'name', 'description')
+        model = Organization
+        exclude = ('id',)

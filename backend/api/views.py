@@ -21,7 +21,9 @@ from content.models import (
     Valuation,
     Skills,
 )
-from projects.models import Project, Volunteer
+from projects.models import Organization, Project, Volunteer
+
+from .filters import CityFilter, SkillsFilter
 from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
@@ -30,6 +32,9 @@ from .serializers import (
     ProjectSerializer,
     VolunteerGetSerializer,
     VolunteerCreateSerializer,
+    OrganizationGetSerializer,
+    OgranizationCreateSerializer,
+
     CitySerializer,
     SkillsSerializer,
 )
@@ -109,6 +114,15 @@ class VolunteerViewSet(viewsets.ModelViewSet):
         if self.request.method in SAFE_METHODS:
             return VolunteerGetSerializer
         return VolunteerCreateSerializer
+
+
+class OrganizationViewSet(viewsets.ModelViewSet):
+    queryset = Organization.objects.all()
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return OrganizationGetSerializer
+        return OgranizationCreateSerializer
 
 
 class CityViewSet(viewsets.ReadOnlyModelViewSet):
