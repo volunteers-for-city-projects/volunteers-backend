@@ -1,9 +1,11 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status, viewsets
 from rest_framework.response import Response
 
 from content.models import Feedback, News, PlatformAbout, Valuation
 from projects.models import Project
 
+from .filters import ProjectFilter
 from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
@@ -11,7 +13,8 @@ from .serializers import (
     PreviewNewsSerializer,
     ProjectSerializer,
 )
-from .permissions import IsOrganizerPermission
+
+# from .permissions import IsOrganizerPermission
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -45,6 +48,8 @@ class FeedbackCreateView(generics.CreateAPIView):
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ProjectFilter
     # permission_classes_by_action = {
     #     'create': [IsOrganizerPermission],
     #     'update': [IsOrganizerPermission],

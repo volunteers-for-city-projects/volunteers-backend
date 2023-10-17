@@ -1,7 +1,8 @@
 from datetime import date
+
+from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-from django.conf import settings
 
 from content.models import City, Skills  # Activities
 from users.models import User
@@ -133,6 +134,10 @@ class Category(models.Model):
         unique=True,
         max_length=30,
         verbose_name='Идентификатор',
+    )
+    description = models.TextField(
+        blank=False,
+        verbose_name='Описание',
     )
 
     class Meta:

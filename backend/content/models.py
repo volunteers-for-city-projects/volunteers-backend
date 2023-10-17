@@ -140,7 +140,6 @@ class Skills(models.Model):
     '''Навыки волонтеров.'''
 
     name = models.CharField(verbose_name='Навык', max_length=MAX_LEN_CHAR)
-    description = models.TextField(verbose_name='Описание навыка')
 
     class Meta:
         ordering = ('name',)
@@ -151,7 +150,6 @@ class Skills(models.Model):
 # # Активности под вопросом, высока вероятность что не будет в проекте
 class Activities(models.Model):
     '''Необходимые активности для реализации проекта.'''
-
 
     name = models.CharField(verbose_name='Активность', max_length=MAX_LEN_CHAR)
     description = models.TextField(verbose_name='Описание активности')

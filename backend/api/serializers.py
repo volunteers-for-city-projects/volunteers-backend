@@ -84,7 +84,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         if not (start <= application <= end):
             raise serializers.ValidationError(
                 'Дата подачи заявки должна быть позже или равна дате начала '
-                'мероприятия и раньше даты окончания.'
+                'мероприятия и позже даты начала и раньше даты окончания.'
             )
         return start, end, application
 
@@ -115,16 +115,6 @@ class ProjectSerializer(serializers.ModelSerializer):
                     'Статус проекта "Проект завершен" можно установить '
                     'только после окончания мероприятия.'
                 )
-        # if not (start_datatime <= now <= application_date):
-        #     raise serializers.ValidationError(
-        #         'Статус проекта "Готов к откликам" можно установить только '
-        #         'в период с даты начала мероприятия до даты подачи заявки.'
-        #     )
-        # if not (end_datatime <= now):
-        #     raise serializers.ValidationError(
-        #         'Статус проекта "Проект завершен" можно установить только '
-        #         'после окончания мероприятия.'
-        #     )
 
     def validate(self, data):
         start_datatime = data['start_datatime']

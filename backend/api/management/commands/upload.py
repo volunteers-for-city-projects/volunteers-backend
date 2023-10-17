@@ -1,9 +1,12 @@
 import csv
-# import os # путь локально расскоментировать
 
 from django.core.management.base import BaseCommand
 
 from content.models import City
+
+# import os # путь локально расскоментировать
+
+
 
 
 def load_cities():

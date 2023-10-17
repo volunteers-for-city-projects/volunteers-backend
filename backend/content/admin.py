@@ -4,15 +4,13 @@ from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
 
-
-from .models import (
+from .models import (  # Activities,
+    City,
     Feedback,
     News,
     PlatformAbout,
-    Valuation,
-    City,
-    # Activities,
     Skills,
+    Valuation,
 )
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
