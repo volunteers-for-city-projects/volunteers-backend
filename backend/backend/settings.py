@@ -19,6 +19,10 @@ DEBUG = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.better-together.acceleratorpracticum.ru/', 'https://*.80.87.109.180', 'https://*.127.0.0.1',
+    'http://*.better-together.acceleratorpracticum.ru/', 'http://*.80.87.109.180', 'http://*.127.0.0.1',
+]
 
 # Application definition
 
