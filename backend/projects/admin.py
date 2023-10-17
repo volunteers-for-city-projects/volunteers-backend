@@ -1,6 +1,8 @@
-from django.contrib.admin import ModelAdmin, register
+from django.contrib.admin import ModelAdmin, register, TabularInline
 
-from projects.models import Organization, Volunteer, Project, Category
+from projects.models import (
+    Category, Organization, Project, Volunteer, VolunteerSkills
+)
 
 
 @register(Organization)
@@ -23,6 +25,13 @@ class OrganizationAdmin(ModelAdmin):
         'city',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'
+
+
+class VolunteerSkillsInline(TabularInline):
+    model = VolunteerSkills
+    verbose_name = 'Навык'
+    verbose_name_plural = 'Навыки'
 
 
 @register(Volunteer)
@@ -31,12 +40,12 @@ class VolunteerAdmin(ModelAdmin):
         'user',
         'city',
         'telegram',
-        'skills',
         'photo',
-        'activities',
+        # 'activities',
         'date_of_birth',
         'phone',
     )
+    inlines = (VolunteerSkillsInline,)
     search_fields = (
         'telegram',
         'phone',
@@ -46,12 +55,19 @@ class VolunteerAdmin(ModelAdmin):
         'skills',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'
 
 
 @register(Category)
 class CategoryAdmin(ModelAdmin):
-    list_display = ('name', 'slug',)
-    search_fields = ('name', 'slug',)
+    list_display = (
+        'name',
+        'slug',
+    )
+    search_fields = (
+        'name',
+        'slug',
+    )
     list_filter = ('name',)
     prepopulated_fields = {'slug': ('name',)}
     save_on_top = True
@@ -89,3 +105,4 @@ class ProjectAdmin(ModelAdmin):
         'status_approve',
     )
     save_on_top = True
+    empty_value_display = '-пусто-'

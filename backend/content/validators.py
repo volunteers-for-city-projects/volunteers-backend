@@ -1,38 +1,25 @@
-from django.core.validators import (MaxLengthValidator,
-                                    MinLengthValidator,
-                                    RegexValidator
-                                    )
-from backend.settings import (LEN_PHONE,
-                              MESSAGE_PHONE_REGEX,
-                              MAX_LENGTH_EMAIL,
-                              MIN_LENGTH_EMAIL,
-                              MESSAGE_EMAIL_VALID,
-                              MIN_LEN_TEXT_FEEDBACK,
-                              MAX_LEN_TEXT_FEEDBACK,
-                              MESSAGE_TEXT_FEEDBACK_VALID,
-                              MAX_LEN_NAME_FEEDBACK,
-                              MIN_LEN_NAME_FEEDBACK,
-                              MESSAGE_NAME_FEEDBACK_VALID,
-                              MESSAGE_NAME_FEEDBACK_CYRILLIC)
+from django.core.validators import (
+    MaxLengthValidator,
+    MinLengthValidator,
+    RegexValidator,
+)
 
-
-class EmailValidator:
-    email_max_length = MaxLengthValidator(
-        MAX_LENGTH_EMAIL,
-        message=MESSAGE_EMAIL_VALID
-    )
-    email_min_length = MinLengthValidator(
-        MIN_LENGTH_EMAIL,
-        message=MESSAGE_EMAIL_VALID
-    )
-
-    @classmethod
-    def validate_email(cls, value):
-        cls.email_max_length(value)
-        cls.email_min_length(value)
+from backend.settings import (
+    LEN_PHONE,
+    MAX_LEN_NAME_FEEDBACK,
+    MAX_LEN_TEXT_FEEDBACK,
+    MESSAGE_NAME_FEEDBACK_CYRILLIC,
+    MESSAGE_NAME_FEEDBACK_VALID,
+    MESSAGE_PHONE_REGEX,
+    MESSAGE_TEXT_FEEDBACK_VALID,
+    MIN_LEN_NAME_FEEDBACK,
+    MIN_LEN_TEXT_FEEDBACK,
+)
 
 
 class PhoneValidator:
+    '''Валидация номере телефона на соответствие формата +70000000000.'''
+
     regex_validator = RegexValidator(
         regex=r'^\+7\d{10}$',
         message=MESSAGE_PHONE_REGEX.format(LEN_PHONE)
@@ -54,6 +41,8 @@ class PhoneValidator:
 
 
 class NameFeedbackUserkValidator:
+    '''Валидация имени в обращении обратной связи на длину и кириллицу.'''
+
     name_regex = RegexValidator(
         regex=r'^[а-яА-ЯёЁ\-]+$',
         message=MESSAGE_NAME_FEEDBACK_CYRILLIC
@@ -75,6 +64,8 @@ class NameFeedbackUserkValidator:
 
 
 class TextFeedbackValidator:
+    '''Валидация текста в форме обратной связи на длину.'''
+
     text_max_length = MaxLengthValidator(
         MAX_LEN_TEXT_FEEDBACK,
         message=MESSAGE_TEXT_FEEDBACK_VALID

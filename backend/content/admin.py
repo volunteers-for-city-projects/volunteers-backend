@@ -1,10 +1,17 @@
 from django.contrib import admin
-from django.utils.safestring import mark_safe
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
-from .models import Feedback, News, PlatformAbout, Valuation
 
+from .models import (  # Activities,
+    City,
+    Feedback,
+    News,
+    PlatformAbout,
+    Skills,
+    Valuation,
+)
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
 admin.site.site_header = 'Администрирование сайта BETTER-TOGETHER'
@@ -15,12 +22,21 @@ class FeedbackAdmin(admin.ModelAdmin):
     '''Администрирование раздела обращений от пользователей.'''
 
     list_display = (
-        'name', 'phone', 'email', 'get_text',
-        'created_at', 'processed_at', 'status'
+        'name',
+        'phone',
+        'email',
+        'get_text',
+        'created_at',
+        'processed_at',
+        'status',
     )
     readonly_fields = (
-        'name', 'phone', 'email', 'text',
-        'created_at', 'processed_at'
+        'name',
+        'phone',
+        'email',
+        'text',
+        'created_at',
+        'processed_at',
     )
     list_editable = ('status',)
     list_filter = ('created_at', 'processed_at', 'status')
@@ -44,11 +60,16 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
+
     '''Администрирование раздела новостей.'''
 
     list_display = (
-        'title', 'get_text', 'created_at',
-        'author_initials', 'get_mini_picture', 'get_tags'
+        'title',
+        'get_text',
+        'created_at',
+        'author_initials',
+        'get_mini_picture',
+        'get_tags',
     )
     readonly_fields = ('created_at',)
     list_filter = ('title', 'created_at', 'author', 'tags')
@@ -93,8 +114,31 @@ class PlatformAboutAdmin(admin.ModelAdmin):
 
 
 @admin.register(Valuation)
-class Valuation(admin.ModelAdmin):
+class ValuationAdmin(admin.ModelAdmin):
     '''Администрирование раздела Ценности Платформы.'''
+
     list_display = ('title', 'description')
     search_fields = ('title', 'description')
     ordering = ('-id',)
+
+
+@admin.register(City)
+class CityAdmin(admin.ModelAdmin):
+    '''Администрирование справочника Города.'''
+
+    list_display = ('id', 'name')
+
+
+@admin.register(Skills)
+class SkillsAdmin(admin.ModelAdmin):
+    '''Администрирование справочника с навыками волонтера.'''
+
+    list_display = ('name',)
+
+
+#  возможно активносетй не будет на проекте
+# @admin.register(Activities)
+# class ActivitiesAdmin(admin.ModelAdmin):
+#     '''Администрирование справочника активностей волонтера.'''
+
+#     list_display = ('name', 'description')

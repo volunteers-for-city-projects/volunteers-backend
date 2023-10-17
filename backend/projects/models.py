@@ -1,25 +1,13 @@
-from django.db import models
-from django.core.validators import (
-    MinValueValidator,
-    MaxValueValidator,
-    MaxLengthValidator,
-    MinLengthValidator,
-)
-from django.core.validators import RegexValidator
 from datetime import date
 
-from content.models import City, Skills, Activities
+from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import models
+
+from content.models import City, Skills  # Activities
 from users.models import User
-from backend.settings import (
-    MAX_LEN_NAME,
-    LEN_OGRN,
-    MAX_LEN_PHONE,
-    MESSAGE_PHONE_REGEX,
-    ORGANIZATION,
-    VOLUNTEER,
-    PROJECT,
-    PROJECTPARTICIPANTS,
-)
+
+from .validators import validate_ogrn, validate_phone_number, validate_telegram
 
 
 class Organization(models.Model):
@@ -34,37 +22,30 @@ class Organization(models.Model):
         verbose_name='Пользователь',
     )
     title = models.CharField(
-        max_length=MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME,
         blank=False,
         verbose_name='Название',
     )
-    ogrn = models.PositiveIntegerField(
-        validators=[
-            MaxLengthValidator(LEN_OGRN),
-            MinLengthValidator(LEN_OGRN),
-        ],
+    ogrn = models.CharField(
+        max_length=settings.LEN_OGRN,
+        validators=[validate_ogrn],
         unique=True,
         blank=False,
         verbose_name='ОГРН',
     )
     phone = models.CharField(
-        validators=[
-            RegexValidator(
-                regex=r'^(?:\+7|8)[0-9]{10}$',
-                message=MESSAGE_PHONE_REGEX.format(MAX_LEN_PHONE),
-            ),
-            MaxLengthValidator(MAX_LEN_PHONE),
-        ],
-        max_length=11,
-        blank=True,
+        validators=[validate_phone_number],
+        max_length=settings.LEN_PHONE,
+        blank=False,
         verbose_name='Телефон',
     )
     about = models.TextField(
         blank=False,
         verbose_name='Об организации',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
+        blank=False,
         on_delete=models.CASCADE,
         related_name='organization',
         verbose_name='Город',
@@ -76,7 +57,7 @@ class Organization(models.Model):
         verbose_name_plural = 'Организации'
 
     def __str__(self):
-        return ORGANIZATION.format(self.title, self.ogrn, self.city)
+        return settings.ORGANIZATION.format(self.title, self.ogrn, self.city)
 
 
 class Volunteer(models.Model):
@@ -87,43 +68,34 @@ class Volunteer(models.Model):
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
-        related_name='volunteer',
+        related_name='volunteers',
         verbose_name='Пользователь',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
         on_delete=models.CASCADE,
-        related_name='volunteer',
+        related_name='volunteers',
         verbose_name='Город',
     )
     telegram = models.CharField(
-        max_length=32,
-        validators=[
-            RegexValidator(
-                regex=r'^@[\w]+$',
-                message=(
-                    'Ник в Telegram должен начинаться с @ и содержать '
-                    'только буквы, цифры и знаки подчеркивания.',
-                ),
-            ),
-            MinLengthValidator(5),
-            MaxLengthValidator(32),
-        ],
+        max_length=settings.MAX_LEN_TELEGRAM,
+        validators=[validate_telegram],
     )
-    skills = models.ForeignKey(
+    skills = models.ManyToManyField(
         Skills,
-        on_delete=models.CASCADE,
+        through='VolunteerSkills',
+        related_name='volunteers',
         verbose_name='Навыки',
     )
     photo = models.ImageField(
-        blank=False,
+        blank=True,
         verbose_name='Фото',
     )
-    activities = models.ForeignKey(
-        Activities,
-        on_delete=models.CASCADE,
-        verbose_name='Активности',
-    )
+    # activities = models.ForeignKey(
+    #     Activities,
+    #     on_delete=models.CASCADE,
+    #     verbose_name='Активности',
+    # )
     date_of_birth = models.DateField(
         blank=False,
         null=False,
@@ -135,14 +107,8 @@ class Volunteer(models.Model):
         help_text='Введите дату в формате "ДД.ММ.ГГГГ", пример: "01 01 2000".',
     )
     phone = models.CharField(
-        validators=[
-            RegexValidator(
-                regex=r'^(?:\+7|8)[0-9]{10}$',
-                message=MESSAGE_PHONE_REGEX.format(MAX_LEN_PHONE),
-            ),
-            MaxLengthValidator(MAX_LEN_PHONE),
-        ],
-        max_length=11,
+        validators=[validate_phone_number],
+        max_length=settings.LEN_PHONE,
         blank=True,
         verbose_name='Телефон',
     )
@@ -153,13 +119,46 @@ class Volunteer(models.Model):
         verbose_name_plural = 'Волонтеры'
 
     def __str__(self):
-        return VOLUNTEER.format(self.user, self.city, self.skills)
+        return settings.VOLUNTEER.format(self.user, self.city, self.skills)
+
+
+class VolunteerSkills(models.Model):
+    """
+    Модель представляет собой список навыков волонтеров.
+    """
+
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('volunteer', 'skill'),
+                name='unique_volunteer_skills',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.volunteer} {self.skill}'
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=MAX_LEN_NAME, verbose_name='Название')
+    """
+    Модель представляет собой категории проекта.
+    """
+
+    name = models.CharField(
+        max_length=settings.MAX_LEN_NAME,
+        verbose_name='Название',
+    )
     slug = models.SlugField(
-        unique=True, max_length=30, verbose_name='Идентификатор'
+        unique=True,
+        max_length=30,
+        verbose_name='Идентификатор',
+    )
+    description = models.TextField(
+        blank=False,
+        verbose_name='Описание',
     )
 
     class Meta:
@@ -171,14 +170,25 @@ class Category(models.Model):
         return self.name
 
 
-class StatusApprove(models.Model):
+class Project(models.Model):
     """
-    Модель представляет собой статус проверки проекта.
+    Модель представляет собой информацию о проекте.
     """
 
     APPROVED = 'approved'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    OPEN = 'open'
+    READY_FOR_FEEDBACK = 'ready_for_feedback'
+    RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
+    PROJECT_COMPLETED = 'project_completed'
+
+    STATUS_PROJECT = [
+        (OPEN, 'Открыт'),
+        (READY_FOR_FEEDBACK, 'Готов к откликам'),
+        (RECEPTION_OF_RESPONSES_CLOSED, 'Прием откликов окончен'),
+        (PROJECT_COMPLETED, 'Проект завершен'),
+    ]
 
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
@@ -186,29 +196,8 @@ class StatusApprove(models.Model):
         (REJECTED, 'Отклонено'),
     ]
 
-    title = models.CharField(
-        max_length=50,
-        choices=STATUS_CHOICES,
-        default=PENDING,
-        verbose_name='Статус проверки',
-    )
-
-    class Meta:
-        ordering = ['title']
-        verbose_name = 'Статус проверки'
-        verbose_name_plural = 'Статусы проверки'
-
-    def __str__(self):
-        return self.title
-
-
-class Project(models.Model):
-    """
-    Модель представляет собой информацию о проекте.
-    """
-
     name = models.CharField(
-        max_length=MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME,
         blank=False,
         verbose_name='Название',
     )
@@ -217,7 +206,8 @@ class Project(models.Model):
         verbose_name='Описание',
     )
     picture = models.ImageField(
-        blank=False,
+        null=True,
+        blank=True,
         verbose_name='Картинка',
     )
     start_datatime = models.DateTimeField(
@@ -238,11 +228,11 @@ class Project(models.Model):
         verbose_name='Цель мероприятия',
     )
     # event_card
-    activities = models.ManyToManyField(
-        Activities,
-        related_name='projects',
-        verbose_name='Активности',
-    )
+    # activities = models.ManyToManyField(
+    #     Activities,
+    #     related_name='projects',
+    #     verbose_name='Активности',
+    # )
     organization = models.ForeignKey(
         Organization,
         blank=False,
@@ -250,7 +240,7 @@ class Project(models.Model):
         related_name='projects',
         verbose_name='Организация',
     )
-    city = models.OneToOneField(
+    city = models.ForeignKey(
         City,
         blank=False,
         on_delete=models.CASCADE,
@@ -264,21 +254,31 @@ class Project(models.Model):
         related_name='projects',
         verbose_name='Категория',
     )
+    status_project = models.CharField(
+        max_length=100,
+        choices=STATUS_PROJECT,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name='Статус проекта',
+    )
     photo_previous_event = models.ImageField(
-        blank=False,
+        blank=True,
+        null=True,
         verbose_name='Фото с мероприятия',
     )
-    # tags =
     participants = models.ForeignKey(
         'ProjectParticipants',
         on_delete=models.SET_NULL,
+        blank=True,
         null=True,
         related_name='projects',
         verbose_name='Участники',
     )
-    status_approve = models.ForeignKey(
-        StatusApprove,
-        on_delete=models.CASCADE,
+    status_approve = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default=PENDING,
         verbose_name='Статус проверки',
     )
 
@@ -287,7 +287,7 @@ class Project(models.Model):
         verbose_name_plural = 'Проекты'
 
     def __str__(self):
-        return PROJECT.format(
+        return settings.PROJECT.format(
             self.name, self.organization, self.category, self.city
         )
 
@@ -305,4 +305,6 @@ class ProjectParticipants(models.Model):
         verbose_name_plural = 'Участники проекта'
 
     def __str__(self):
-        return PROJECTPARTICIPANTS.format(self.project, self.volunteer)
+        return settings.PROJECTPARTICIPANTS.format(
+            self.project, self.volunteer
+        )
