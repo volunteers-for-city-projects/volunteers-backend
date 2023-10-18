@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
             name='Feedback',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=40, validators=[content.validators.NameFeedbackUserkValidator.validate_name], verbose_name='Имя')),
+                ('name', models.CharField(max_length=40, validators=[content.validators.NameFeedbackUserValidator.validate_name], verbose_name='Имя')),
                 ('phone', models.CharField(max_length=12, validators=[content.validators.PhoneValidator.validate_phone], verbose_name='Телефон')),
                 ('email', models.EmailField(max_length=256)),
                 ('text', models.CharField(max_length=750, validators=[content.validators.TextFeedbackValidator.validate_text], verbose_name='Текст обращения')),

@@ -88,23 +88,23 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('POSTGRES_DB', 'volunteers'),
-        'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-        'HOST': os.getenv('DB_HOST', 'localhost'),
-        'PORT': os.getenv('DB_PORT', 5432),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'volunteers'),
+#         'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', 'localhost'),
+#         'PORT': os.getenv('DB_PORT', 5432),
+#     }
+# }
 
 
 # Password validation
@@ -215,11 +215,11 @@ MIN_LEN_TEXT_FEEDBACK = 10
 MAX_LEN_TEXT_FEEDBACK = 750
 MESSAGE_TEXT_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_TEXT_FEEDBACK} до {MAX_LEN_TEXT_FEEDBACK} символов'
 
-MIN_LEN_NAME_FEEDBACK = 2
-MAX_LEN_NAME_FEEDBACK = 40
-MESSAGE_NAME_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_NAME_FEEDBACK} до {MAX_LEN_NAME_FEEDBACK} символов'
-MESSAGE_NAME_FEEDBACK_CYRILLIC = 'Введите имя кириллицей'
-
+MIN_LEN_NAME_USER = 2
+MAX_LEN_NAME_USER = 40
+MESSAGE_NAME_USER_VALID = f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
+MESSAGE_NAME_USER_CYRILLIC = 'Введите имя кириллицей'
+MAX_LENGTH_ROLE = 50
 OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
 
 MIN_LEN_TELEGRAM = 5
