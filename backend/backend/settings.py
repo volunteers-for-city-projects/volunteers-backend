@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    'rest_framework_swagger',
+    # 'rest_framework_swagger', # убираем
+    'drf_yasg',
     'taggit',
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
@@ -88,23 +89,23 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': os.getenv('POSTGRES_DB', 'volunteers'),
-#         'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
-#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-#         'HOST': os.getenv('DB_HOST', 'localhost'),
-#         'PORT': os.getenv('DB_PORT', 5432),
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('POSTGRES_DB', 'volunteers'),
+        'USER': os.getenv('POSTGRES_USER', 'volunteers_user'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', 5432),
+    }
+}
 
 
 # Password validation
@@ -162,7 +163,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend',],
-    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
+    # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
 DJOSER = {
@@ -187,6 +188,22 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ORIGIN_ALLOW_ALL = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 
 AUTH_USER_MODEL = 'users.User'
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Token': {               # авторизация в джанго по токену
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        },
+        'Basic': {                # базова авторизация
+            'type': 'basic'
+        }
+    },
+    'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
+    'JSON_EDITOR': True,
+    'SHOW_REQUEST_HEADERS': True,
+}
 
 # Constants
 MAX_LENGTH_NAME = 50
@@ -219,9 +236,9 @@ MIN_LEN_NAME_USER = 2
 MAX_LEN_NAME_USER = 40
 MESSAGE_NAME_USER_VALID = f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
 MESSAGE_NAME_USER_CYRILLIC = 'Введите имя кириллицей'
-MAX_LENGTH_ROLE = 50
-OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
 
+OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
+MAX_LENGTH_ROLE = 50
 MIN_LEN_TELEGRAM = 5
 MAX_LEN_TELEGRAM = 32
 TELEGRAM_ERROR_MESSAGE = 'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. От {} до {} символов.'
