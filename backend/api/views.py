@@ -1,44 +1,37 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, status, viewsets
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
-
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
-
-
-from .filters import CityFilter, SkillsFilter, ProjectFilter
-
-# from .filters import SearchFilter
-# from django.db.models import Q
-
 from content.models import (
     City,
     Feedback,
     News,
     PlatformAbout,
-    Valuation,
     Skills,
+    Valuation,
 )
 from projects.models import Organization, Project, Volunteer
 
-from .filters import CityFilter, SkillsFilter
+from .filters import CityFilter, ProjectFilter, SkillsFilter
+from .permissions import IsOrganizerPermission
 from .serializers import (
+    CitySerializer,
     FeedbackSerializer,
     NewsSerializer,
+    OgranizationCreateSerializer,
+    OrganizationGetSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectSerializer,
-    VolunteerGetSerializer,
-    VolunteerCreateSerializer,
-    OrganizationGetSerializer,
-    OgranizationCreateSerializer,
-    CitySerializer,
     SkillsSerializer,
+    VolunteerCreateSerializer,
+    VolunteerGetSerializer,
 )
 
-from .permissions import IsOrganizerPermission
+# from .filters import SearchFilter
+# from django.db.models import Q
 
 
 class PlatformAboutView(generics.RetrieveAPIView):

@@ -1,10 +1,11 @@
 import django_filters
 from django_filters.rest_framework import FilterSet, filters
 
-# from django.core.validators import RegexValidator
-
 from content.models import City, Skills
 from projects.models import Project
+
+# from django.core.validators import RegexValidator
+
 
 # from django.db.models import Q
 

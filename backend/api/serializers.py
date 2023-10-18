@@ -3,13 +3,14 @@ from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
 
-from content.models import (City,
-                            Feedback,
-                            News,
-                            PlatformAbout,
-                            Valuation,
-                            Skills
-                            )
+from content.models import (
+    City,
+    Feedback,
+    News,
+    PlatformAbout,
+    Skills,
+    Valuation,
+)
 from projects.models import Organization, Project, Volunteer, VolunteerSkills
 from users.models import User
 
