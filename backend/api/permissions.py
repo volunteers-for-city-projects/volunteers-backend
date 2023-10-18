@@ -1,4 +1,6 @@
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import SAFE_METHODS, BasePermission
+
+from users.models import User
 
 
 class IsAdmin(BasePermission):
@@ -12,11 +14,9 @@ class IsOrganizerPermission(BasePermission):
     """Разрешает доступ только пользователям с ролью организатор."""
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_organizer
-
-    def has_object_permission(self, request, view, project):
-        return (
-            request.user.is_authenticated and project.organizer == request.user
+        return request.method in SAFE_METHODS or (
+            request.user.is_authenticated
+            and request.user.role == User.ORGANIZER
         )
 
 

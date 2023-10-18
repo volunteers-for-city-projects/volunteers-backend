@@ -1,10 +1,11 @@
 import django_filters
 from django_filters.rest_framework import FilterSet, filters
 
-# from django.core.validators import RegexValidator
-
 from content.models import City, Skills
 from projects.models import Project
+
+# from django.core.validators import RegexValidator
+
 
 # from django.db.models import Q
 
@@ -39,9 +40,15 @@ class ProjectFilter(FilterSet):
     """
 
     name = django_filters.CharFilter(lookup_expr='icontains')
-    status = django_filters.ChoiceFilter(choices=Project.STATUS_CHOICES)
-    category = django_filters.CharFilter(lookup_expr='icontains')
-    organizer = django_filters.CharFilter(lookup_expr='icontains')
+    status = django_filters.ChoiceFilter(
+        field_name='status_project', choices=Project.STATUS_PROJECT
+    )
+    category = django_filters.CharFilter(
+        field_name='category', lookup_expr='exact'
+    )
+    organizer = django_filters.NumberFilter(
+        field_name='organization', lookup_expr='exact'
+    )
 
     class Meta:
         model = Project

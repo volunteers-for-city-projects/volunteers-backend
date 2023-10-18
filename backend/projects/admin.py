@@ -1,7 +1,11 @@
-from django.contrib.admin import ModelAdmin, register, TabularInline
+from django.contrib.admin import ModelAdmin, TabularInline, register
 
 from projects.models import (
-    Category, Organization, Project, Volunteer, VolunteerSkills
+    Category,
+    Organization,
+    Project,
+    Volunteer,
+    VolunteerSkills,
 )
 
 
