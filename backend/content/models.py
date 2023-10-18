@@ -1,6 +1,6 @@
+from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
-from django.conf import settings
 
 from users.models import User
 

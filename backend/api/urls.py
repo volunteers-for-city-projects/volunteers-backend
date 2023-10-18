@@ -5,12 +5,12 @@ from api.views import (
     CityViewSet,
     FeedbackCreateView,
     NewsViewSet,
+    OrganizationViewSet,
     PlatformAboutView,
     ProjectViewSet,
-    SkillsViewSet,
     SearchListView,
+    SkillsViewSet,
     VolunteerViewSet,
-    OrganizationViewSet,
 )
 
 router = DefaultRouter()
