@@ -10,7 +10,9 @@ from projects.models import Project
 
 
 class CityFilter(FilterSet):
-    """Класс для фильтрации городов по имени."""
+    """
+    Класс для фильтрации городов по имени.
+    """
 
     name = filters.CharFilter(field_name='name', lookup_expr='istartswith')
 
@@ -20,7 +22,9 @@ class CityFilter(FilterSet):
 
 
 class SkillsFilter(FilterSet):
-    """Класс для фильтрации навыков по имени."""
+    """
+    Класс для фильтрации навыков по имени.
+    """
 
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
 

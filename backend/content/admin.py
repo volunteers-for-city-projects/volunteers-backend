@@ -19,7 +19,9 @@ admin.site.site_header = 'Администрирование сайта BETTER-T
 
 @admin.register(Feedback)
 class FeedbackAdmin(admin.ModelAdmin):
-    '''Администрирование раздела обращений от пользователей.'''
+    """
+    Администрирование раздела обращений от пользователей.
+    """
 
     list_display = (
         'name',
@@ -60,8 +62,9 @@ class FeedbackAdmin(admin.ModelAdmin):
 
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
-
-    '''Администрирование раздела новостей.'''
+    """
+    Администрирование раздела новостей.
+    """
 
     list_display = (
         'title',
@@ -108,14 +111,18 @@ class NewsAdmin(admin.ModelAdmin):
 
 @admin.register(PlatformAbout)
 class PlatformAboutAdmin(admin.ModelAdmin):
-    '''Администрирование раздела О Платформе'''
+    """
+    Администрирование раздела О Платформе.
+    """
 
     list_display = ('about_us', 'platform_email')
 
 
 @admin.register(Valuation)
 class ValuationAdmin(admin.ModelAdmin):
-    '''Администрирование раздела Ценности Платформы.'''
+    """
+    Администрирование раздела Ценности Платформы.
+    """
 
     list_display = ('title', 'description')
     search_fields = ('title', 'description')
@@ -124,14 +131,18 @@ class ValuationAdmin(admin.ModelAdmin):
 
 @admin.register(City)
 class CityAdmin(admin.ModelAdmin):
-    '''Администрирование справочника Города.'''
+    """
+    Администрирование справочника Города.
+    """
 
     list_display = ('id', 'name')
 
 
 @admin.register(Skills)
 class SkillsAdmin(admin.ModelAdmin):
-    '''Администрирование справочника с навыками волонтера.'''
+    """
+    Администрирование справочника с навыками волонтера.
+    """
 
     list_display = ('name',)
 
