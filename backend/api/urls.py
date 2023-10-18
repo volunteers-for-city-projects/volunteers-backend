@@ -24,7 +24,7 @@ router.register(r'skills', SkillsViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('', include('djoser.urls')),  # это вроде можно убрать
+    # path('', include('djoser.urls')),  # это вроде можно убрать
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
