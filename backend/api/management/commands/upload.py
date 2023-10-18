@@ -6,6 +6,10 @@ from django.core.management.base import BaseCommand
 from content.models import City, Skills
 from projects.models import Category
 
+# import os # путь локально расскоментировать
+
+
+
 
 def load_cities():
     print('loading cities...')

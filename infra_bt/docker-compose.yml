@@ -5,37 +5,72 @@ volumes:
   static:
   media:
 
+
+name: volunteers
+
 services:
 
-  # db:
-  #   image: postgres:13
-  #   env_file: .env
-  #   volumes:
-  #     - pg_data:/var/lib/postgresql/data
-  
+  db:
+    image: postgres:13.0-alpine
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
   backend:
     build: ../backend/
     env_file: .env
-    # volumes:
-    #   - static:/backend_static
-    #   - media:/media
-    # depends_on:
-    #   - db
+    volumes:
+      - static:/backend_static
+      - media:/media
+    command:
+      - /bin/sh
+      - -c
+      - |
+        python manage.py collectstatic -c --noinput
+        cp -r /app/collected_static/. /backend_static/static/
+        python manage.py migrate
+        gunicorn --bind 0.0.0.0:8000 backend.wsgi
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
 
-  # frontend:
-  #   build:
-  #     context: ../frontend
-  #     dockerfile: Dockerfile
-  #   volumes:
-  #     - ../frontend/:/app/result_build/
-  
+  #    frontend:
+  #      build:
+  #        context: git@github.com:volunteers-for-city-projects/volunteers-frontend.git
+  #        dockerfile: Dockerfile
+  #      command:
+  #        - /bin/sh
+  #        - -c
+  #        - |
+  #          npm run build result_build
+  #          cp -r /app/result_build/ static_files/
+  #      volumes:
+  #        - ../frontend:/app/
+  #        - static:/static_files
+
   nginx:
-    image: nginx:1.19.3
+    image: nginx:1.25.2-alpine3.18-slim
     ports:
       - "8000:80"
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       # - ../frontend/build:/usr/share/nginx/html/
       # - ../docs/:/usr/share/nginx/html/api/docs/
-      # - static:/static
-      # - media:/media
+      - static:/static
+      - media:/media
+    depends_on:
+      backend:
+        condition: service_started
