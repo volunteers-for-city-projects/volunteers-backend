@@ -36,7 +36,7 @@ jobs:
         flake8 backend --count --exit-zero --max-complexity=10 --max-line-length=79 --statistics --config=setup.cfg
     - name: Run ruff
       run: |
-        python -m ruff --exclude=.tox,.
+        python -m ruff check .
     - name: Run isort
       run: |
         isort -c .
