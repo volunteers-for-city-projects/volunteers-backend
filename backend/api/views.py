@@ -74,35 +74,41 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    permission_classes_by_action = {
-        'create': [IsOrganizerPermission],
-        'update': [IsOrganizerPermission],
-        'destroy': [IsOrganizerPermission],
-    }
+    permission_classes = [IsOrganizerPermission]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
-            return Response(status=status.HTTP_201_CREATED)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
         instance = self.get_object()
+        self.check_object_permissions(request, instance)
+        if instance.organization.contact_person != request.user:
+            message = "У вас нет разрешения на редактирование этой записи."
+            return Response(
+                {"detail": message}, status=status.HTTP_403_FORBIDDEN
+            )
+        partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial
         )
         if serializer.is_valid():
-            self.perform_update(serializer)
-            return Response(status=status.HTTP_200_OK)
-        return Response(
-            status=status.HTTP_400_BAD_REQUEST,
-        )
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        self.perform_destroy(instance)
+        self.check_object_permissions(request, instance)
+        if instance.organization.contact_person != request.user:
+            message = "У вас нет разрешения на удаление этой записи."
+            return Response(
+                {"detail": message}, status=status.HTTP_403_FORBIDDEN
+            )
+        instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

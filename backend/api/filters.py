@@ -35,9 +35,15 @@ class ProjectFilter(FilterSet):
     """
 
     name = django_filters.CharFilter(lookup_expr='icontains')
-    status = django_filters.ChoiceFilter(choices=Project.STATUS_CHOICES)
-    category = django_filters.CharFilter(lookup_expr='icontains')
-    organizer = django_filters.CharFilter(lookup_expr='icontains')
+    status = django_filters.ChoiceFilter(
+        field_name='status_project', choices=Project.STATUS_PROJECT
+    )
+    category = django_filters.CharFilter(
+        field_name='category', lookup_expr='exact'
+    )
+    organizer = django_filters.NumberFilter(
+        field_name='organization', lookup_expr='exact'
+    )
 
     class Meta:
         model = Project
