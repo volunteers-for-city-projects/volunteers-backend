@@ -5,13 +5,24 @@ volumes:
   static:
   media:
 
+
 services:
   db:
-    image: postgres:13
+    image: postgres:13.0-alpine
     env_file: .env
     volumes:
       - pg_data:/var/lib/postgresql/data
-  
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
+        ]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
   backend:
     image: 1yunker/volunteers_backend
     env_file: .env
@@ -19,16 +30,17 @@ services:
       - static:/backend_static
       - media:/media
     depends_on:
-      - db
-  
+      db:
+        condition: service_healthy
+
   # frontend:
   #   image: 1yunker/volunteers_frontend
   #   command: cp -r /app/result_build/. /static/
   #   volumes:
   #     - static:/static
-  
+
   gateway:
-    image: nginx:1.19.3
+    image: nginx:1.25.2-alpine3.18-slim
     ports:
       - 8000:80
     volumes:
@@ -36,3 +48,6 @@ services:
       # - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/static
       - media:/media
+    depends_on:
+      backend:
+        condition: service_started
