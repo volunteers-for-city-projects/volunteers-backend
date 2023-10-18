@@ -3,6 +3,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from .validators import NameUserValidator
+
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -48,17 +50,20 @@ class User(AbstractUser):
     first_name = models.CharField(
         verbose_name='Имя',
         max_length=settings.MAX_LENGTH_NAME,
-        blank=False
+        blank=False,
+        validators=[NameUserValidator.validate_name],
     )
     second_name = models.CharField(
         verbose_name='Отчество',
         max_length=settings.MAX_LENGTH_NAME,
-        blank=False
+        blank=False,
+        validators=[NameUserValidator.validate_name],
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
         max_length=settings.MAX_LENGTH_NAME,
-        blank=False
+        blank=False,
+        validators=[NameUserValidator.validate_name],
     )
     email = models.EmailField(
         verbose_name='Электронная почта',
@@ -69,7 +74,7 @@ class User(AbstractUser):
     role = models.CharField(
         verbose_name='Роль',
         choices=USER_ROLES,
-        max_length=50,
+        max_length=settings.MAX_LENGTH_ROLE,
         default=ADMIN
     )
 

@@ -61,7 +61,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
-      # Дождёмся билда всех образов Foodgram
+      # Дождёмся билда всех образов
       - build_backend_and_push_to_docker_hub
       # - build_frontend_and_push_to_docker_hub
     steps:

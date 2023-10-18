@@ -1,18 +1,20 @@
+from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
-from django.conf import settings
 
 from users.models import User
 
 from .validators import (
-    NameFeedbackUserkValidator,
+    NameFeedbackUserValidator,
     PhoneValidator,
     TextFeedbackValidator,
 )
 
 
 class PlatformAbout(models.Model):
-    '''Информация о проекте Платформа.'''
+    """
+    Информация о проекте Платформа.
+    """
 
     # photo = models.ImageField(upload_to='content/%Y/%m/%d/', blank=True)
     # # еще не определились надо ли менять фото из админки
@@ -27,7 +29,9 @@ class PlatformAbout(models.Model):
 
 
 class Valuation(models.Model):
-    '''Ценности проекта Платформа.'''
+    """
+    Ценности проекта Платформа.
+    """
 
     title = models.CharField(
         verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
@@ -43,12 +47,14 @@ class Valuation(models.Model):
 
 
 class Feedback(models.Model):
-    '''Модель обратной связи на Платформе.'''
+    """
+    Модель обратной связи на Платформе.
+    """
 
     name = models.CharField(
         verbose_name='Имя',
-        max_length=settings.MAX_LEN_NAME_FEEDBACK,
-        validators=[NameFeedbackUserkValidator.validate_name],
+        max_length=settings.MAX_LEN_NAME_USER,
+        validators=[NameFeedbackUserValidator.validate_name],
     )
     phone = models.CharField(
         verbose_name='Телефон',
@@ -79,7 +85,9 @@ class Feedback(models.Model):
 
 
 class News(models.Model):
-    '''Новости Платформы.'''
+    """
+    Новости Платформы.
+    """
 
     picture = models.ImageField(upload_to='news/%Y/%m/%d/', blank=True)
     title = models.CharField(
@@ -114,7 +122,9 @@ class News(models.Model):
 
 
 class City(models.Model):
-    '''Справочник городов.'''
+    """
+    Справочник городов.
+    """
 
     name = models.CharField(
         verbose_name='Город', max_length=settings.MAX_LEN_CHAR
