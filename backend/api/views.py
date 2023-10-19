@@ -28,6 +28,7 @@ from .serializers import (
     SkillsSerializer,
     VolunteerCreateSerializer,
     VolunteerGetSerializer,
+    VolunteerProfileSerializer,
 )
 
 # from .filters import SearchFilter
@@ -143,3 +144,11 @@ class SearchListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
     search_fields = ['name', 'description', 'event_purpose']
+
+
+class VolunteerProfileView(generics.RetrieveAPIView):
+    queryset = Volunteer.objects.all()
+    serializer_class = VolunteerProfileSerializer
+
+    def get_object(self):
+        return self.request.user.volunteer

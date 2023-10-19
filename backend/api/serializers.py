@@ -11,7 +11,14 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Organization, Project, Volunteer, VolunteerSkills
+from projects.models import (
+    Organization,
+    Project,
+    Volunteer,
+    VolunteerSkills,
+    ProjectParticipants,
+    ProjectIncomes,
+)
 from users.models import User
 
 
@@ -36,8 +43,12 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlatformAbout
         fields = (
-            'about_us', 'platform_email', 'valuations',
-            'projects_count', 'volunteers_count', 'organizers_count'
+            'about_us',
+            'platform_email',
+            'valuations',
+            'projects_count',
+            'volunteers_count',
+            'organizers_count',
         )
 
     def get_projects_count(self, obj):
@@ -208,9 +219,16 @@ class UserSerializer(serializers.ModelSerializer):
     """
     Сериализатор для получения пользователя.
     """
+
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'second_name', 'last_name', 'email',)
+        fields = (
+            'id',
+            'first_name',
+            'second_name',
+            'last_name',
+            'email',
+        )
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -220,14 +238,20 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('first_name', 'second_name', 'last_name',
-                  'email', 'password',)
+        fields = (
+            'first_name',
+            'second_name',
+            'last_name',
+            'email',
+            'password',
+        )
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения волонтера.
     """
+
     user = UserSerializer()
     skills = SkillsSerializer(many=True)
 
@@ -240,10 +264,10 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания волонтера.
     """
+
     user = UserCreateSerializer()
     skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(),
-        many=True
+        queryset=Skills.objects.all(), many=True
     )
 
     def create_skills(self, skills, volunteer):
@@ -292,6 +316,7 @@ class OrganizationGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения организации-организатора.
     """
+
     contact_person = UserSerializer()
 
     class Meta:
@@ -303,6 +328,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания организации-организатора.
     """
+
     contact_person = UserCreateSerializer()
 
     @transaction.atomic
@@ -310,8 +336,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('contact_person')
         user = User.objects.create_user(role=User.ORGANIZER, **user_data)
         organization = Organization.objects.create(
-            contact_person=user,
-            **validated_data
+            contact_person=user, **validated_data
         )
 
         return organization
@@ -335,3 +360,55 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
         exclude = ('id',)
+
+
+class ProjectParticipantSerializer(serializers.Serializer):
+    """
+    Сериализатор для списока участников.
+    """
+
+    class Meta:
+        model = ProjectParticipants
+        fields = (
+            'project',
+            'volunteer',
+        )
+
+
+class ProjectIncomesSerializer(serializers.Serializer):
+    """
+    Сериализатор для заявок волонтеров.
+    """
+
+    class Meta:
+        model = ProjectIncomes
+        fields = (
+            'project',
+            'volunteer',
+            'status_incomes',
+        )
+
+
+class VolunteerProfileSerializer(serializers.Serializer):
+    """
+    Сериализатор для личного кабинета.
+    """
+
+    volunteer = VolunteerGetSerializer()
+    user = UserSerializer()
+    skills = SkillsSerializer(many=True)
+    participating_projects = ProjectSerializer(many=True)
+    applied_projects = ProjectSerializer(many=True)
+    participants = ProjectParticipantSerializer(many=True)
+    project_incomes = ProjectIncomesSerializer(many=True)
+
+    class Meta:
+        fields = (
+            'volunteer',
+            'user',
+            'skills',
+            'participating_projects',
+            'applied_projects',
+            'participants',
+            'project_incomes',
+        )
