@@ -40,11 +40,10 @@ services:
       - static_data:/static_files
 
   gateway:
-    image: nginx:1.25.2-alpine3.18-slim
+    image: 1yunker/volunteers_gateway
     ports:
       - 8000:80
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - static_data:/usr/share/nginx/html
       - media_data:/usr/share/nginx/html/media
     depends_on:
