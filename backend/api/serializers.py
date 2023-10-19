@@ -263,6 +263,26 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
 
         return volunteer
 
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        skills = validated_data.pop('skills')
+        VolunteerSkills.objects.filter(volunteer=instance).delete()
+        self.create_skills(skills, instance)
+
+        user_data = validated_data.pop('user')
+        user = User.objects.get(email=user_data.get('email'))
+        user.first_name = user_data.get('first_name')
+        user.second_name = user_data.get('second_name')
+        user.last_name = user_data.get('last_name')
+        user.save()
+
+        for attr, value in validated_data.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
     class Meta:
         model = Volunteer
         exclude = ('id',)
@@ -295,6 +315,22 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
         )
 
         return organization
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('contact_person')
+        user = User.objects.get(email=user_data.get('email'))
+        user.first_name = user_data.get('first_name')
+        user.second_name = user_data.get('second_name')
+        user.last_name = user_data.get('last_name')
+        user.save()
+
+        for attr, value in validated_data.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
 
     class Meta:
         model = Organization
