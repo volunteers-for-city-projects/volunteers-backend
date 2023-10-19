@@ -3,12 +3,8 @@ import csv
 
 from django.core.management.base import BaseCommand
 
-from content.models import City, Skills, News, Valuation
-from projects.models import Category
-
-# import os # путь на сервер расскоментировать
-
-
+from content.models import City, Valuation, Skills  # , News
+# from projects.models import Category
 
 
 def load_cities():
@@ -44,7 +40,7 @@ def load_skills():
         Skills.objects.bulk_create(skills)
     print('skills loaded!')
 
-#def load_categories():
+# def load_categories():
 #    print('loading categories...')
 #    categories = []
 #    #  путь для заливки на сервер не проверен
@@ -62,7 +58,7 @@ def load_skills():
 #        Category.objects.bulk_create(categories)
 #    print('categories loaded!')
 
-#def load_news():
+# def load_news():
 #    print('loading news...')
 #    news = []
 #    #  путь для заливки на сервер не проверен
@@ -78,6 +74,7 @@ def load_skills():
 #            news.append(new)
 #        News.objects.bulk_create(news)
 #    print('news loaded!')
+
 
 def load_valuations():
     print('loading valuations...')
