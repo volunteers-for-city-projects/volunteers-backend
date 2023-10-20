@@ -18,25 +18,35 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip --no-cache-dir
         pip install flake8 ruff isort --no-cache-dir
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Git Clone Action
-      uses: actions/checkout@v2
-      with:
-        repository: ${{ github.repository }}
-        path: backend/
+
     - name: Run flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 backend --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings
         flake8 backend --count --exit-zero --max-complexity=10 --max-line-length=79 --statistics --config=setup.cfg
+
     - name: Run ruff
       run: |
         python -m ruff check .
+
     - name: Run isort
       run: |
         isort -c .
+
+    - name: Send report
+      uses: appleboy/telegram-action@master
+      with:
+        fail_ci_if_error: true
+        to: ${{ secrets.A_TG_TO }}
+        token: ${{ secrets.A_TG_TOKEN }}
+        message: |
+          В репозитории {{ github.repository }} проверка кода прошла
+          успешно.
+          Данные: {{ fail_ci_if_error }}

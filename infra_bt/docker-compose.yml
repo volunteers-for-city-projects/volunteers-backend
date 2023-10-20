@@ -49,7 +49,7 @@ services:
 
   frontend:
     build:
-      context: https://github.com/volunteers-for-city-projects/volunteers-frontend.git#feature/deployDocker
+      context: https://github.com/volunteers-for-city-projects/volunteers-frontend.git#develop
     command:
       - /bin/sh
       - -c
