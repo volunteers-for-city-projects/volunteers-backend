@@ -83,6 +83,14 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('first_name', 'second_name', 'last_name',)
 
+    @property
+    def is_organizer(self):
+        return self.role == self.ORGANIZER
+
+    @property
+    def is_volunteer(self):
+        return self.role == self.VOLUNTEER
+
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
