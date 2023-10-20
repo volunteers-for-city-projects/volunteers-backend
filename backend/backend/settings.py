@@ -20,8 +20,12 @@ DEBUG = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.better-together.acceleratorpracticum.ru/', 'https://*.80.87.109.180', 'https://*.127.0.0.1',
-    'http://*.better-together.acceleratorpracticum.ru/', 'http://*.80.87.109.180', 'http://*.127.0.0.1',
+    'https://*.better-together.acceleratorpracticum.ru/',
+    'https://*.80.87.109.180',
+    'https://*.127.0.0.1',
+    'http://*.better-together.acceleratorpracticum.ru/',
+    'http://*.80.87.109.180',
+    'http://*.127.0.0.1',
 ]
 
 # Application definition
@@ -162,7 +166,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend', ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
@@ -191,14 +197,12 @@ AUTH_USER_MODEL = 'users.User'
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
-        'Token': {               # авторизация в джанго по токену
+        'Token': {  # авторизация в джанго по токену
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
         },
-        'Basic': {                # базова авторизация
-            'type': 'basic'
-        }
+        'Basic': {'type': 'basic'},  # базова авторизация
     },
     'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
     'JSON_EDITOR': True,
@@ -217,6 +221,7 @@ LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 200
+MAX_LEN_SLUG = 50
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 и содержать {} цифр.'
 MESSAGE_EMAIL_VALID = (
@@ -234,7 +239,9 @@ MESSAGE_TEXT_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_TEXT_FEEDBACK}
 
 MIN_LEN_NAME_USER = 2
 MAX_LEN_NAME_USER = 40
-MESSAGE_NAME_USER_VALID = f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
+MESSAGE_NAME_USER_VALID = (
+    f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
+)
 MESSAGE_NAME_USER_CYRILLIC = 'Введите имя кириллицей'
 
 OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
