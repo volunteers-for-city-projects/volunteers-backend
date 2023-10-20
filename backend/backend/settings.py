@@ -117,6 +117,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -170,12 +173,6 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
-    # 'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
-    #                 'current_user': 'api.serializers.UserSerializer',
-    #                 'user_create': 'api.serializers.UserCreateSerializer', },
-    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
 }
 
 CORS_ALLOWED_ORIGINS = [

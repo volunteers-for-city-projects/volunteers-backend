@@ -1,4 +1,5 @@
-# from dataclasses import fields
+import django.contrib.auth.password_validation as validators
+from django.core import exceptions
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -217,6 +218,17 @@ class UserCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания пользователя.
     """
+
+    def validate(self, data):
+        password = data.get('password')
+        errors = dict()
+        try:
+            validators.validate_password(password=password)
+        except exceptions.ValidationError as e:
+            errors['password'] = list(e.messages)
+        if errors:
+            raise serializers.ValidationError(errors)
+        return super(UserCreateSerializer, self).validate(data)
 
     class Meta:
         model = User
