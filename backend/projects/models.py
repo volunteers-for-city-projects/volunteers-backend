@@ -153,8 +153,8 @@ class Category(models.Model):
     )
     slug = models.SlugField(
         unique=True,
-        max_length=30,
-        verbose_name='Идентификатор',
+        max_length=settings.MAX_LEN_SLUG,
+        verbose_name='Слаг',
     )
     description = models.TextField(
         blank=False,
@@ -308,3 +308,40 @@ class ProjectParticipants(models.Model):
         return settings.PROJECTPARTICIPANTS.format(
             self.project, self.volunteer
         )
+
+
+class ProjectIncomes(models.Model):
+    """
+    Модель представляет собой заявки волонтеров на участие в проекте.
+    """
+
+    APPLICATION_SUBMITTED = 'application_submitted'
+    REJECTED = 'rejected'
+    ACCEPTED = 'accepted'
+
+    STATUS_INCOMES = [
+        (APPLICATION_SUBMITTED, 'Одобрено'),
+        (REJECTED, 'На рассмотрении'),
+        (ACCEPTED, 'Принята'),
+    ]
+    project = models.ForeignKey(
+        Project,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name='project_incomes',
+        verbose_name='Проект',
+    )
+    volunteer = models.ForeignKey(
+        Volunteer,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name='project_incomes',
+        verbose_name='Волонтер',
+    )
+    status_incomes = models.CharField(
+        choices=STATUS_INCOMES,
+        null=True,
+        blank=True,
+        default=None,
+        verbose_name='Статус заявки волонтера',
+    )

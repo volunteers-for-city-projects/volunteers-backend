@@ -11,6 +11,7 @@ from api.views import (
     SearchListView,
     SkillsViewSet,
     VolunteerViewSet,
+    VolunteerProfileView,
 )
 
 router = DefaultRouter()
@@ -18,7 +19,8 @@ router.register(r'news', NewsViewSet, basename='news')
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
 router.register(
-    r'organizations', OrganizationViewSet, basename='organizations')
+    r'organizations', OrganizationViewSet, basename='organizations'
+)
 router.register(r'cities', CityViewSet)
 router.register(r'skills', SkillsViewSet)
 
@@ -29,4 +31,8 @@ urlpatterns = [
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
+    path(
+        'volunteer/profile/<int:volunteer_id>/',
+        VolunteerProfileView.as_view(),
+    ),
 ]

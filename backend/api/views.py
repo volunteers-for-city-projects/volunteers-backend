@@ -28,6 +28,7 @@ from .serializers import (
     SkillsSerializer,
     VolunteerCreateSerializer,
     VolunteerGetSerializer,
+    VolunteerProfileSerializer,
 )
 
 # from .filters import SearchFilter
@@ -143,3 +144,14 @@ class SearchListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
     search_fields = ['name', 'description', 'event_purpose']
+
+
+# в разработке
+class VolunteerProfileView(generics.RetrieveAPIView):
+    def get(self, request, volunteer_id, format=None):
+        try:
+            volunteer = Volunteer.objects.get(id=volunteer_id)
+            serializer = VolunteerProfileSerializer(volunteer)
+            return Response(serializer.data)
+        except Volunteer.DoesNotExist:
+            return Response({'error': 'Волонтер не найден'}, status=404)
