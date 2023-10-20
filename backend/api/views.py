@@ -146,9 +146,12 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
+# в разработке
 class VolunteerProfileView(generics.RetrieveAPIView):
-    queryset = Volunteer.objects.all()
-    serializer_class = VolunteerProfileSerializer
-
-    def get_object(self):
-        return self.request.user.volunteer
+    def get(self, request, volunteer_id, format=None):
+        try:
+            volunteer = Volunteer.objects.get(id=volunteer_id)
+            serializer = VolunteerProfileSerializer(volunteer)
+            return Response(serializer.data)
+        except Volunteer.DoesNotExist:
+            return Response({'error': 'Волонтер не найден'}, status=404)

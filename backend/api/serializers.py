@@ -389,26 +389,29 @@ class ProjectIncomesSerializer(serializers.Serializer):
         )
 
 
+# в разработке
 class VolunteerProfileSerializer(serializers.Serializer):
     """
-    Сериализатор для личного кабинета.
+    Сериализатор для личного кабинета волонтера.
     """
 
     volunteer = VolunteerGetSerializer()
     user = UserSerializer()
     skills = SkillsSerializer(many=True)
     participating_projects = ProjectSerializer(many=True)
-    applied_projects = ProjectSerializer(many=True)
+    projects = ProjectSerializer(many=True)
     participants = ProjectParticipantSerializer(many=True)
     project_incomes = ProjectIncomesSerializer(many=True)
+    phone = serializers.CharField(source='volunteer.phone')
 
     class Meta:
         fields = (
             'volunteer',
             'user',
+            'phone',
             'skills',
             'participating_projects',
-            'applied_projects',
+            'projects',
             'participants',
             'project_incomes',
         )

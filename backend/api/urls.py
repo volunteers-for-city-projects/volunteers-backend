@@ -32,8 +32,7 @@ urlpatterns = [
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
     path(
-        'volunteer/profile/',
+        'volunteer/profile/<int:volunteer_id>/',
         VolunteerProfileView.as_view(),
-        name='volunteer-profile',
     ),
 ]
