@@ -29,6 +29,7 @@ from .serializers import (
     NewsSerializer,
     OgranizationCreateSerializer,
     OrganizationGetSerializer,
+    OgranizationUpdateSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
@@ -136,6 +137,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return OrganizationGetSerializer
+        if self.request.method in ('PUT', 'PATCH'):
+            return OgranizationUpdateSerializer
         return OgranizationCreateSerializer
 
 
