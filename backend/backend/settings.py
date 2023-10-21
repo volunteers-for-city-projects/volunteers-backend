@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,8 +20,12 @@ DEBUG = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.better-together.acceleratorpracticum.ru/', 'https://*.80.87.109.180', 'https://*.127.0.0.1',
-    'http://*.better-together.acceleratorpracticum.ru/', 'http://*.80.87.109.180', 'http://*.127.0.0.1',
+    'https://*.better-together.acceleratorpracticum.ru/',
+    'https://*.80.87.109.180',
+    'https://*.127.0.0.1',
+    'http://*.better-together.acceleratorpracticum.ru/',
+    'http://*.80.87.109.180',
+    'http://*.127.0.0.1',
 ]
 
 # Application definition
@@ -117,6 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -146,7 +153,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = Path(BASE_DIR, 'collected_static')
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = '/media'
+MEDIA_ROOT = Path(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -162,7 +169,9 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10,
-    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend', ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
     # 'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }
 
@@ -170,12 +179,6 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
-    # 'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
-    #                 'current_user': 'api.serializers.UserSerializer',
-    #                 'user_create': 'api.serializers.UserCreateSerializer', },
-    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
 }
 
 CORS_ALLOWED_ORIGINS = [
@@ -191,14 +194,12 @@ AUTH_USER_MODEL = 'users.User'
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
-        'Token': {               # авторизация в джанго по токену
+        'Token': {  # авторизация в джанго по токену
             'type': 'apiKey',
             'name': 'Authorization',
-            'in': 'header'
+            'in': 'header',
         },
-        'Basic': {                # базова авторизация
-            'type': 'basic'
-        }
+        'Basic': {'type': 'basic'},  # базова авторизация
     },
     'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
     'JSON_EDITOR': True,
@@ -217,6 +218,7 @@ LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 200
+MAX_LEN_SLUG = 50
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 и содержать {} цифр.'
 MESSAGE_EMAIL_VALID = (
@@ -234,7 +236,9 @@ MESSAGE_TEXT_FEEDBACK_VALID = f'Длина поля от {MIN_LEN_TEXT_FEEDBACK}
 
 MIN_LEN_NAME_USER = 2
 MAX_LEN_NAME_USER = 40
-MESSAGE_NAME_USER_VALID = f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
+MESSAGE_NAME_USER_VALID = (
+    f'Длина поля от {MIN_LEN_NAME_USER} до {MAX_LEN_NAME_USER} символов'
+)
 MESSAGE_NAME_USER_CYRILLIC = 'Введите имя кириллицей'
 
 OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'

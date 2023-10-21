@@ -167,3 +167,6 @@ cython_debug/
 # static
 **/collected_static/
 media/
+
+# pre-commit
+.pre-commit-config.yaml
