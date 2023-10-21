@@ -69,8 +69,6 @@ jobs:
       - name: Push to DockerHub
         uses: docker/build-push-action@v4
         with:
-          build-args:
-            NGINX_VERSION=${{ vars.NGINX_VERSION_BUILD }}
           context: ./infra_bt/
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/volunteers_gateway:latest
