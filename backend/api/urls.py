@@ -13,8 +13,8 @@ from api.views import (
     SearchListView,
     SkillsViewSet,
     TagViewSet,
-    VolunteerViewSet,
     VolunteerProfileView,
+    VolunteerViewSet,
 )
 
 router = DefaultRouter()

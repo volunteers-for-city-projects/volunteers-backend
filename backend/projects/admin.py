@@ -4,10 +4,10 @@ from projects.models import (
     Category,
     Organization,
     Project,
+    ProjectIncomes,
+    ProjectParticipants,
     Volunteer,
     VolunteerSkills,
-    ProjectParticipants,
-    ProjectIncomes,
 )
 
 
