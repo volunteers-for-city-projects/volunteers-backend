@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
             name='ProjectIncomes',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status_incomes', models.CharField(blank=True, choices=[('application_submitted', 'Одобрено'), ('rejected', 'На рассмотрении'), ('accepted', 'Принята')], default=None, null=True, verbose_name='Статус заявки волонтера')),
+                ('status_incomes', models.CharField(blank=True, choices=[('application_submitted', 'Одобрено'), ('rejected', 'На рассмотрении'), ('accepted', 'Принята')], default=None, max_length=100, null=True, verbose_name='Статус заявки волонтера')),
                 ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_incomes', to='projects.project', verbose_name='Проект')),
                 ('volunteer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='project_incomes', to='projects.volunteer', verbose_name='Волонтер')),
             ],

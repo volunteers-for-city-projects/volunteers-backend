@@ -50,6 +50,10 @@ class Organization(models.Model):
         related_name='organization',
         verbose_name='Город',
     )
+    photo = models.ImageField(
+        blank=True,
+        verbose_name='Фото',
+    )
 
     class Meta:
         ordering = ['title']
@@ -339,6 +343,7 @@ class ProjectIncomes(models.Model):
         verbose_name='Волонтер',
     )
     status_incomes = models.CharField(
+        max_length=100,
         choices=STATUS_INCOMES,
         null=True,
         blank=True,

@@ -1,7 +1,7 @@
 import os
+from pathlib import Path
 
 from dotenv import load_dotenv
-from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -121,6 +121,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {
+            'min_length': 8,
+        },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
@@ -150,7 +153,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = Path(BASE_DIR, 'collected_static')
 
 MEDIA_URL = 'media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -176,12 +179,6 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
-    # 'SERIALIZERS': {'user': 'api.serializers.UserSerializer',
-    #                 'current_user': 'api.serializers.UserSerializer',
-    #                 'user_create': 'api.serializers.UserCreateSerializer', },
-    # 'PERMISSIONS': {'user': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
-    #                 'user_delete': ['rest_framework.permissions.IsAdminUser'], },
 }
 
 CORS_ALLOWED_ORIGINS = [
