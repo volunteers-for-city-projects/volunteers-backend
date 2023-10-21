@@ -135,6 +135,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для Project.
     """
+
     category = ProjectCategorySerializer()
     city = CitySerializer()
 
@@ -237,7 +238,10 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('name', 'slug',)
+        fields = (
+            'name',
+            'slug',
+        )
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
