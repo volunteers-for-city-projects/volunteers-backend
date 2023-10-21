@@ -1,3 +1,4 @@
+from django.db.models import OuterRef, Prefetch, Subquery
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
@@ -12,7 +13,13 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Organization, Project, Volunteer
+from projects.models import (
+    Organization,
+    Project,
+    ProjectIncomes,
+    ProjectParticipants,
+    Volunteer,
+)
 
 from .filters import CityFilter, ProjectFilter, SkillsFilter
 from .permissions import IsOrganizerPermission
@@ -146,16 +153,21 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
-# в разработке
+# class VolunteerProfileView(generics.RetrieveAPIView):
+#     queryset = Volunteer.objects.all()
+#     serializer_class = VolunteerProfileSerializer
+
+
+#     def get(self, request, *args, **kwargs):
+#         pk = self.kwargs['pk']
+#         try:
+#             volunteer = self.get_queryset().get(pk=pk)
+#             serializer = self.get_serializer(volunteer)
+#             return Response(serializer.data)
+#         except Volunteer.DoesNotExist:
+#             return Response({'error': 'Волонтер не найден'}, status=404)
+
+
 class VolunteerProfileView(generics.RetrieveAPIView):
     queryset = Volunteer.objects.all()
     serializer_class = VolunteerProfileSerializer
-
-    def get(self, request, *args, **kwargs):
-        pk = self.kwargs['pk']
-        try:
-            volunteer = self.get_queryset().get(pk=pk)
-            serializer = self.get_serializer(volunteer)
-            return Response(serializer.data)
-        except Volunteer.DoesNotExist:
-            return Response({'error': 'Волонтер не найден'}, status=404)

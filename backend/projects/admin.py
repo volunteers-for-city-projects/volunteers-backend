@@ -6,6 +6,7 @@ from projects.models import (
     Project,
     Volunteer,
     VolunteerSkills,
+    ProjectParticipants,
     ProjectIncomes,
 )
 
@@ -113,6 +114,21 @@ class ProjectAdmin(ModelAdmin):
     empty_value_display = '-пусто-'
 
 
+@register(ProjectParticipants)
+class ProjectParticipantsAdmin(ModelAdmin):
+    list_display = (
+        'project',
+        'volunteer',
+    )
+    search_fields = (
+        'project',
+        'volunteer',
+    )
+    list_filter = ('project',)
+    save_on_top = True
+    empty_value_display = '-пусто-'
+
+
 @register(ProjectIncomes)
 class ProjectIncomesAdmin(ModelAdmin):
     list_display = (
@@ -122,8 +138,8 @@ class ProjectIncomesAdmin(ModelAdmin):
     )
     search_fields = (
         'name',
-        'slug',
-        'status_incomes',
+        'volunteer',
     )
     list_filter = ('project',)
     save_on_top = True
+    empty_value_display = '-пусто-'

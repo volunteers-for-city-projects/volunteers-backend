@@ -362,7 +362,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
-class ProjectParticipantSerializer(serializers.Serializer):
+class ProjectParticipantSerializer(serializers.ModelSerializer):
     """
     Сериализатор для списока участников.
     """
@@ -375,7 +375,7 @@ class ProjectParticipantSerializer(serializers.Serializer):
         )
 
 
-class ProjectIncomesSerializer(serializers.Serializer):
+class ProjectIncomesSerializer(serializers.ModelSerializer):
     """
     Сериализатор для заявок волонтеров.
     """
@@ -385,19 +385,35 @@ class ProjectIncomesSerializer(serializers.Serializer):
         fields = '__all__'
 
 
-# в разработке
+# class VolunteerProfileSerializer(serializers.Serializer):
+#     """
+#     Сериализатор для личного кабинета волонтера.
+#     """
+
+#     user = VolunteerGetSerializer(source='*')
+#     projects = ProjectSerializer(
+#         many=True,
+#         read_only=True,
+#         source='volunteer.projectparticipants_set.project',
+#     )
+#     project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
+
+#     class Meta:
+#         fields = '__all__'
+
+
 class VolunteerProfileSerializer(serializers.Serializer):
     """
     Сериализатор для личного кабинета волонтера.
     """
 
-    user = VolunteerGetSerializer(source='*')
+    user = VolunteerGetSerializer(read_only=True, source='*')
     projects = ProjectSerializer(
         many=True,
         read_only=True,
         source='volunteer.projectparticipants_set.project',
     )
-    project_incomes = ProjectIncomesSerializer(many=True)
+    project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
 
     class Meta:
         fields = '__all__'
