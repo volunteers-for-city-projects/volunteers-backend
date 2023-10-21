@@ -232,6 +232,7 @@ ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
 VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
 PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
 PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
+PROJECTINCOMES = 'Проект: {}> Волонтер: {}> Стаутс заявки {}'
 
 MIN_LEN_TEXT_FEEDBACK = 10
 MAX_LEN_TEXT_FEEDBACK = 750

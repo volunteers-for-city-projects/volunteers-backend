@@ -14,10 +14,10 @@ from content.models import (
 from projects.models import (
     Organization,
     Project,
+    ProjectIncomes,
+    ProjectParticipants,
     Volunteer,
     VolunteerSkills,
-    ProjectParticipants,
-    ProjectIncomes,
 )
 from users.models import User
 
@@ -382,11 +382,7 @@ class ProjectIncomesSerializer(serializers.Serializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = (
-            'project',
-            'volunteer',
-            'status_incomes',
-        )
+        fields = '__all__'
 
 
 # в разработке
@@ -395,23 +391,13 @@ class VolunteerProfileSerializer(serializers.Serializer):
     Сериализатор для личного кабинета волонтера.
     """
 
-    volunteer = VolunteerGetSerializer()
-    user = UserSerializer()
-    skills = SkillsSerializer(many=True)
-    participating_projects = ProjectSerializer(many=True)
-    projects = ProjectSerializer(many=True)
-    participants = ProjectParticipantSerializer(many=True)
+    user = VolunteerGetSerializer(source='*')
+    projects = ProjectSerializer(
+        many=True,
+        read_only=True,
+        source='volunteer.projectparticipants_set.project',
+    )
     project_incomes = ProjectIncomesSerializer(many=True)
-    phone = serializers.CharField(source='volunteer.phone')
 
     class Meta:
-        fields = (
-            'volunteer',
-            'user',
-            'phone',
-            'skills',
-            'participating_projects',
-            'projects',
-            'participants',
-            'project_incomes',
-        )
+        fields = '__all__'

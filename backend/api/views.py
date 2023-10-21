@@ -148,10 +148,14 @@ class SearchListView(generics.ListAPIView):
 
 # в разработке
 class VolunteerProfileView(generics.RetrieveAPIView):
-    def get(self, request, volunteer_id, format=None):
+    queryset = Volunteer.objects.all()
+    serializer_class = VolunteerProfileSerializer
+
+    def get(self, request, *args, **kwargs):
+        pk = self.kwargs['pk']
         try:
-            volunteer = Volunteer.objects.get(id=volunteer_id)
-            serializer = VolunteerProfileSerializer(volunteer)
+            volunteer = self.get_queryset().get(pk=pk)
+            serializer = self.get_serializer(volunteer)
             return Response(serializer.data)
         except Volunteer.DoesNotExist:
             return Response({'error': 'Волонтер не найден'}, status=404)
