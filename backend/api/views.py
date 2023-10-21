@@ -2,6 +2,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from taggit.models import Tag
+# from taggit.serializers import TaggitSerializer
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from content.models import (
@@ -12,9 +14,15 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Organization, Project, Volunteer
+from projects.models import Category, Organization, Project, Volunteer
 
-from .filters import CityFilter, ProjectFilter, SkillsFilter
+from .filters import (
+    CityFilter,
+    ProjectCategoryFilter,
+    ProjectFilter,
+    SkillsFilter,
+    TagFilter,
+)
 from .permissions import IsOrganizerPermission
 from .serializers import (
     CitySerializer,
@@ -24,10 +32,13 @@ from .serializers import (
     OrganizationGetSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
+    ProjectCategorySerializer,
     ProjectSerializer,
     SkillsSerializer,
+    TagSerializer,
     VolunteerCreateSerializer,
     VolunteerGetSerializer,
+    VolunteerUpdateSerializer,
     VolunteerProfileSerializer,
 )
 
@@ -112,6 +123,8 @@ class VolunteerViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return VolunteerGetSerializer
+        if self.request.method in ('PUT', 'PATCH'):
+            return VolunteerUpdateSerializer
         return VolunteerCreateSerializer
 
 
@@ -136,6 +149,20 @@ class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = SkillsSerializer
     pagination_class = None
     filterset_class = SkillsFilter
+
+
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    pagination_class = None
+    filterset_class = TagFilter
+
+
+class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = ProjectCategorySerializer
+    pagination_class = None
+    filterset_class = ProjectCategoryFilter
 
 
 class SearchListView(generics.ListAPIView):
