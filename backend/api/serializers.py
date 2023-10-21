@@ -1,8 +1,9 @@
-import django.contrib.auth.password_validation as validators
-from django.core import exceptions
 from django.db import transaction
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+from taggit.models import Tag
 
 from content.models import (
     City,
@@ -13,6 +14,7 @@ from content.models import (
     Valuation,
 )
 from projects.models import (
+    Category,
     Organization,
     Project,
     Volunteer,
@@ -56,7 +58,7 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
         return Project.objects.count()
 
     def get_volunteers_count(self, obj):
-        return User.objects.filter(role='volunteer').count()
+        return Volunteer.objects.count()
 
     def get_organizers_count(self, obj):
         return User.objects.filter(role='organizer').count()
@@ -109,10 +111,32 @@ class FeedbackSerializer(serializers.ModelSerializer):
         fields = ('name', 'phone', 'email', 'text')
 
 
+class CitySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения городов.
+    """
+
+    class Meta:
+        model = City
+        fields = ('id', 'name')
+
+
+class ProjectCategorySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения категорий проекта.
+    """
+
+    class Meta:
+        model = Category
+        exclude = ('description',)
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для Project.
     """
+    category = ProjectCategorySerializer()
+    city = CitySerializer()
 
     def validate_dates(self, start, end, application):
         """
@@ -196,16 +220,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
 
-class CitySerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для отображения городов.
-    """
-
-    class Meta:
-        model = City
-        fields = ('id', 'name')
-
-
 class SkillsSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения навыков.
@@ -216,47 +230,14 @@ class SkillsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
-class UserSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для получения пользователя.
+    Сериализатор для отображения тегов.
     """
 
     class Meta:
-        model = User
-        fields = (
-            'id',
-            'first_name',
-            'second_name',
-            'last_name',
-            'email',
-        )
-
-
-class UserCreateSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для создания пользователя.
-    """
-
-    def validate(self, data):
-        password = data.get('password')
-        errors = dict()
-        try:
-            validators.validate_password(password=password)
-        except exceptions.ValidationError as e:
-            errors['password'] = list(e.messages)
-        if errors:
-            raise serializers.ValidationError(errors)
-        return super(UserCreateSerializer, self).validate(data)
-
-    class Meta:
-        model = User
-        fields = (
-            'first_name',
-            'second_name',
-            'last_name',
-            'email',
-            'password',
-        )
+        model = Tag
+        fields = ('name', 'slug',)
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
@@ -299,6 +280,47 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
 
         return volunteer
 
+    # @transaction.atomic
+    # def update(self, instance, validated_data):
+    #     skills = validated_data.pop('skills')
+    #     VolunteerSkills.objects.filter(volunteer=instance).delete()
+    #     self.create_skills(skills, instance)
+
+    #     user_data = validated_data.pop('user')
+    #     user = User.objects.get(email=user_data.get('email'))
+    #     user.first_name = user_data.get('first_name')
+    #     user.second_name = user_data.get('second_name')
+    #     user.last_name = user_data.get('last_name')
+    #     user.save()
+
+    #     for attr, value in validated_data.items():
+    #         if hasattr(instance, attr):
+    #             setattr(instance, attr, value)
+
+    #     instance.save()
+    #     return instance
+
+    class Meta:
+        model = Volunteer
+        exclude = ('id',)
+
+
+class VolunteerUpdateSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для редактирования волонтера.
+    """
+
+    user = UserSerializer()
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skills.objects.all(), many=True
+    )
+
+    def create_skills(self, skills, volunteer):
+        data = []
+        for skill in skills:
+            data.append(VolunteerSkills(volunteer=volunteer, skill=skill))
+        VolunteerSkills.objects.bulk_create(data)
+
     @transaction.atomic
     def update(self, instance, validated_data):
         skills = validated_data.pop('skills')
@@ -306,7 +328,8 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
         self.create_skills(skills, instance)
 
         user_data = validated_data.pop('user')
-        user = User.objects.get(email=user_data.get('email'))
+        email = user_data.get('email')
+        user = get_object_or_404(User, email=email)
         user.first_name = user_data.get('first_name')
         user.second_name = user_data.get('second_name')
         user.last_name = user_data.get('last_name')
@@ -376,7 +399,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
 
 class ProjectParticipantSerializer(serializers.Serializer):
     """
-    Сериализатор для списока участников.
+    Сериализатор для списка участников.
     """
 
     class Meta:
