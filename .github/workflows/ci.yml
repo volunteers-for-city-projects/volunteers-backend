@@ -40,13 +40,3 @@ jobs:
       run: |
         isort -c .
 
-    - name: Send report
-      uses: appleboy/telegram-action@master
-      with:
-        fail_ci_if_error: true
-        to: ${{ secrets.A_TG_TO }}
-        token: ${{ secrets.A_TG_TOKEN }}
-        message: |
-          В репозитории {{ github.repository }} проверка кода прошла
-          успешно.
-          Данные: {{ fail_ci_if_error }}
