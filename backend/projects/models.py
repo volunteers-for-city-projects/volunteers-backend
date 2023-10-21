@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from content.models import City, Skills  # Activities
+from content.models import City, Skills
 from users.models import User
 
 from .validators import validate_ogrn, validate_phone_number, validate_telegram
@@ -324,8 +324,8 @@ class ProjectIncomes(models.Model):
     ACCEPTED = 'accepted'
 
     STATUS_INCOMES = [
-        (APPLICATION_SUBMITTED, 'Одобрено'),
-        (REJECTED, 'На рассмотрении'),
+        (APPLICATION_SUBMITTED, 'Заявка подана'),
+        (REJECTED, 'Отклонена'),
         (ACCEPTED, 'Принята'),
     ]
     project = models.ForeignKey(
@@ -350,3 +350,22 @@ class ProjectIncomes(models.Model):
         default=None,
         verbose_name='Статус заявки волонтера',
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Статус заявки волонтера',
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer', 'status_incomes'],
+                name='%(app_label)s%(class)s_unique_project_volunteer',
+            )
+        ]
+        verbose_name = 'Заявки волонтеров'
+        verbose_name_plural = 'Заявки волонтеров'
+
+    def __str__(self):
+        return settings.PROJECTINCOMES.format(
+            self.project, self.volunteer, self.status_incomes
+        )

@@ -3,7 +3,6 @@ from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
-# from taggit.serializers import TaggitSerializer
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from content.models import (
@@ -38,9 +37,12 @@ from .serializers import (
     TagSerializer,
     VolunteerCreateSerializer,
     VolunteerGetSerializer,
-    VolunteerUpdateSerializer,
     VolunteerProfileSerializer,
+    VolunteerUpdateSerializer,
 )
+
+# from taggit.serializers import TaggitSerializer
+
 
 # from .filters import SearchFilter
 # from django.db.models import Q
@@ -173,12 +175,21 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
-# в разработке
+# class VolunteerProfileView(generics.RetrieveAPIView):
+#     queryset = Volunteer.objects.all()
+#     serializer_class = VolunteerProfileSerializer
+
+
+#     def get(self, request, *args, **kwargs):
+#         pk = self.kwargs['pk']
+#         try:
+#             volunteer = self.get_queryset().get(pk=pk)
+#             serializer = self.get_serializer(volunteer)
+#             return Response(serializer.data)
+#         except Volunteer.DoesNotExist:
+#             return Response({'error': 'Волонтер не найден'}, status=404)
+
+
 class VolunteerProfileView(generics.RetrieveAPIView):
-    def get(self, request, volunteer_id, format=None):
-        try:
-            volunteer = Volunteer.objects.get(id=volunteer_id)
-            serializer = VolunteerProfileSerializer(volunteer)
-            return Response(serializer.data)
-        except Volunteer.DoesNotExist:
-            return Response({'error': 'Волонтер не найден'}, status=404)
+    queryset = Volunteer.objects.all()
+    serializer_class = VolunteerProfileSerializer
