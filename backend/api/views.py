@@ -3,6 +3,7 @@ from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
+
 # from taggit.serializers import TaggitSerializer
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
