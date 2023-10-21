@@ -75,13 +75,14 @@ class User(AbstractUser):
         verbose_name='Роль',
         choices=USER_ROLES,
         max_length=settings.MAX_LENGTH_ROLE,
+        blank=False,
         default=ADMIN
     )
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('first_name', 'second_name', 'last_name',)
+    REQUIRED_FIELDS = ('first_name', 'second_name', 'last_name', 'role',)
 
     @property
     def is_organizer(self):
