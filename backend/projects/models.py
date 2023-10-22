@@ -305,6 +305,13 @@ class ProjectParticipants(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
     class Meta:
+        default_related_name = 'projects_volunteers'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer'],
+                name='%(app_label)s%(class)s' '_unique_project_volunteer',
+            )
+        ]
         verbose_name = 'Участник проекта'
         verbose_name_plural = 'Участники проекта'
 
