@@ -134,6 +134,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для Project.
     """
+
     category = ProjectCategorySerializer()
     city = CitySerializer()
 
@@ -236,7 +237,20 @@ class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('name', 'slug',)
+        fields = (
+            'name',
+            'slug',
+        )
+
+
+class ProjectIncomesSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для заявок волонтеров.
+    """
+
+    class Meta:
+        model = ProjectIncomes
+        fields = '__all__'
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
@@ -381,16 +395,6 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-class ProjectIncomesSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для заявок волонтеров.
-    """
-
-    class Meta:
-        model = ProjectIncomes
-        fields = '__all__'
-
-
 # class VolunteerProfileSerializer(serializers.Serializer):
 #     """
 #     Сериализатор для личного кабинета волонтера.
@@ -414,12 +418,24 @@ class VolunteerProfileSerializer(serializers.Serializer):
     """
 
     user = VolunteerGetSerializer(read_only=True, source='*')
-    projects = ProjectSerializer(
-        many=True,
-        read_only=True,
-        source='volunteer.projectparticipants_set.project',
-    )
+    # projects = ProjectParticipantSerializer(
+    #     many=True,
+    #     read_only=True,
+    #     source='volunteer.projectparticipants_set',
+    # )
+    projects = serializers.SerializerMethodField()
     project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
 
     class Meta:
+        model = Volunteer
         fields = '__all__'
+
+    def get_projects(self, obj):
+        # return Project.objects.filter(obj='participants__volunteer')
+
+        projects = Project.objects.filter(
+            # participants__volunteer=obj
+            # obj=project__projects_volunteers__volunteer
+            participants__projects_volunteers__volunteer=obj
+        )
+        return projects
