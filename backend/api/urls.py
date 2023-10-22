@@ -42,5 +42,5 @@ urlpatterns = [
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
-    path('volunteer/profile/<int:pk>/', VolunteerProfileView.as_view()),
+    path('volunteers/profile/<int:pk>/', VolunteerProfileView.as_view()),
 ]

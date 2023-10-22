@@ -28,6 +28,7 @@ from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
     OgranizationCreateSerializer,
+    OgranizationUpdateSerializer,
     OrganizationGetSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
