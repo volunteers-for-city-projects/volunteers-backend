@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
@@ -61,7 +60,7 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
         return Volunteer.objects.count()
 
     def get_organizers_count(self, obj):
-        return User.objects.filter(role='organizer').count()
+        return Organization.objects.count()
 
 
 class TagListSerializerField(serializers.Serializer):
@@ -294,46 +293,17 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
 
         return volunteer
 
-    # @transaction.atomic
-    # def update(self, instance, validated_data):
-    #     skills = validated_data.pop('skills')
-    #     VolunteerSkills.objects.filter(volunteer=instance).delete()
-    #     self.create_skills(skills, instance)
-
-    #     user_data = validated_data.pop('user')
-    #     user = User.objects.get(email=user_data.get('email'))
-    #     user.first_name = user_data.get('first_name')
-    #     user.second_name = user_data.get('second_name')
-    #     user.last_name = user_data.get('last_name')
-    #     user.save()
-
-    #     for attr, value in validated_data.items():
-    #         if hasattr(instance, attr):
-    #             setattr(instance, attr, value)
-
-    #     instance.save()
-    #     return instance
-
     class Meta:
         model = Volunteer
         exclude = ('id',)
 
 
-class VolunteerUpdateSerializer(serializers.ModelSerializer):
+class VolunteerUpdateSerializer(VolunteerCreateSerializer):
     """
     Сериализатор для редактирования волонтера.
     """
 
     user = UserSerializer()
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True
-    )
-
-    def create_skills(self, skills, volunteer):
-        data = []
-        for skill in skills:
-            data.append(VolunteerSkills(volunteer=volunteer, skill=skill))
-        VolunteerSkills.objects.bulk_create(data)
 
     @transaction.atomic
     def update(self, instance, validated_data):
@@ -342,12 +312,10 @@ class VolunteerUpdateSerializer(serializers.ModelSerializer):
         self.create_skills(skills, instance)
 
         user_data = validated_data.pop('user')
-        email = user_data.get('email')
-        user = get_object_or_404(User, email=email)
-        user.first_name = user_data.get('first_name')
-        user.second_name = user_data.get('second_name')
-        user.last_name = user_data.get('last_name')
-        user.save()
+        instance.user.first_name = user_data.get('first_name')
+        instance.user.second_name = user_data.get('second_name')
+        instance.user.last_name = user_data.get('last_name')
+        instance.user.save()
 
         for attr, value in validated_data.items():
             if hasattr(instance, attr):
@@ -355,10 +323,6 @@ class VolunteerUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-    class Meta:
-        model = Volunteer
-        exclude = ('id',)
 
 
 class OrganizationGetSerializer(serializers.ModelSerializer):
@@ -390,14 +354,25 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
 
         return organization
 
+    class Meta:
+        model = Organization
+        exclude = ('id',)
+
+
+class OgranizationUpdateSerializer(OgranizationCreateSerializer):
+    """
+    Сериализатор для редактирования организации-организатора.
+    """
+
+    contact_person = UserSerializer()
+
     @transaction.atomic
     def update(self, instance, validated_data):
         user_data = validated_data.pop('contact_person')
-        user = User.objects.get(email=user_data.get('email'))
-        user.first_name = user_data.get('first_name')
-        user.second_name = user_data.get('second_name')
-        user.last_name = user_data.get('last_name')
-        user.save()
+        instance.contact_person.first_name = user_data.get('first_name')
+        instance.contact_person.second_name = user_data.get('second_name')
+        instance.contact_person.last_name = user_data.get('last_name')
+        instance.contact_person.save()
 
         for attr, value in validated_data.items():
             if hasattr(instance, attr):
@@ -405,10 +380,6 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
-
-    class Meta:
-        model = Organization
-        exclude = ('id',)
 
 
 class ProjectParticipantSerializer(serializers.ModelSerializer):
