@@ -40,7 +40,7 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        blank=False,
+        blank=True,
         verbose_name='Об организации',
     )
     city = models.ForeignKey(
@@ -352,9 +352,7 @@ class ProjectIncomes(models.Model):
     status_incomes = models.CharField(
         max_length=100,
         choices=STATUS_INCOMES,
-        null=True,
-        blank=True,
-        default=None,
+        default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
     )
     created_at = models.DateTimeField(
