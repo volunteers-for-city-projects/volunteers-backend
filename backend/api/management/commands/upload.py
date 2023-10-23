@@ -1,9 +1,10 @@
-import os
 import csv
+import os
 
 from django.core.management.base import BaseCommand
 
-from content.models import City, Valuation, Skills  # , News
+from content.models import City, Skills, Valuation  # , News
+
 # from projects.models import Category
 
 

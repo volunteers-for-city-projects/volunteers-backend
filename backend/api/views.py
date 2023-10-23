@@ -3,7 +3,6 @@ from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
-# from taggit.serializers import TaggitSerializer
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from content.models import (
@@ -29,6 +28,7 @@ from .serializers import (
     FeedbackSerializer,
     NewsSerializer,
     OgranizationCreateSerializer,
+    OgranizationUpdateSerializer,
     OrganizationGetSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
@@ -38,9 +38,12 @@ from .serializers import (
     TagSerializer,
     VolunteerCreateSerializer,
     VolunteerGetSerializer,
-    VolunteerUpdateSerializer,
     VolunteerProfileSerializer,
+    VolunteerUpdateSerializer,
 )
+
+# from taggit.serializers import TaggitSerializer
+
 
 # from .filters import SearchFilter
 # from django.db.models import Q
@@ -75,6 +78,14 @@ class FeedbackCreateView(generics.CreateAPIView):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    Представление для управления проектами.
+
+    Позволяет создавать, просматривать, обновлять и удалять проекты.
+    Только авторизованные пользователи-организаторы, связанные с проектом
+    в качестве контактных лиц, могут вносить изменения.
+    """
+
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
@@ -134,6 +145,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return OrganizationGetSerializer
+        if self.request.method in ('PUT', 'PATCH'):
+            return OgranizationUpdateSerializer
         return OgranizationCreateSerializer
 
 
@@ -173,12 +186,23 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
-# в разработке
 class VolunteerProfileView(generics.RetrieveAPIView):
-    def get(self, request, volunteer_id, format=None):
-        try:
-            volunteer = Volunteer.objects.get(id=volunteer_id)
-            serializer = VolunteerProfileSerializer(volunteer)
-            return Response(serializer.data)
-        except Volunteer.DoesNotExist:
-            return Response({'error': 'Волонтер не найден'}, status=404)
+    """
+    Представление для получения профиля волонтера (личный кабинет волонтера).
+
+    Позволяет волонтерам получать свой собственный профиль. Доступно только
+    авторизованным волонтерам.
+    """
+
+    queryset = Volunteer.objects.all()
+    serializer_class = VolunteerProfileSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        volunteer = self.get_object()
+        if volunteer.user != request.user:
+            return Response(
+                {'error': 'Недостаточно прав доступа'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = self.get_serializer(volunteer)
+        return Response(serializer.data, status=status.HTTP_200_OK)

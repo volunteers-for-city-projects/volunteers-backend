@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from content.models import City, Skills  # Activities
+from content.models import City, Skills
 from users.models import User
 
 from .validators import validate_ogrn, validate_phone_number, validate_telegram
@@ -40,7 +40,7 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        blank=False,
+        blank=True,
         verbose_name='Об организации',
     )
     city = models.ForeignKey(
@@ -305,6 +305,13 @@ class ProjectParticipants(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
     class Meta:
+        default_related_name = 'projects_volunteers'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer'],
+                name='%(app_label)s%(class)s' '_unique_project_volunteer',
+            )
+        ]
         verbose_name = 'Участник проекта'
         verbose_name_plural = 'Участники проекта'
 
@@ -324,8 +331,8 @@ class ProjectIncomes(models.Model):
     ACCEPTED = 'accepted'
 
     STATUS_INCOMES = [
-        (APPLICATION_SUBMITTED, 'Одобрено'),
-        (REJECTED, 'На рассмотрении'),
+        (APPLICATION_SUBMITTED, 'Заявка подана'),
+        (REJECTED, 'Отклонена'),
         (ACCEPTED, 'Принята'),
     ]
     project = models.ForeignKey(
@@ -345,8 +352,25 @@ class ProjectIncomes(models.Model):
     status_incomes = models.CharField(
         max_length=100,
         choices=STATUS_INCOMES,
-        null=True,
-        blank=True,
-        default=None,
+        default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Статус заявки волонтера',
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer', 'status_incomes'],
+                name='%(app_label)s%(class)s_unique_project_volunteer',
+            )
+        ]
+        verbose_name = 'Заявки волонтеров'
+        verbose_name_plural = 'Заявки волонтеров'
+
+    def __str__(self):
+        return settings.PROJECTINCOMES.format(
+            self.project, self.volunteer, self.status_incomes
+        )
