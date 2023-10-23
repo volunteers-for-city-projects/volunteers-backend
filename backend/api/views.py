@@ -78,6 +78,14 @@ class FeedbackCreateView(generics.CreateAPIView):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    Представление для управления проектами.
+
+    Позволяет создавать, просматривать, обновлять и удалять проекты.
+    Только авторизованные пользователи-организаторы, связанные с проектом
+    в качестве контактных лиц, могут вносить изменения.
+    """
+
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
@@ -178,21 +186,23 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
-# class VolunteerProfileView(generics.RetrieveAPIView):
-#     queryset = Volunteer.objects.all()
-#     serializer_class = VolunteerProfileSerializer
-
-
-#     def get(self, request, *args, **kwargs):
-#         pk = self.kwargs['pk']
-#         try:
-#             volunteer = self.get_queryset().get(pk=pk)
-#             serializer = self.get_serializer(volunteer)
-#             return Response(serializer.data)
-#         except Volunteer.DoesNotExist:
-#             return Response({'error': 'Волонтер не найден'}, status=404)
-
-
 class VolunteerProfileView(generics.RetrieveAPIView):
+    """
+    Представление для получения профиля волонтера (личный кабинет волонтера).
+
+    Позволяет волонтерам получать свой собственный профиль. Доступно только
+    авторизованным волонтерам.
+    """
+
     queryset = Volunteer.objects.all()
     serializer_class = VolunteerProfileSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        volunteer = self.get_object()
+        if volunteer.user != request.user:
+            return Response(
+                {'error': 'Недостаточно прав доступа'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = self.get_serializer(volunteer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
