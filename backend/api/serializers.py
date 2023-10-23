@@ -395,47 +395,21 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-# class VolunteerProfileSerializer(serializers.Serializer):
-#     """
-#     Сериализатор для личного кабинета волонтера.
-#     """
-
-#     user = VolunteerGetSerializer(source='*')
-#     projects = ProjectSerializer(
-#         many=True,
-#         read_only=True,
-#         source='volunteer.projectparticipants_set.project',
-#     )
-#     project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
-
-#     class Meta:
-#         fields = '__all__'
-
-
 class VolunteerProfileSerializer(serializers.Serializer):
     """
     Сериализатор для личного кабинета волонтера.
     """
 
     user = VolunteerGetSerializer(read_only=True, source='*')
-    # projects = ProjectParticipantSerializer(
-    #     many=True,
-    #     read_only=True,
-    #     source='volunteer.projectparticipants_set',
-    # )
     projects = serializers.SerializerMethodField()
     project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
 
-    class Meta:
-        model = Volunteer
-        fields = '__all__'
-
     def get_projects(self, obj):
-        # return Project.objects.filter(obj='participants__volunteer')
-
-        projects = Project.objects.filter(
-            # participants__volunteer=obj
-            # obj=project__projects_volunteers__volunteer
-            participants__projects_volunteers__volunteer=obj
+        project_participants = ProjectParticipants.objects.filter(
+            volunteer__id=obj.id
         )
-        return projects
+        projects = [
+            participant.project for participant in project_participants
+        ]
+        project_serializer = ProjectSerializer(projects, many=True)
+        return project_serializer.data
