@@ -1,3 +1,3 @@
-ARG NGINX_VERSION_BUILD
-FROM nginx:stable-alpine3.17-slim
+ARG GATEWAY_VERSION
+FROM $GATEWAY_VERSION
 COPY ./nginx.conf /etc/nginx/conf.d/default.conf
