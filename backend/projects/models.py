@@ -180,6 +180,7 @@ class Project(models.Model):
     """
 
     APPROVED = 'approved'
+    EDITING = 'editing'
     PENDING = 'pending'
     REJECTED = 'rejected'
     OPEN = 'open'
@@ -196,6 +197,7 @@ class Project(models.Model):
 
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
+        (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
     ]
@@ -233,7 +235,6 @@ class Project(models.Model):
     )
     project_tasks = models.TextField(
         blank=False,
-        default=None,
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
@@ -274,9 +275,9 @@ class Project(models.Model):
     status_project = models.CharField(
         max_length=100,
         choices=STATUS_PROJECT,
-        null=True,
-        blank=True,
-        default=None,
+        null=False,
+        blank=False,
+        default=EDITING,
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
@@ -387,3 +388,23 @@ class ProjectIncomes(models.Model):
         return settings.PROJECTINCOMES.format(
             self.project, self.volunteer, self.status_incomes
         )
+
+
+class VolunteerFavorite(models.Model):
+    """
+    Модель избранных проектов волонтеров.
+    """
+
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('volunteer', 'project'),
+                name='unique_volunteer_favorites',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.volunteer} {self.project}'
