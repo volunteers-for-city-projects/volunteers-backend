@@ -231,6 +231,19 @@ class Project(models.Model):
         blank=False,
         verbose_name='Цель мероприятия',
     )
+    project_tasks = models.TextField(
+        blank=False,
+        default=None,
+        verbose_name='Задачи проекта',
+    )
+    project_events = models.TextField(
+        blank=True,
+        verbose_name='Мероприятия на проекте',
+    )
+    organizer_provides = models.TextField(
+        blank=True,
+        verbose_name='Организатор предоставляет',
+    )
     # event_card
     # activities = models.ManyToManyField(
     #     Activities,

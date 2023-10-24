@@ -181,6 +181,7 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_URL': '#/login/password-reset/{uid}/{token}',
 }
 
 CORS_ALLOWED_ORIGINS = [
