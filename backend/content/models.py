@@ -140,7 +140,9 @@ class City(models.Model):
 
 
 class Skills(models.Model):
-    '''Навыки волонтеров.'''
+    """
+    Навыки волонтеров.
+    """
 
     name = models.CharField(
         verbose_name='Навык', max_length=settings.MAX_LEN_CHAR

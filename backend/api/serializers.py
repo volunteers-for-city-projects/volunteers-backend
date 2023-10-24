@@ -135,8 +135,8 @@ class ProjectSerializer(serializers.ModelSerializer):
     Сериализатор для Project.
     """
 
-    category = ProjectCategorySerializer()
-    city = CitySerializer()
+    # category = ProjectCategorySerializer()
+    # city = CitySerializer()
 
     def validate_dates(self, start, end, application):
         """
@@ -199,6 +199,12 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
 
         return data
+
+    def create(self, validated_data):
+        if validated_data.get('status_approve') not in (
+                Project.EDITING, Project.PENDING):
+            validated_data.pop('status_approve')
+        return super().create(validated_data)
 
     class Meta:
         model = Project
@@ -289,6 +295,9 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         skills = validated_data.pop('skills')
         user_data = validated_data.pop('user')
+        # Убираем из параметров роль, если она указана в JSON явно
+        if user_data.get('role') is not None:
+            user_data.pop('role')
 
         user = User.objects.create_user(role=User.VOLUNTEER, **user_data)
         volunteer = Volunteer.objects.create(user=user, **validated_data)
@@ -350,6 +359,10 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user_data = validated_data.pop('contact_person')
+        # Убираем из параметров роль, если она указана в JSON явно
+        if user_data.get('role') is not None:
+            user_data.pop('role')
+
         user = User.objects.create_user(role=User.ORGANIZER, **user_data)
         organization = Organization.objects.create(
             contact_person=user, **validated_data
@@ -416,3 +429,13 @@ class VolunteerProfileSerializer(serializers.Serializer):
         ]
         project_serializer = ProjectSerializer(projects, many=True)
         return project_serializer.data
+
+
+class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения избранных проектов волонтера.
+    """
+
+    class Meta:
+        model = Project
+        fields = ('id', 'name', 'picture', 'organization', 'status_project',)
