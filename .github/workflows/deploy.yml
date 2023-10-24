@@ -15,7 +15,7 @@ jobs:
         ref: develop
 
     - name: Copy docker-compose.production.yml via ssh
-      uses: appleboy/scp-action@v.0.1.4
+      uses: appleboy/scp-action@v0.1.4
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
