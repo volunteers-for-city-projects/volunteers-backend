@@ -1,5 +1,7 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -13,7 +15,13 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Category, Organization, Project, Volunteer
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    Volunteer,
+    VolunteerFavorite,
+)
 
 from .filters import (
     CityFilter,
@@ -22,7 +30,7 @@ from .filters import (
     SkillsFilter,
     TagFilter,
 )
-from .permissions import IsOrganizerPermission
+from .permissions import IsOrganizerPermission, IsVolunteerPermission
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
@@ -37,6 +45,7 @@ from .serializers import (
     SkillsSerializer,
     TagSerializer,
     VolunteerCreateSerializer,
+    VolunteerFavoriteGetSerializer,
     VolunteerGetSerializer,
     VolunteerProfileSerializer,
     VolunteerUpdateSerializer,
@@ -126,6 +135,59 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def add_to(self, volunteer, project, errors):
+        """
+        Добавить проект в избранное.
+        """
+        _, created = VolunteerFavorite.objects.get_or_create(
+            volunteer=volunteer,
+            project=project
+        )
+        if not created:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = VolunteerFavoriteGetSerializer(instance=project)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, volunteer, project, errors):
+        """
+        Удалить проект из избранного.
+        """
+        cnt_deleted, _ = VolunteerFavorite.objects.filter(
+            volunteer=volunteer,
+            project=project
+        ).delete()
+
+        if cnt_deleted == 0:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsVolunteerPermission,)
+    )
+    def favorite(self, request, **kwargs):
+        """
+        Избранные проекты волонтера.
+        """
+        project = get_object_or_404(Project, pk=kwargs.get('pk'))
+        volunteer = get_object_or_404(Volunteer, user=request.user)
+        if request.method == 'POST':
+            return self.add_to(
+                volunteer, project,
+                'Данный проект уже есть в избранном!'
+            )
+        return self.delete_from(
+            volunteer, project,
+            'Данного проекта нет в избранном!'
+        )
 
 
 class VolunteerViewSet(viewsets.ModelViewSet):

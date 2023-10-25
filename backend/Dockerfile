@@ -1,4 +1,5 @@
-FROM python:3.10-alpine
+ARG PYTHON_VERSION_BUILD
+FROM $PYTHON_VERSION_BUILD
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --upgrade pip --no-cache-dir \

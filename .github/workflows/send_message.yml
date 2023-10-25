@@ -1,0 +1,16 @@
+name: Send message in Telegram
+
+on:
+  workflow_call:
+
+jobs:
+  send_message:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Send message in Telegram
+      uses: appleboy/telegram-action@master
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          Деплой бэкэнда из ${{ github.repository }} успешно выполнен!
