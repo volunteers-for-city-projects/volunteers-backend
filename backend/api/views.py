@@ -1,7 +1,10 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from taggit.models import Tag
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from content.models import (
@@ -12,23 +15,44 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Organization, Project, Volunteer
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    Volunteer,
+    VolunteerFavorite,
+)
 
-from .filters import CityFilter, ProjectFilter, SkillsFilter
-from .permissions import IsOrganizerPermission
+from .filters import (
+    CityFilter,
+    ProjectCategoryFilter,
+    ProjectFilter,
+    SkillsFilter,
+    TagFilter,
+)
+from .permissions import IsOrganizerPermission, IsVolunteerPermission
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
     NewsSerializer,
     OgranizationCreateSerializer,
+    OgranizationUpdateSerializer,
     OrganizationGetSerializer,
     PlatformAboutSerializer,
     PreviewNewsSerializer,
+    ProjectCategorySerializer,
     ProjectSerializer,
     SkillsSerializer,
+    TagSerializer,
     VolunteerCreateSerializer,
+    VolunteerFavoriteGetSerializer,
     VolunteerGetSerializer,
+    VolunteerProfileSerializer,
+    VolunteerUpdateSerializer,
 )
+
+# from taggit.serializers import TaggitSerializer
+
 
 # from .filters import SearchFilter
 # from django.db.models import Q
@@ -63,6 +87,14 @@ class FeedbackCreateView(generics.CreateAPIView):
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
+    """
+    Представление для управления проектами.
+
+    Позволяет создавать, просматривать, обновлять и удалять проекты.
+    Только авторизованные пользователи-организаторы, связанные с проектом
+    в качестве контактных лиц, могут вносить изменения.
+    """
+
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
@@ -104,6 +136,59 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def add_to(self, volunteer, project, errors):
+        """
+        Добавить проект в избранное.
+        """
+        _, created = VolunteerFavorite.objects.get_or_create(
+            volunteer=volunteer,
+            project=project
+        )
+        if not created:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = VolunteerFavoriteGetSerializer(instance=project)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, volunteer, project, errors):
+        """
+        Удалить проект из избранного.
+        """
+        cnt_deleted, _ = VolunteerFavorite.objects.filter(
+            volunteer=volunteer,
+            project=project
+        ).delete()
+
+        if cnt_deleted == 0:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsVolunteerPermission,)
+    )
+    def favorite(self, request, **kwargs):
+        """
+        Избранные проекты волонтера.
+        """
+        project = get_object_or_404(Project, pk=kwargs.get('pk'))
+        volunteer = get_object_or_404(Volunteer, user=request.user)
+        if request.method == 'POST':
+            return self.add_to(
+                volunteer, project,
+                'Данный проект уже есть в избранном!'
+            )
+        return self.delete_from(
+            volunteer, project,
+            'Данного проекта нет в избранном!'
+        )
+
 
 class VolunteerViewSet(viewsets.ModelViewSet):
     queryset = Volunteer.objects.all()
@@ -111,6 +196,8 @@ class VolunteerViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return VolunteerGetSerializer
+        if self.request.method in ('PUT', 'PATCH'):
+            return VolunteerUpdateSerializer
         return VolunteerCreateSerializer
 
 
@@ -120,6 +207,8 @@ class OrganizationViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return OrganizationGetSerializer
+        if self.request.method in ('PUT', 'PATCH'):
+            return OgranizationUpdateSerializer
         return OgranizationCreateSerializer
 
 
@@ -137,9 +226,45 @@ class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_class = SkillsFilter
 
 
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Tag.objects.all()
+    serializer_class = TagSerializer
+    pagination_class = None
+    filterset_class = TagFilter
+
+
+class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = ProjectCategorySerializer
+    pagination_class = None
+    filterset_class = ProjectCategoryFilter
+
+
 class SearchListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
     search_fields = ['name', 'description', 'event_purpose']
+
+
+class VolunteerProfileView(generics.RetrieveAPIView):
+    """
+    Представление для получения профиля волонтера (личный кабинет волонтера).
+
+    Позволяет волонтерам получать свой собственный профиль. Доступно только
+    авторизованным волонтерам.
+    """
+
+    queryset = Volunteer.objects.all()
+    serializer_class = VolunteerProfileSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        volunteer = self.get_object()
+        if volunteer.user != request.user:
+            return Response(
+                {'error': 'Недостаточно прав доступа'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = self.get_serializer(volunteer)
+        return Response(serializer.data, status=status.HTTP_200_OK)

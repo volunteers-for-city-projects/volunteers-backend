@@ -4,7 +4,7 @@ from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from content.models import City, Skills  # Activities
+from content.models import City, Skills
 from users.models import User
 
 from .validators import validate_ogrn, validate_phone_number, validate_telegram
@@ -40,7 +40,7 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        blank=False,
+        blank=True,
         verbose_name='Об организации',
     )
     city = models.ForeignKey(
@@ -49,6 +49,10 @@ class Organization(models.Model):
         on_delete=models.CASCADE,
         related_name='organization',
         verbose_name='Город',
+    )
+    photo = models.ImageField(
+        blank=True,
+        verbose_name='Фото',
     )
 
     class Meta:
@@ -79,6 +83,7 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
@@ -153,8 +158,8 @@ class Category(models.Model):
     )
     slug = models.SlugField(
         unique=True,
-        max_length=30,
-        verbose_name='Идентификатор',
+        max_length=settings.MAX_LEN_SLUG,
+        verbose_name='Слаг',
     )
     description = models.TextField(
         blank=False,
@@ -176,6 +181,7 @@ class Project(models.Model):
     """
 
     APPROVED = 'approved'
+    EDITING = 'editing'
     PENDING = 'pending'
     REJECTED = 'rejected'
     OPEN = 'open'
@@ -192,6 +198,7 @@ class Project(models.Model):
 
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
+        (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
     ]
@@ -227,6 +234,18 @@ class Project(models.Model):
         blank=False,
         verbose_name='Цель мероприятия',
     )
+    project_tasks = models.TextField(
+        blank=False,
+        verbose_name='Задачи проекта',
+    )
+    project_events = models.TextField(
+        blank=True,
+        verbose_name='Мероприятия на проекте',
+    )
+    organizer_provides = models.TextField(
+        blank=True,
+        verbose_name='Организатор предоставляет',
+    )
     # event_card
     # activities = models.ManyToManyField(
     #     Activities,
@@ -257,9 +276,9 @@ class Project(models.Model):
     status_project = models.CharField(
         max_length=100,
         choices=STATUS_PROJECT,
-        null=True,
-        blank=True,
-        default=None,
+        null=False,
+        blank=False,
+        default=EDITING,
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
@@ -301,6 +320,13 @@ class ProjectParticipants(models.Model):
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
     class Meta:
+        default_related_name = 'projects_volunteers'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer'],
+                name='%(app_label)s%(class)s' '_unique_project_volunteer',
+            )
+        ]
         verbose_name = 'Участник проекта'
         verbose_name_plural = 'Участники проекта'
 
@@ -308,3 +334,78 @@ class ProjectParticipants(models.Model):
         return settings.PROJECTPARTICIPANTS.format(
             self.project, self.volunteer
         )
+
+
+class ProjectIncomes(models.Model):
+    """
+    Модель представляет собой заявки волонтеров на участие в проекте.
+    """
+
+    APPLICATION_SUBMITTED = 'application_submitted'
+    REJECTED = 'rejected'
+    ACCEPTED = 'accepted'
+
+    STATUS_INCOMES = [
+        (APPLICATION_SUBMITTED, 'Заявка подана'),
+        (REJECTED, 'Отклонена'),
+        (ACCEPTED, 'Принята'),
+    ]
+    project = models.ForeignKey(
+        Project,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name='project_incomes',
+        verbose_name='Проект',
+    )
+    volunteer = models.ForeignKey(
+        Volunteer,
+        blank=False,
+        on_delete=models.CASCADE,
+        related_name='project_incomes',
+        verbose_name='Волонтер',
+    )
+    status_incomes = models.CharField(
+        max_length=100,
+        choices=STATUS_INCOMES,
+        default=APPLICATION_SUBMITTED,
+        verbose_name='Статус заявки волонтера',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Статус заявки волонтера',
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'volunteer', 'status_incomes'],
+                name='%(app_label)s%(class)s_unique_project_volunteer',
+            )
+        ]
+        verbose_name = 'Заявки волонтеров'
+        verbose_name_plural = 'Заявки волонтеров'
+
+    def __str__(self):
+        return settings.PROJECTINCOMES.format(
+            self.project, self.volunteer, self.status_incomes
+        )
+
+
+class VolunteerFavorite(models.Model):
+    """
+    Модель избранных проектов волонтеров.
+    """
+
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('volunteer', 'project'),
+                name='unique_volunteer_favorites',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.volunteer} {self.project}'

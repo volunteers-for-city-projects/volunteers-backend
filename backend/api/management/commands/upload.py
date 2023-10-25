@@ -1,5 +1,5 @@
-import os
 import csv
+import os
 
 from django.core.management.base import BaseCommand
 
@@ -8,7 +8,6 @@ from projects.models import Category, Organization, Volunteer, VolunteerSkills
 from users.models import User
 
 # import os # путь на сервер расскоментировать
-
 
 def load_cities():
     print('loading cities...')

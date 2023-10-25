@@ -1,7 +1,8 @@
-# from dataclasses import fields
 from django.db import transaction
 from django.utils import timezone
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
+from taggit.models import Tag
 
 from content.models import (
     City,
@@ -11,7 +12,15 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Organization, Project, Volunteer, VolunteerSkills
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    ProjectIncomes,
+    ProjectParticipants,
+    Volunteer,
+    VolunteerSkills,
+)
 from users.models import User
 
 
@@ -36,18 +45,22 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlatformAbout
         fields = (
-            'about_us', 'platform_email', 'valuations',
-            'projects_count', 'volunteers_count', 'organizers_count'
+            'about_us',
+            'platform_email',
+            'valuations',
+            'projects_count',
+            'volunteers_count',
+            'organizers_count',
         )
 
     def get_projects_count(self, obj):
         return Project.objects.count()
 
     def get_volunteers_count(self, obj):
-        return User.objects.filter(role='volunteer').count()
+        return Volunteer.objects.count()
 
     def get_organizers_count(self, obj):
-        return User.objects.filter(role='organizer').count()
+        return Organization.objects.count()
 
 
 class TagListSerializerField(serializers.Serializer):
@@ -97,10 +110,33 @@ class FeedbackSerializer(serializers.ModelSerializer):
         fields = ('name', 'phone', 'email', 'text')
 
 
+class CitySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения городов.
+    """
+
+    class Meta:
+        model = City
+        fields = ('id', 'name')
+
+
+class ProjectCategorySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения категорий проекта.
+    """
+
+    class Meta:
+        model = Category
+        exclude = ('description',)
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для Project.
     """
+
+    # category = ProjectCategorySerializer()
+    # city = CitySerializer()
 
     def validate_dates(self, start, end, application):
         """
@@ -164,6 +200,12 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        if validated_data.get('status_approve') not in (
+                Project.EDITING, Project.PENDING):
+            validated_data.pop('status_approve')
+        return super().create(validated_data)
+
     class Meta:
         model = Project
         fields = (
@@ -174,6 +216,9 @@ class ProjectSerializer(serializers.ModelSerializer):
             'end_datatime',
             'application_date',
             'event_purpose',
+            'project_tasks',
+            'project_events',
+            'organizer_provides',
             'organization',
             'city',
             'category',
@@ -182,16 +227,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'participants',
             'status_approve',
         )
-
-
-class CitySerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для отображения городов.
-    """
-
-    class Meta:
-        model = City
-        fields = ('id', 'name')
 
 
 class SkillsSerializer(serializers.ModelSerializer):
@@ -204,30 +239,34 @@ class SkillsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
-class UserSerializer(serializers.ModelSerializer):
+class TagSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для получения пользователя.
-    """
-    class Meta:
-        model = User
-        fields = ('id', 'first_name', 'second_name', 'last_name', 'email',)
-
-
-class UserCreateSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для создания пользователя.
+    Сериализатор для отображения тегов.
     """
 
     class Meta:
-        model = User
-        fields = ('first_name', 'second_name', 'last_name',
-                  'email', 'password',)
+        model = Tag
+        fields = (
+            'name',
+            'slug',
+        )
+
+
+class ProjectIncomesSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для заявок волонтеров.
+    """
+
+    class Meta:
+        model = ProjectIncomes
+        fields = '__all__'
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения волонтера.
     """
+
     user = UserSerializer()
     skills = SkillsSerializer(many=True)
 
@@ -240,10 +279,10 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания волонтера.
     """
+
     user = UserCreateSerializer()
     skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(),
-        many=True
+        queryset=Skills.objects.all(), many=True
     )
 
     def create_skills(self, skills, volunteer):
@@ -256,6 +295,9 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         skills = validated_data.pop('skills')
         user_data = validated_data.pop('user')
+        # Убираем из параметров роль, если она указана в JSON явно
+        if user_data.get('role') is not None:
+            user_data.pop('role')
 
         user = User.objects.create_user(role=User.VOLUNTEER, **user_data)
         volunteer = Volunteer.objects.create(user=user, **validated_data)
@@ -268,10 +310,38 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
         exclude = ('id',)
 
 
+class VolunteerUpdateSerializer(VolunteerCreateSerializer):
+    """
+    Сериализатор для редактирования волонтера.
+    """
+
+    user = UserSerializer()
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        skills = validated_data.pop('skills')
+        VolunteerSkills.objects.filter(volunteer=instance).delete()
+        self.create_skills(skills, instance)
+
+        user_data = validated_data.pop('user')
+        instance.user.first_name = user_data.get('first_name')
+        instance.user.second_name = user_data.get('second_name')
+        instance.user.last_name = user_data.get('last_name')
+        instance.user.save()
+
+        for attr, value in validated_data.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
+
 class OrganizationGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения организации-организатора.
     """
+
     contact_person = UserSerializer()
 
     class Meta:
@@ -283,15 +353,19 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     """
     Сериализатор для создания организации-организатора.
     """
+
     contact_person = UserCreateSerializer()
 
     @transaction.atomic
     def create(self, validated_data):
         user_data = validated_data.pop('contact_person')
+        # Убираем из параметров роль, если она указана в JSON явно
+        if user_data.get('role') is not None:
+            user_data.pop('role')
+
         user = User.objects.create_user(role=User.ORGANIZER, **user_data)
         organization = Organization.objects.create(
-            contact_person=user,
-            **validated_data
+            contact_person=user, **validated_data
         )
 
         return organization
@@ -299,3 +373,69 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Organization
         exclude = ('id',)
+
+
+class OgranizationUpdateSerializer(OgranizationCreateSerializer):
+    """
+    Сериализатор для редактирования организации-организатора.
+    """
+
+    contact_person = UserSerializer()
+
+    @transaction.atomic
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('contact_person')
+        instance.contact_person.first_name = user_data.get('first_name')
+        instance.contact_person.second_name = user_data.get('second_name')
+        instance.contact_person.last_name = user_data.get('last_name')
+        instance.contact_person.save()
+
+        for attr, value in validated_data.items():
+            if hasattr(instance, attr):
+                setattr(instance, attr, value)
+
+        instance.save()
+        return instance
+
+
+class ProjectParticipantSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для списка участников.
+    """
+
+    class Meta:
+        model = ProjectParticipants
+        fields = (
+            'project',
+            'volunteer',
+        )
+
+
+class VolunteerProfileSerializer(serializers.Serializer):
+    """
+    Сериализатор для личного кабинета волонтера.
+    """
+
+    user = VolunteerGetSerializer(read_only=True, source='*')
+    projects = serializers.SerializerMethodField()
+    project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
+
+    def get_projects(self, obj):
+        project_participants = ProjectParticipants.objects.filter(
+            volunteer__id=obj.id
+        )
+        projects = [
+            participant.project for participant in project_participants
+        ]
+        project_serializer = ProjectSerializer(projects, many=True)
+        return project_serializer.data
+
+
+class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения избранных проектов волонтера.
+    """
+
+    class Meta:
+        model = Project
+        fields = ('id', 'name', 'picture', 'organization', 'status_project',)
