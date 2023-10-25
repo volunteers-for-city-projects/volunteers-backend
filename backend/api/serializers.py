@@ -197,7 +197,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         self.validate_reception_status(
             status_project, application_date, start_datatime, end_datatime
         )
-
         return data
 
     class Meta:

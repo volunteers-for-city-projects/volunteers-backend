@@ -206,3 +206,7 @@ class VolunteerProfileView(generics.RetrieveAPIView):
             )
         serializer = self.get_serializer(volunteer)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class ProjectIncomesView:
+    pass
