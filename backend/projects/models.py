@@ -83,6 +83,7 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
