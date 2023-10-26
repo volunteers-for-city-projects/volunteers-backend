@@ -217,13 +217,13 @@ class Project(models.Model):
         blank=True,
         verbose_name='Картинка',
     )
-    start_datatime = models.DateTimeField(
+    start_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
         verbose_name='Дата начало мероприятия',
     )
-    end_datatime = models.DateTimeField(
+    end_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
