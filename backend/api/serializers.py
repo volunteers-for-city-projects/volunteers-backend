@@ -152,7 +152,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Дата окончания мероприятия должна быть позже даты начала.'
             )
-        if not (start <= application <= end):
+        if not (application <= start <= end):
             raise serializers.ValidationError(
                 'Дата подачи заявки должна быть позже или равна дате начала '
                 'мероприятия и позже даты начала и раньше даты окончания.'
@@ -160,14 +160,13 @@ class ProjectSerializer(serializers.ModelSerializer):
         return start, end, application
 
     def validate_reception_status(
-        self, status_project, application_date, start_datatime, end_datatime
+        self, status_project, application_date, start_datetime, end_datetime
     ):
         """
         Проверяет, что статус "Прием откликов окончен" можно устанавливать
         только после указанной даты подачи заявки.
         """
         now = timezone.now()
-
         if status_project == Project.RECEPTION_OF_RESPONSES_CLOSED:
             if application_date > now:
                 raise serializers.ValidationError(
@@ -175,33 +174,35 @@ class ProjectSerializer(serializers.ModelSerializer):
                     'только после окончания подачи заявок.'
                 )
         if status_project == Project.READY_FOR_FEEDBACK:
-            if not (start_datatime <= application_date <= end_datatime):
+            if now < start_datetime or now < application_date:
                 raise serializers.ValidationError(
-                    'Статус проекта "Готов к откликам" можно установить '
-                    'в период с даты начала мероприятия до даты подачи заявки.'
+                    'Статус проекта "Готов к откликам" можно установить до '
+                    'начала мероприятия и до даты подачи заявки.'
                 )
         if status_project == Project.PROJECT_COMPLETED:
-            if now < end_datatime:
+            if now < end_datetime:
                 raise serializers.ValidationError(
                     'Статус проекта "Проект завершен" можно установить '
                     'только после окончания мероприятия.'
                 )
 
     def validate(self, data):
-        start_datatime = data['start_datatime']
-        end_datatime = data['end_datatime']
+        start_datetime = data['start_datetime']
+        end_datetime = data['end_datetime']
         application_date = data['application_date']
         status_project = data.get('status_project')
 
-        self.validate_dates(start_datatime, end_datatime, application_date)
+        self.validate_dates(start_datetime, end_datetime, application_date)
         self.validate_reception_status(
-            status_project, application_date, start_datatime, end_datatime
+            status_project, application_date, start_datetime, end_datetime
         )
         return data
 
     def create(self, validated_data):
         if validated_data.get('status_approve') not in (
-                Project.EDITING, Project.PENDING):
+            Project.EDITING,
+            Project.PENDING,
+        ):
             validated_data.pop('status_approve')
         return super().create(validated_data)
 
@@ -211,8 +212,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'picture',
-            'start_datatime',
-            'end_datatime',
+            'start_datetime',
+            'end_datetime',
             'application_date',
             'event_purpose',
             'project_tasks',
@@ -437,4 +438,10 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ('id', 'name', 'picture', 'organization', 'status_project',)
+        fields = (
+            'id',
+            'name',
+            'picture',
+            'organization',
+            'status_project',
+        )
