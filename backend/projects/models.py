@@ -277,6 +277,7 @@ class Project(models.Model):
     )
     project_tasks = models.TextField(
         blank=True,
+        null=True,
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
