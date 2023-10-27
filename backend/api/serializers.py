@@ -13,6 +13,7 @@ from content.models import (
     Valuation,
 )
 from projects.models import (
+    Address,
     Category,
     Organization,
     Project,
@@ -22,6 +23,16 @@ from projects.models import (
     VolunteerSkills,
 )
 from users.models import User
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения адреса.
+    """
+
+    class Meta:
+        model = Address
+        fields = '__all__'
 
 
 class ValuationSerializer(serializers.ModelSerializer):
@@ -35,7 +46,9 @@ class ValuationSerializer(serializers.ModelSerializer):
 
 
 class PlatformAboutSerializer(serializers.ModelSerializer):
-    '''Сериалзиатор для отображения информации о платформе.'''
+    """
+    Сериалзиатор для отображения информации о платформе.
+    """
 
     valuations = ValuationSerializer(many=True)
     projects_count = serializers.SerializerMethodField()
@@ -132,9 +145,10 @@ class ProjectCategorySerializer(serializers.ModelSerializer):
 
 class ProjectSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для Project.
+    Сериализатор для проекта.
     """
 
+    event_address = AddressSerializer()
     # category = ProjectCategorySerializer()
     # city = CitySerializer()
 
@@ -267,7 +281,7 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
     Сериализатор для отображения волонтера.
     """
 
-    user = UserSerializer()
+    user = UserSerializer(read_only=True)
     skills = SkillsSerializer(many=True)
 
     class Meta:
@@ -328,6 +342,11 @@ class VolunteerUpdateSerializer(VolunteerCreateSerializer):
         instance.user.second_name = user_data.get('second_name')
         instance.user.last_name = user_data.get('last_name')
         instance.user.save()
+
+        # Убираем из параметров дату рождения, если она указана в JSON явно:
+        # в соответсвии с тербованиями редактирование запрещено
+        if validated_data.get('date_of_birth') is not None:
+            validated_data.pop('date_of_birth')
 
         for attr, value in validated_data.items():
             if hasattr(instance, attr):
