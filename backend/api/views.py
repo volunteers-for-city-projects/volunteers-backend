@@ -371,13 +371,12 @@ class RejectIncomesView(generics.UpdateAPIView):
             return Response(
                 {'status': 'Заявка отклонена'}, status=status.HTTP_200_OK
             )
-        elif instance.status_incomes == ProjectIncomes.REJECTED:
+        if instance.status_incomes == ProjectIncomes.REJECTED:
             return Response(
                 {'status': 'Заявка уже отклонена'},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            return Response(
-                {'status': 'Невозможно отклонить эту заявку'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return Response(
+            {'status': 'Невозможно отклонить эту заявку'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

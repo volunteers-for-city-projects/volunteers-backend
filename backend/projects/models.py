@@ -108,7 +108,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ДД.ММ.ГГГГ", пример: "01 01 2000".',
+        help_text='Введите дату в формате "ГГГГ.ММ.ДД", пример: "2000 01 01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
