@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     # 'rest_framework_swagger', # убираем
     'drf_yasg',
     'taggit',
+    'gmailapi_backend',
     'api.apps.ApiConfig',
     'content.apps.ContentConfig',
     'notifications.apps.NotificationsConfig',
@@ -182,7 +183,17 @@ DJOSER = {
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_URL': '#/login/password-reset/{uid}/{token}',
+    'ACTIVATION_URL': 'api/auth/activate/{uid}/{token}',
+    'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+    'SERIALIZERS': {
+    },
 }
+
+EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'
+GMAIL_API_CLIENT_ID = os.getenv('GMAIL_API_CLIENT_ID', '')
+GMAIL_API_CLIENT_SECRET = os.getenv('GMAIL_API_CLIENT_SECRET', '')
+GMAIL_API_REFRESH_TOKEN = os.getenv('GMAIL_API_REFRESH_TOKEN', '')
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',

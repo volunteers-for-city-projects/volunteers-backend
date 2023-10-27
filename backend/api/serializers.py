@@ -4,6 +4,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from taggit.models import Tag
 
+from api.utils import create_user
 from content.models import (
     City,
     Feedback,
@@ -289,8 +290,9 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         skills = validated_data.pop('skills')
         user_data = validated_data.pop('user')
+        user_data['role'] = User.VOLUNTEER
 
-        user = User.objects.create_user(role=User.VOLUNTEER, **user_data)
+        user = create_user(self, UserCreateSerializer, user_data)
         volunteer = Volunteer.objects.create(user=user, **validated_data)
         self.create_skills(skills, volunteer)
 
@@ -350,7 +352,9 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user_data = validated_data.pop('contact_person')
-        user = User.objects.create_user(role=User.ORGANIZER, **user_data)
+        user_data['role'] = User.ORGANIZER
+
+        user = create_user(self, UserCreateSerializer, user_data)
         organization = Organization.objects.create(
             contact_person=user, **validated_data
         )

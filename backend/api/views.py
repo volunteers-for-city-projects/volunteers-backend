@@ -1,7 +1,9 @@
+import requests
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from taggit.models import Tag
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
@@ -206,3 +208,16 @@ class VolunteerProfileView(generics.RetrieveAPIView):
             )
         serializer = self.get_serializer(volunteer)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserActivationView(APIView):
+    def get(self, request, uid, token):
+        protocol = 'https://' if request.is_secure() else 'http://'
+        web_url = protocol + request.get_host()
+        post_url = web_url + f"/api/auth/activation/{uid}/{token}/"
+        post_data = {'uid': uid, 'token': token}
+        result = requests.post(post_url, data=post_data)
+        if result.status_code == 204:
+            return Response(status=result.status_code)
+        else:
+            return Response(result.json(), status=result.status_code)
