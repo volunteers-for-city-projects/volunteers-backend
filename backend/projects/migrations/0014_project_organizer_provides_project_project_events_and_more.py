@@ -30,7 +30,7 @@ class Migration(migrations.Migration):
             model_name='project',
             name='project_tasks',
             field=models.TextField(
-                default=None, verbose_name='Задачи проекта'
+                blank=True, verbose_name='Задачи проекта'
             ),
         ),
         migrations.AlterField(
