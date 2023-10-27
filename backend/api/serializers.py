@@ -230,6 +230,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'end_datetime',
             'application_date',
             'event_purpose',
+            'event_address',
             'project_tasks',
             'project_events',
             'organizer_provides',

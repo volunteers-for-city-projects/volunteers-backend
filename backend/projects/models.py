@@ -176,6 +176,10 @@ class Category(models.Model):
 
 
 class Address(models.Model):
+    """
+    Адрес проведения проекта.
+    """
+
     address_line = models.CharField(
         max_length=100,
         verbose_name='Адрес в одну строчку'
@@ -267,6 +271,7 @@ class Project(models.Model):
     event_address = models.ForeignKey(
         Address,
         on_delete=models.CASCADE,
+        blank=True,
         null=True,
         verbose_name='Адрес проведения проекта'
     )
