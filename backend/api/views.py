@@ -297,6 +297,11 @@ class ProjectIncomesView(generics.RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         project = get_object_or_404(Project, pk=self.kwargs['pk'])
+        if project.organization.contact_person != request.user:
+            message = "У вас нет разрешения на просмотр этой страницы."
+            return Response(
+                {"detail": message}, status=status.HTTP_403_FORBIDDEN
+            )
         project_incomes = ProjectIncomes.objects.filter(project=project)
         total_incomes = project_incomes.aggregate(total_incomes=Count('id'))[
             'total_incomes'
@@ -353,36 +358,26 @@ class RejectIncomesView(generics.UpdateAPIView):
 
     def get_object(self):
         project_id = self.kwargs['project_id']
-        return ProjectIncomes.objects.filter(project_id=project_id).first()
-
-    def put(self, request, *args, **kwargs):
-        project_id = self.kwargs['project_id']
         income_id = self.kwargs['income_id']
-        project_exists = Project.objects.filter(id=project_id).exists()
-        if project_exists:
-            instance = self.get_object()
-            if instance:
-                if instance.project_id == int(
-                    project_id
-                ) and instance.id == int(income_id):
-                    instance.status_incomes = ProjectIncomes.REJECTED
-                    instance.save()
-                    return Response(
-                        {'status': 'Заявка отклонена'},
-                        status=status.HTTP_200_OK,
-                    )
-                else:
-                    return Response(
-                        {'status': 'Заявка не найдена'},
-                        status=status.HTTP_404_NOT_FOUND,
-                    )
-            else:
-                return Response(
-                    {'status': 'Заявка не найдена'},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+        return get_object_or_404(
+            ProjectIncomes, id=income_id, project_id=project_id
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
+            instance.status_incomes = ProjectIncomes.REJECTED
+            instance.save()
+            return Response(
+                {'status': 'Заявка отклонена'}, status=status.HTTP_200_OK
+            )
+        elif instance.status_incomes == ProjectIncomes.REJECTED:
+            return Response(
+                {'status': 'Заявка уже отклонена'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         else:
             return Response(
-                {'status': 'Проект не найден'},
-                status=status.HTTP_404_NOT_FOUND,
+                {'status': 'Невозможно отклонить эту заявку'},
+                status=status.HTTP_400_BAD_REQUEST,
             )
