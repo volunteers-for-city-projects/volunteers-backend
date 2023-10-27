@@ -228,11 +228,11 @@ MESSAGE_EMAIL_VALID = (
     f'"Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов"'
 )
 
-ORGANIZATION = 'Название: {}> ОГРН: {}> Город: {}'
-VOLUNTEER = 'Пользователь: {}> Город: {}> Навыки: {}'
-PROJECT = 'Название: {}> Организатор: {}> Категория: {}> Город: {}'
-PROJECTPARTICIPANTS = 'Проект: {}> Волонтер: {}'
-PROJECTINCOMES = 'Проект: {}> Волонтер: {}> Стаутс заявки {}'
+ORGANIZATION = ' {} ОГРН: {} {}'
+VOLUNTEER = 'Пользователь: {} Город: {} Навыки: {}'
+PROJECT = 'Название: {}, Организатор: {}, Категория: {}, Город: {}'
+PROJECTPARTICIPANTS = 'Проект: {} Волонтер: {}'
+PROJECTINCOMES = 'Проект: {} Волонтер: {} Стаутс заявки {}'
 
 MIN_LEN_TEXT_FEEDBACK = 10
 MAX_LEN_TEXT_FEEDBACK = 750
