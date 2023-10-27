@@ -34,6 +34,9 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd better-together
+          echo GMAIL_API_CLIENT_ID=${{ secrets.GMAIL_API_CLIENT_ID }} > .env
+          echo GMAIL_API_CLIENT_SECRET=${{ secrets.GMAIL_API_CLIENT_SECRET }} >> .env
+          echo GMAIL_API_REFRESH_TOKEN=${{ secrets.GMAIL_API_REFRESH_TOKEN }} >> .env
           sudo docker compose -f docker-compose.production.yml pull
           sudo docker compose -f docker-compose.production.yml down
           sudo docker compose -f docker-compose.production.yml up -d
