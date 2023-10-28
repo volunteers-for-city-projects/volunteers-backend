@@ -181,25 +181,12 @@ class Address(models.Model):
     """
 
     address_line = models.CharField(
-        max_length=100,
-        verbose_name='Адрес в одну строчку'
+        max_length=100, verbose_name='Адрес в одну строчку'
     )
-    street = models.CharField(
-        max_length=75,
-        verbose_name='Улица'
-    )
-    house = models.CharField(
-        max_length=5,
-        verbose_name='Дом'
-    )
-    block = models.CharField(
-        max_length=5,
-        verbose_name='Корпус'
-    )
-    building = models.CharField(
-        max_length=5,
-        verbose_name='Строение'
-    )
+    street = models.CharField(max_length=75, verbose_name='Улица')
+    house = models.CharField(max_length=5, verbose_name='Дом')
+    block = models.CharField(max_length=5, verbose_name='Корпус')
+    building = models.CharField(max_length=5, verbose_name='Строение')
 
     class Meta:
         verbose_name = 'Адрес проекта'
@@ -273,7 +260,7 @@ class Project(models.Model):
         on_delete=models.CASCADE,
         blank=True,
         null=True,
-        verbose_name='Адрес проведения проекта'
+        verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
         blank=True,

@@ -3,16 +3,14 @@ from djoser.views import UserViewSet
 from rest_framework.routers import DefaultRouter
 
 from api.views import (
-    AcceptIncomesView,
     CityViewSet,
     FeedbackCreateView,
     NewsViewSet,
     OrganizationViewSet,
     PlatformAboutView,
     ProjectCategoryViewSet,
-    ProjectIncomesView,
+    ProjectIncomesViewSet,
     ProjectViewSet,
-    RejectIncomesView,
     SearchListView,
     SkillsViewSet,
     TagViewSet,
@@ -31,6 +29,9 @@ router.register(
 router.register(r'cities', CityViewSet)
 router.register(r'skills', SkillsViewSet)
 router.register(r'tags', TagViewSet)
+router.register(
+    r'projects/incomes', ProjectIncomesViewSet, basename='project_incomes'
+)
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -58,13 +59,4 @@ urlpatterns = [
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
     path('volunteers/<int:pk>/profile/', VolunteerProfileView.as_view()),
-    path('projects/<int:pk>/incomes/', ProjectIncomesView.as_view()),
-    path(
-        'projects/<int:project_id>/incomes/<int:income_id>/accept/',
-        AcceptIncomesView.as_view(),
-    ),
-    path(
-        'projects/<int:project_id>/incomes/<int:income_id>/reject/',
-        RejectIncomesView.as_view(),
-    ),
 ]

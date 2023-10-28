@@ -24,6 +24,8 @@ from projects.models import (
 )
 from users.models import User
 
+from .validators import validate_status_incomes
+
 
 class AddressSerializer(serializers.ModelSerializer):
     """
@@ -274,7 +276,67 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = '__all__'
+        fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
+        read_only_fields = ('id', 'created_at')
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs['context']['request'].user
+        self.Meta.model._meta.get_field(
+            'project'
+        ).queryset = Project.objects.filter(organizer=user.organizer_profile)
+        super(ProjectIncomesSerializer, self).__init__(*args, **kwargs)
+
+    def create(self, validated_data):
+        project = validated_data['project']
+        volunteer = validated_data['volunteer']
+        status_incomes = validated_data.get(
+            'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
+        )
+        existing_application = ProjectIncomes.objects.filter(
+            project=project, volunteer=volunteer
+        ).first()
+        if existing_application:
+            existing_application.status_incomes = status_incomes
+            existing_application.save()
+            return existing_application
+        else:
+            project_income = ProjectIncomes.objects.create(
+                project=project,
+                volunteer=volunteer,
+                status_incomes=status_incomes,
+            )
+            return project_income
+
+    def delete(self, instance):
+        """
+        Удаляет заявку волонтера только если статус APPLICATION_SUBMITTED.
+        """
+        if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
+            instance.delete()
+        else:
+            raise serializers.ValidationError(
+                'Невозможно удалить заявку, если статус не "Заявка подана".'
+            )
+
+    def validate_status_incomes(self, value):
+        return validate_status_incomes(value)
+
+    def accept_application(self, instance):
+        """
+        Принимает заявку волонтера и добавляет его в участники проекта.
+        """
+        instance.status_incomes = ProjectIncomes.ACCEPTED
+        instance.save()
+        ProjectParticipants.objects.create(
+            project=instance.project, volunteer=instance.volunteer
+        )
+
+    def reject_application(self, instance):
+        """
+        Отклоняет заявку волонтера.
+        """
+        instance.status_incomes = ProjectIncomes.REJECTED
+        instance.save()
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):

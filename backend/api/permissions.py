@@ -25,3 +25,12 @@ class IsVolunteerPermission(BasePermission):
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_volunteer
+
+
+class IsOwnerOrReadOnlyPermission(BasePermission):
+    """Разрешает доступ только создателю объекта для изменения/удаления."""
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+            return True
+        return obj.volunteer == request.user
