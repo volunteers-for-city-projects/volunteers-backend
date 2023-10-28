@@ -1,0 +1,43 @@
+name: Deploy backend and gateway to production server
+
+on:
+    workflow_call:
+
+jobs:
+
+  deploy:
+    name: Deploy backend and gateway to production server
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        ref: develop
+
+    - name: Copy docker-compose.production.yml via ssh
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        source: "infra_bt/docker-compose.production.yml"
+        target: "better-together/"
+        strip_components: 1
+
+    - name: Executing remote ssh commands to deploy
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          cd better-together
+          sudo docker compose -f docker-compose.production.yml pull
+          sudo docker compose -f docker-compose.production.yml down
+          sudo docker compose -f docker-compose.production.yml up -d
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+          sudo docker compose -f dockr-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+          sudo docker system prune -f

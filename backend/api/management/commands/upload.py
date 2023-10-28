@@ -1,6 +1,9 @@
-import os
 import csv
+<<<<<<< HEAD
 from csv import DictReader
+=======
+import os
+>>>>>>> 145cef2c657d1e8b59ea20882053edb29da47293
 
 from django.core.management.base import BaseCommand
 
@@ -9,7 +12,6 @@ from projects.models import Category, Organization, Volunteer, VolunteerSkills, 
 from users.models import User
 
 # import os # путь на сервер расскоментировать
-
 
 def load_cities():
     print('loading cities...')

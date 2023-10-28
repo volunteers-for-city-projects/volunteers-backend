@@ -1,13 +1,24 @@
 import django_filters
 from django_filters.rest_framework import FilterSet, filters
+from taggit.models import Tag
 
 from content.models import City, Skills
-from projects.models import Project
+from projects.models import Category, Project
 
 # from django.core.validators import RegexValidator
-
-
 # from django.db.models import Q
+
+
+class ProjectCategoryFilter(FilterSet):
+    """
+    Класс для фильтрации городов по имени.
+    """
+
+    name = filters.CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Category
+        fields = ('name',)
 
 
 class CityFilter(FilterSet):
@@ -31,6 +42,18 @@ class SkillsFilter(FilterSet):
 
     class Meta:
         model = Skills
+        fields = ('name',)
+
+
+class TagFilter(FilterSet):
+    """
+    Класс для фильтрации тегов по имени.
+    """
+
+    name = filters.CharFilter(field_name='name', lookup_expr='icontains')
+
+    class Meta:
+        model = Tag
         fields = ('name',)
 
 

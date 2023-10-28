@@ -4,6 +4,8 @@ from projects.models import (
     Category,
     Organization,
     Project,
+    ProjectIncomes,
+    ProjectParticipants,
     Volunteer,
     VolunteerSkills,
 )
@@ -108,5 +110,36 @@ class ProjectAdmin(ModelAdmin):
         'category',
         'status_approve',
     )
+    save_on_top = True
+    empty_value_display = '-пусто-'
+
+
+@register(ProjectParticipants)
+class ProjectParticipantsAdmin(ModelAdmin):
+    list_display = (
+        'project',
+        'volunteer',
+    )
+    search_fields = (
+        'project',
+        'volunteer',
+    )
+    list_filter = ('project',)
+    save_on_top = True
+    empty_value_display = '-пусто-'
+
+
+@register(ProjectIncomes)
+class ProjectIncomesAdmin(ModelAdmin):
+    list_display = (
+        'project',
+        'volunteer',
+        'status_incomes',
+    )
+    search_fields = (
+        'name',
+        'volunteer',
+    )
+    list_filter = ('project',)
     save_on_top = True
     empty_value_display = '-пусто-'
