@@ -34,6 +34,14 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd better-together
+          sudo echo POSTGRES_DB=${{ vars.POSTGRES_DB }} > .env
+          sudo echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
+          sudo echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+          sudo echo DB_HOST=db >> .env
+          sudo echo DB_HOST=5432 >> .env
+          sudo echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+          sudo echo DEBUG=True >> .env
+          sudo echo ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }} >> .env
           echo GMAIL_API_CLIENT_ID=${{ secrets.GMAIL_API_CLIENT_ID }} > .env
           echo GMAIL_API_CLIENT_SECRET=${{ secrets.GMAIL_API_CLIENT_SECRET }} >> .env
           echo GMAIL_API_REFRESH_TOKEN=${{ secrets.GMAIL_API_REFRESH_TOKEN }} >> .env
