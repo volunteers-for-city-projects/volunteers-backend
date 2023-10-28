@@ -276,6 +276,33 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         model = ProjectIncomes
         fields = '__all__'
 
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        user = request.user
+
+        # Волонтер видит только свою заявку
+        if (
+            user.role == User.VOLUNTEER
+            and instance.volunteer != user.volunteer
+        ):
+            return {}
+
+        # Организатор видит все заявки по своему проекту
+        if (
+            user.role == User.ORGANIZER
+            and instance.project.organizer != user.organizer
+        ):
+            return {}
+
+        # Если пользователь - организатор, возвращаем полные данные
+        if user.role == User.ORGANIZER:
+            return super().to_representation(instance)
+
+        # Если пользователь - волонтер, скрываем чувствительные данные
+        data = super().to_representation(instance)
+        data['volunteer'] = {'id': instance.volunteer.id}
+        return data
+
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
     """

@@ -83,7 +83,6 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
-        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
@@ -175,40 +174,6 @@ class Category(models.Model):
         return self.name
 
 
-class Address(models.Model):
-    """
-    Адрес проведения проекта.
-    """
-
-    address_line = models.CharField(
-        max_length=100,
-        verbose_name='Адрес в одну строчку'
-    )
-    street = models.CharField(
-        max_length=75,
-        verbose_name='Улица'
-    )
-    house = models.CharField(
-        max_length=5,
-        verbose_name='Дом'
-    )
-    block = models.CharField(
-        max_length=5,
-        verbose_name='Корпус'
-    )
-    building = models.CharField(
-        max_length=5,
-        verbose_name='Строение'
-    )
-
-    class Meta:
-        verbose_name = 'Адрес проекта'
-        verbose_name_plural = 'Адреса проектов'
-
-    def __str__(self):
-        return self.address_line
-
-
 class Project(models.Model):
     """
     Модель представляет собой информацию о проекте.
@@ -230,7 +195,7 @@ class Project(models.Model):
         (PROJECT_COMPLETED, 'Проект завершен'),
     ]
 
-    STATUS_APPROVE = [
+    STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
         (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
@@ -268,16 +233,8 @@ class Project(models.Model):
         blank=False,
         verbose_name='Цель мероприятия',
     )
-    event_address = models.ForeignKey(
-        Address,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        verbose_name='Адрес проведения проекта'
-    )
     project_tasks = models.TextField(
-        blank=True,
-        null=True,
+        blank=False,
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
@@ -320,7 +277,7 @@ class Project(models.Model):
         choices=STATUS_PROJECT,
         null=False,
         blank=False,
-        default=OPEN,
+        default=EDITING,
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
@@ -338,8 +295,8 @@ class Project(models.Model):
     )
     status_approve = models.CharField(
         max_length=50,
-        choices=STATUS_APPROVE,
-        default=EDITING,
+        choices=STATUS_CHOICES,
+        default=PENDING,
         verbose_name='Статус проверки',
     )
 
