@@ -1,6 +1,10 @@
 import requests
+
+from django.db.models import Count
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -15,7 +19,15 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Category, Organization, Project, Volunteer
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    ProjectIncomes,
+    ProjectParticipants,
+    Volunteer,
+    VolunteerFavorite,
+)
 
 from .filters import (
     CityFilter,
@@ -24,7 +36,7 @@ from .filters import (
     SkillsFilter,
     TagFilter,
 )
-from .permissions import IsOrganizerPermission
+from .permissions import IsOrganizerPermission, IsVolunteerPermission
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
@@ -35,10 +47,12 @@ from .serializers import (
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
+    ProjectIncomesSerializer,
     ProjectSerializer,
     SkillsSerializer,
     TagSerializer,
     VolunteerCreateSerializer,
+    VolunteerFavoriteGetSerializer,
     VolunteerGetSerializer,
     VolunteerProfileSerializer,
     VolunteerUpdateSerializer,
@@ -81,7 +95,7 @@ class FeedbackCreateView(generics.CreateAPIView):
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
-    Представление для управления проектами.
+    Представление для проектов.
 
     Позволяет создавать, просматривать, обновлять и удалять проекты.
     Только авторизованные пользователи-организаторы, связанные с проектом
@@ -128,6 +142,55 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def add_to(self, volunteer, project, errors):
+        """
+        Добавить проект в избранное.
+        """
+        _, created = VolunteerFavorite.objects.get_or_create(
+            volunteer=volunteer, project=project
+        )
+        if not created:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = VolunteerFavoriteGetSerializer(instance=project)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, volunteer, project, errors):
+        """
+        Удалить проект из избранного.
+        """
+        cnt_deleted, _ = VolunteerFavorite.objects.filter(
+            volunteer=volunteer, project=project
+        ).delete()
+
+        if cnt_deleted == 0:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsVolunteerPermission,),
+    )
+    def favorite(self, request, **kwargs):
+        """
+        Избранные проекты волонтера.
+        """
+        project = get_object_or_404(Project, pk=kwargs.get('pk'))
+        volunteer = get_object_or_404(Volunteer, user=request.user)
+        if request.method == 'POST':
+            return self.add_to(
+                volunteer, project, 'Данный проект уже есть в избранном!'
+            )
+        return self.delete_from(
+            volunteer, project, 'Данного проекта нет в избранном!'
+        )
 
 
 class VolunteerViewSet(viewsets.ModelViewSet):
@@ -221,3 +284,115 @@ class UserActivationView(APIView):
             return Response(status=result.status_code)
         else:
             return Response(result.json(), status=result.status_code)
+
+
+class ProjectIncomesView(generics.RetrieveAPIView):
+    """
+    Представление для отображения информации о проекте и его заявках.
+
+    Параметры запроса:
+    - pk: первичный ключ проекта.
+
+    Методы:
+    - GET: Получает информацию о проекте и его заявках в формате JSON.
+
+    Возвращает JSON объект с информацией о проекте, включая:
+    - Название проекта.
+    - Дату начала приема заявок.
+    - Город проекта.
+    - Дату начала и окончания проекта.
+    - Общее количество заявок на проекте.
+    - Статус первой заявки на проекте.
+    - Дату и время подачи первой заявки.
+    - Информацию о волонтере, включая:
+      - Имя, Фамилию и Отчество волонтера.
+      - Навыки волонтера.
+    """
+
+    permission_classes = [IsOrganizerPermission]
+
+    def get(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, pk=self.kwargs['pk'])
+        if project.organization.contact_person != request.user:
+            message = "У вас нет разрешения на просмотр этой страницы."
+            return Response(
+                {"detail": message}, status=status.HTTP_403_FORBIDDEN
+            )
+        project_incomes = ProjectIncomes.objects.filter(project=project)
+        total_incomes = project_incomes.aggregate(total_incomes=Count('id'))[
+            'total_incomes'
+        ]
+        project_serializer = ProjectSerializer(project)
+        volunteers = project_incomes.values('volunteer')
+        volunteer_serializer = VolunteerGetSerializer(
+            Volunteer.objects.filter(pk__in=volunteers), many=True
+        )
+        response_data = {
+            'project_name': project_serializer.data['name'],
+            'application_date': project_serializer.data['application_date'],
+            'city': project_serializer.data['city'],
+            'start_datetime': project_serializer.data['start_datetime'],
+            'end_datetime': project_serializer.data['end_datetime'],
+            'total_incomes': total_incomes,
+            'volunteers': volunteer_serializer.data,
+        }
+        return Response(response_data, status=status.HTTP_200_OK)
+
+
+class AcceptIncomesView(generics.DestroyAPIView):
+    """
+    Представление для принятия заявки на участие в проекте.
+
+    Запись удаляется из заявок, волонтер добавляется в участники проекта.
+
+    """
+
+    lookup_field = 'project_id'
+    queryset = ProjectIncomes.objects.all()
+    serializer_class = ProjectIncomesSerializer
+
+    def delete(self, request, *args, **kwargs):
+        instance = self.get_object()
+        ProjectParticipants.objects.create(
+            project=instance.project, volunteer=instance.volunteer
+        )
+        instance.delete()
+        return Response(
+            {'status': 'Заявка принята'}, status=status.HTTP_200_OK
+        )
+
+
+class RejectIncomesView(generics.UpdateAPIView):
+    """
+    Представление для отклонения заявки на участие в проекте.
+
+    Меняется статус заявки на отклонен.
+    """
+
+    lookup_field = 'project_id'
+    serializer_class = ProjectIncomesSerializer
+
+    def get_object(self):
+        project_id = self.kwargs['project_id']
+        income_id = self.kwargs['income_id']
+        return get_object_or_404(
+            ProjectIncomes, id=income_id, project_id=project_id
+        )
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
+            instance.status_incomes = ProjectIncomes.REJECTED
+            instance.save()
+            return Response(
+                {'status': 'Заявка отклонена'}, status=status.HTTP_200_OK
+            )
+        if instance.status_incomes == ProjectIncomes.REJECTED:
+            return Response(
+                {'status': 'Заявка уже отклонена'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(
+            {'status': 'Невозможно отклонить эту заявку'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

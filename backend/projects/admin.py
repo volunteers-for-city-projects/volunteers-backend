@@ -85,8 +85,8 @@ class ProjectAdmin(ModelAdmin):
         'name',
         'description',
         'picture',
-        'start_datatime',
-        'end_datatime',
+        'start_datetime',
+        'end_datetime',
         'application_date',
         'event_purpose',
         'organization',
@@ -98,13 +98,13 @@ class ProjectAdmin(ModelAdmin):
     )
     search_fields = (
         'name',
-        'start_datatime',
+        'start_datetime',
         'organization',
         'city',
         'category',
     )
     list_filter = (
-        'start_datatime',
+        'start_datetime',
         'organization',
         'city',
         'category',
