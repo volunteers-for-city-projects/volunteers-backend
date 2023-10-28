@@ -1,9 +1,11 @@
+import requests
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from taggit.models import Tag
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
@@ -15,7 +17,7 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import (  # ProjectParticipants,
+from projects.models import (
     Category,
     Organization,
     Project,
@@ -321,60 +323,14 @@ class VolunteerProfileView(generics.RetrieveAPIView):
 #         return Response(response_data, status=status.HTTP_200_OK)
 
 
-class ProjectIncomesView(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    mixins.DestroyModelMixin,
-    viewsets.GenericViewSet,
-):
-    """
-    Представление для отображения информации о проекте и его заявках.
-
-    Параметры запроса:
-    - pk: первичный ключ проекта.
-
-    Методы:
-    - GET: Получает информацию о проекте и его заявках в формате JSON.
-
-    Возвращает JSON объект с информацией о проекте и соответствующих
-    заявках включая:
-    - Название проекта.
-    - Дату начала приема заявок.
-    - Город проекта.
-    - Дату начала и окончания проекта.
-    - Список заявок волонтеров.
-    """
-
-    serializer_class = ProjectIncomesSerializer
-
-    def get_queryset(self):
-        project_id = self.kwargs['pk']
-        # Отфильтровать заявки только для данного проекта
-        return ProjectIncomes.objects.filter(project_id=project_id)
-
-    def get(self, request, *args, **kwargs):
-        project = self.get_object()
-        serializer = self.get_serializer(project)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(detail=True, methods=['post'])
-    def accept_application(self, request, pk=None):
-        instance = self.get_object()
-        # Логика для принятия заявки
-        instance.status = ProjectIncomes.ACCEPTED
-        instance.save()
-        return Response(
-            {'status': 'Заявка принята'}, status=status.HTTP_200_OK
-        )
-
-    @action(detail=True, methods=['post'])
-    def reject_application(self, request, pk=None):
-        instance = self.get_object()
-        # Логика для отклонения заявки
-        instance.status = ProjectIncomes.REJECTED
-        instance.save()
-        return Response(
-            {'status': 'Заявка отклонена'}, status=status.HTTP_200_OK
-        )
+class UserActivationView(APIView):
+    def get(self, request, uid, token):
+        protocol = 'https://' if request.is_secure() else 'http://'
+        web_url = protocol + request.get_host()
+        post_url = web_url + f"/api/auth/activation/{uid}/{token}/"
+        post_data = {'uid': uid, 'token': token}
+        result = requests.post(post_url, data=post_data)
+        if result.status_code == 204:
+            return Response(status=result.status_code)
+        else:
+            return Response(result.json(), status=result.status_code)
