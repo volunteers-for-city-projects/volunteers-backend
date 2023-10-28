@@ -16,6 +16,7 @@ from api.views import (
     SearchListView,
     SkillsViewSet,
     TagViewSet,
+    UserActivationView,
     VolunteerProfileView,
     VolunteerViewSet,
 )
@@ -53,6 +54,13 @@ urlpatterns = [
         UserViewSet.as_view({'post': 'reset_password_confirm'}),
         name='password_reset_confirm',
     ),
+    path(
+        r'auth/activation/<uid>/<token>/',
+        UserViewSet.as_view({'post': 'activation'}),
+        name='user-activation'),
+    path(
+        r'auth/activate/<uid>/<token>/',
+        UserActivationView.as_view()),
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
