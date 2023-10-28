@@ -35,11 +35,11 @@ jobs:
         script: |
           cd better-together
           rm -f .env
-          echo POSTGRES_DB: ${{ vars.POSTGRES_DB }} > .env
-          echo POSTGRES_USER: ${{ vars.POSTGRES_USER }} >> .env
-          echo POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }} >> .env
+          echo POSTGRES_DB=${{ vars.POSTGRES_DB }} > .env
+          echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
           echo DB_HOST=db >> .env
-          echo DB_HOST=5432 >> .env
+          echo DB_PORT=5432 >> .env
           echo SECRET_KEY='${{ secrets.SECRET_KEY }}' >> .env
           echo DEBUG=True >> .env
           echo ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }} >> .env
