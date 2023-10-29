@@ -3,6 +3,7 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from taggit.models import Tag
 
+from api.utils import create_user
 from content.models import (
     City,
     Feedback,
@@ -322,11 +323,10 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         skills = validated_data.pop('skills')
         user_data = validated_data.pop('user')
-        # Убираем из параметров роль, если она указана в JSON явно
-        if user_data.get('role') is not None:
-            user_data.pop('role')
 
-        user = User.objects.create_user(role=User.VOLUNTEER, **user_data)
+        user_data['role'] = User.VOLUNTEER
+
+        user = create_user(self, UserCreateSerializer, user_data)
         volunteer = Volunteer.objects.create(user=user, **validated_data)
         self.create_skills(skills, volunteer)
 
@@ -334,7 +334,7 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Volunteer
-        exclude = ('id',)
+        fields = '__all__'
 
 
 class VolunteerUpdateSerializer(VolunteerCreateSerializer):
@@ -391,11 +391,10 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         user_data = validated_data.pop('contact_person')
-        # Убираем из параметров роль, если она указана в JSON явно
-        if user_data.get('role') is not None:
-            user_data.pop('role')
 
-        user = User.objects.create_user(role=User.ORGANIZER, **user_data)
+        user_data['role'] = User.ORGANIZER
+
+        user = create_user(self, UserCreateSerializer, user_data)
         organization = Organization.objects.create(
             contact_person=user, **validated_data
         )
@@ -404,7 +403,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        exclude = ('id',)
+        fields = '__all__'
 
 
 class OgranizationUpdateSerializer(OgranizationCreateSerializer):

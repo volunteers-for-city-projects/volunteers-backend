@@ -7,7 +7,12 @@ from django.db import models
 from content.models import City, Skills
 from users.models import User
 
-from .validators import validate_ogrn, validate_phone_number, validate_telegram
+from .validators import (
+    validate_ogrn,
+    validate_phone_number,
+    validate_telegram,
+    validate_title,
+)
 
 
 class Organization(models.Model):
@@ -22,7 +27,8 @@ class Organization(models.Model):
         verbose_name='Пользователь',
     )
     title = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_TITLE,
+        validators=[validate_title],
         blank=False,
         verbose_name='Название',
     )
