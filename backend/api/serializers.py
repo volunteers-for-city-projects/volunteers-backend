@@ -322,7 +322,7 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Volunteer
-        exclude = ('id',)
+        fields = '__all__'
 
 
 class VolunteerUpdateSerializer(VolunteerCreateSerializer):
@@ -391,7 +391,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Organization
-        exclude = ('id',)
+        fields = '__all__'
 
 
 class OgranizationUpdateSerializer(OgranizationCreateSerializer):
