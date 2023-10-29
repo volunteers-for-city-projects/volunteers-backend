@@ -194,7 +194,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'organizer_provides',
             'organization',
             'city',
-            'category',
+            'categories',
             'status_project',
             'photo_previous_event',
             'participants',

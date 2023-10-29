@@ -101,11 +101,6 @@ class Volunteer(models.Model):
         blank=True,
         verbose_name='Фото',
     )
-    # activities = models.ForeignKey(
-    #     Activities,
-    #     on_delete=models.CASCADE,
-    #     verbose_name='Активности',
-    # )
     date_of_birth = models.DateField(
         blank=False,
         null=False,
@@ -340,7 +335,7 @@ class Project(models.Model):
 
     def __str__(self):
         return settings.PROJECT.format(
-            self.name, self.organization, self.category, self.city
+            self.name, self.organization, self.categories, self.city
         )
 
 
