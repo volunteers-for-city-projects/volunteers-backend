@@ -13,7 +13,7 @@ def load_cities():
     cities = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/cities.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'cities.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'cities.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = csv.reader(file)
         for row in reader:
@@ -30,7 +30,7 @@ def load_skills():
     skills = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/skills.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'skills.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'skills.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = csv.reader(file)
         for row in reader:
@@ -82,7 +82,7 @@ def load_valuations():
     valuations = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'valuations.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'valuations.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = csv.reader(file)
         for row in reader:
