@@ -1,9 +1,6 @@
-import csv
-<<<<<<< HEAD
-from csv import DictReader
-=======
 import os
->>>>>>> 145cef2c657d1e8b59ea20882053edb29da47293
+from csv import DictReader
+
 
 from django.core.management.base import BaseCommand
 
@@ -18,7 +15,7 @@ def load_cities():
     cities = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/cities.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'cities.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'cities.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -35,7 +32,7 @@ def load_skills():
     skills = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/skills.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'skills.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'skills.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -52,7 +49,7 @@ def load_categories():
     categories = []
   #  путь для заливки на сервер не проверен
     # file_path = "/app/data/categories.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'categories.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'categories.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -71,7 +68,7 @@ def load_news():
     news = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/news.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'news.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'news.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -92,7 +89,7 @@ def load_valuations():
     valuations = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'valuations.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'valuations.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -110,7 +107,7 @@ def load_users():
     users = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'users.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'users.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -131,7 +128,7 @@ def load_organizations():
     organizations = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'organizations.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'organizations.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -153,7 +150,7 @@ def load_volunteers():
     volunteers = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'volunteers.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'volunteers.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -174,7 +171,7 @@ def load_volunteerskills():
     volunteerskills = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/valuations.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'volunteerskills.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'volunteerskills.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -192,7 +189,7 @@ def load_projects():
     projects = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/projects.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'projects.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'projects.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
@@ -220,7 +217,7 @@ def load_projectparticipants():
     projectparticipants = []
     #  путь для заливки на сервер не проверен
     # file_path = "/app/data/projectparticipants.csv"   путь для заливки на сервер
-    file_path = os.path.join(os.getcwd(), '..', 'data', 'projectparticipants.csv')
+    file_path = os.path.join(os.getcwd(), 'data', 'projectparticipants.csv')
     with open(file_path, encoding="utf-8-sig") as file:
         reader = DictReader(file)
         for row in reader:
