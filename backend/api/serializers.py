@@ -1,5 +1,4 @@
 from django.db import transaction
-from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from taggit.models import Tag
@@ -24,6 +23,12 @@ from projects.models import (
     VolunteerSkills,
 )
 from users.models import User
+
+from .validators import (
+    validate_dates,
+    validate_reception_status,
+    validate_status_incomes,
+)
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -153,62 +158,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     # category = ProjectCategorySerializer()
     # city = CitySerializer()
 
-    def validate_dates(self, start, end, application):
-        """
-        Проверяет корректность дат.
-        """
-        now = timezone.now()
-
-        if start <= now:
-            raise serializers.ValidationError(
-                'Дата начала мероприятия должна быть в будущем.'
-            )
-        if end <= start:
-            raise serializers.ValidationError(
-                'Дата окончания мероприятия должна быть позже даты начала.'
-            )
-        if not (application <= start <= end):
-            raise serializers.ValidationError(
-                'Дата подачи заявки должна быть позже или равна дате начала '
-                'мероприятия и позже даты начала и раньше даты окончания.'
-            )
-        return start, end, application
-
-    def validate_reception_status(
-        self, status_project, application_date, start_datetime, end_datetime
-    ):
-        """
-        Проверяет, что статус "Прием откликов окончен" можно устанавливать
-        только после указанной даты подачи заявки.
-        """
-        now = timezone.now()
-        if status_project == Project.RECEPTION_OF_RESPONSES_CLOSED:
-            if application_date > now:
-                raise serializers.ValidationError(
-                    'Статус проекта "Прием откликов окончен" можно установить'
-                    'только после окончания подачи заявок.'
-                )
-        if status_project == Project.READY_FOR_FEEDBACK:
-            if now < start_datetime or now < application_date:
-                raise serializers.ValidationError(
-                    'Статус проекта "Готов к откликам" можно установить до '
-                    'начала мероприятия и до даты подачи заявки.'
-                )
-        if status_project == Project.PROJECT_COMPLETED:
-            if now < end_datetime:
-                raise serializers.ValidationError(
-                    'Статус проекта "Проект завершен" можно установить '
-                    'только после окончания мероприятия.'
-                )
-
     def validate(self, data):
         start_datetime = data['start_datetime']
         end_datetime = data['end_datetime']
         application_date = data['application_date']
         status_project = data.get('status_project')
 
-        self.validate_dates(start_datetime, end_datetime, application_date)
-        self.validate_reception_status(
+        validate_dates(start_datetime, end_datetime, application_date)
+        validate_reception_status(
             status_project, application_date, start_datetime, end_datetime
         )
         return data
@@ -275,7 +232,62 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = '__all__'
+        fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
+        read_only_fields = ('id', 'created_at')
+
+    def create(self, validated_data):
+        project = validated_data['project']
+        volunteer = validated_data['volunteer']
+        status_incomes = validated_data.get(
+            'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
+        )
+        existing_application = ProjectIncomes.objects.filter(
+            project=project, volunteer=volunteer
+        ).first()
+        if existing_application:
+            existing_application.status_incomes = status_incomes
+            existing_application.save()
+            return existing_application
+        else:
+            project_income = ProjectIncomes.objects.create(
+                project=project,
+                volunteer=volunteer,
+                status_incomes=status_incomes,
+            )
+            return project_income
+
+    def delete(self, instance):
+        """
+        Удаляет заявку волонтера только если статус APPLICATION_SUBMITTED.
+        """
+        if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
+            instance.delete()
+        else:
+            raise serializers.ValidationError(
+                'Невозможно удалить заявку, если статус не "Заявка подана".'
+            )
+
+    def validate_status_incomes(self, value):
+        return validate_status_incomes(value)
+
+    def accept_incomes(self, instance):
+        """
+        Принимает заявку волонтера и добавляет его в участники проекта.
+        """
+        instance.status_incomes = ProjectIncomes.ACCEPTED
+        instance.save()
+        ProjectParticipants.objects.create(
+            project=instance.project, volunteer=instance.volunteer
+        )
+        return {'message': 'Заявка волонтера принята.'}
+
+    def reject_incomes(self, instance):
+        """
+        Отклоняет заявку волонтера.
+        """
+        instance.status_incomes = ProjectIncomes.REJECTED
+        instance.save()
+        return {'message': 'Заявка волонтера отклонена.'}
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
