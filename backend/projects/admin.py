@@ -91,27 +91,38 @@ class ProjectAdmin(ModelAdmin):
         'event_purpose',
         'organization',
         'city',
-        'category',
+        'get_categories_display',
         'photo_previous_event',
         'participants',
         'status_approve',
+        'get_skills_display',
     )
     search_fields = (
         'name',
         'start_datetime',
         'organization',
         'city',
-        'category',
+        'categories',
     )
     list_filter = (
         'start_datetime',
         'organization',
         'city',
-        'category',
+        'categories',
         'status_approve',
     )
     save_on_top = True
     empty_value_display = '-пусто-'
+
+    def get_categories_display(self, obj):
+        return ", ".join([category.name for category in obj.categories.all()])
+
+    get_categories_display.short_description = 'Categories'
+
+    def get_skills_display(self, obj):
+        return ", ".join([skill.name for skill in obj.skills.all()])
+
+    get_skills_display.short_description = 'Skills'
 
 
 @register(ProjectParticipants)

@@ -10,7 +10,7 @@ class IsAdmin(BasePermission):
         return request.user.is_authenticated and request.user.is_admin
 
 
-class IsOrganizerPermission(BasePermission):
+class IsOrganizer(BasePermission):
     """Разрешает доступ только пользователям с ролью организатор."""
 
     def has_permission(self, request, view):
@@ -20,7 +20,7 @@ class IsOrganizerPermission(BasePermission):
         )
 
 
-class IsOrganizerOfRequestedProject(BasePermission):
+class IsOrganizerOfProject(BasePermission):
     """
     Разрешает доступ только организатору проекта.
     """
@@ -33,11 +33,27 @@ class IsOrganizerOfRequestedProject(BasePermission):
         )
 
 
-class IsVolunteerPermission(BasePermission):
+class IsVolunteer(BasePermission):
     """Разрешает доступ только пользователям с ролью волонтер."""
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_volunteer
+        return (
+            request.user.is_authenticated
+            and request.user.role == User.VOLUNTEER
+        )
+
+
+class IsVolunteerOfIncomes(BasePermission):
+    """
+    Разрешает доступ только волонтеру, который создал заявку.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated
+            and request.user.is_volunteer
+            and obj.volunteer == request.user.volunteers
+        )
 
 
 class IsOwnerOrReadOnlyPermission(BasePermission):

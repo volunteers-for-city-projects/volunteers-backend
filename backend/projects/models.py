@@ -275,12 +275,6 @@ class Project(models.Model):
         blank=True,
         verbose_name='Организатор предоставляет',
     )
-    # event_card
-    # activities = models.ManyToManyField(
-    #     Activities,
-    #     related_name='projects',
-    #     verbose_name='Активности',
-    # )
     organization = models.ForeignKey(
         Organization,
         blank=False,
@@ -295,12 +289,11 @@ class Project(models.Model):
         related_name='project',
         verbose_name='Город',
     )
-    category = models.ForeignKey(
+    categories = models.ManyToManyField(
         Category,
         blank=False,
-        on_delete=models.CASCADE,
         related_name='projects',
-        verbose_name='Категория',
+        verbose_name='Категории',
     )
     status_project = models.CharField(
         max_length=100,
@@ -329,6 +322,13 @@ class Project(models.Model):
         default=EDITING,
         verbose_name='Статус проверки',
     )
+    skills = models.ManyToManyField(
+        Skills,
+        blank=True,
+        through='ProjectSkills',
+        related_name='projects',
+        verbose_name='Навыки',
+    )
 
     class Meta:
         verbose_name = 'Проект'
@@ -338,6 +338,15 @@ class Project(models.Model):
         return settings.PROJECT.format(
             self.name, self.organization, self.category, self.city
         )
+
+
+class ProjectSkills(models.Model):
+    """
+    Модель представляет собой связь между проектом и навыками.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
 
 
 class ProjectParticipants(models.Model):

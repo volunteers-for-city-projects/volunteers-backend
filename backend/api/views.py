@@ -31,11 +31,7 @@ from .filters import (
     SkillsFilter,
     TagFilter,
 )
-from .permissions import (
-    IsOrganizerOfRequestedProject,
-    IsOrganizerPermission,
-    IsVolunteerPermission,
-)
+from .permissions import IsOrganizer, IsOrganizerOfProject, IsVolunteer
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
@@ -105,7 +101,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    permission_classes = [IsOrganizerPermission]
+    permission_classes = [IsOrganizer]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -175,7 +171,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        permission_classes=(IsVolunteerPermission,),
+        permission_classes=(IsVolunteer,),
     )
     def favorite(self, request, **kwargs):
         """
@@ -289,7 +285,7 @@ class ProjectIncomesViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['post'],
-        permission_classes=[IsOrganizerOfRequestedProject],
+        permission_classes=[IsOrganizerOfProject],
     )
     def accept_incomes(self, request, pk):
         """
@@ -309,7 +305,7 @@ class ProjectIncomesViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['put'],
-        permission_classes=[IsOrganizerOfRequestedProject],
+        permission_classes=[IsOrganizerOfProject],
     )
     def reject_incomes(self, request, pk):
         """
