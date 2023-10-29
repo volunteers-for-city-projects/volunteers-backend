@@ -20,6 +20,19 @@ class IsOrganizerPermission(BasePermission):
         )
 
 
+class IsOrganizerOfRequestedProject(BasePermission):
+    """
+    Разрешает доступ только организатору проекта.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        return (
+            request.user.is_authenticated
+            and request.user.is_organizer
+            and obj.project.organization.contact_person == request.user
+        )
+
+
 class IsVolunteerPermission(BasePermission):
     """Разрешает доступ только пользователям с ролью волонтер."""
 

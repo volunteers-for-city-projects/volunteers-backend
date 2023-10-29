@@ -34,6 +34,7 @@ from .filters import (
     TagFilter,
 )
 from .permissions import (
+    IsOrganizerOfRequestedProject,
     IsOrganizerPermission,
     IsOwnerOrReadOnlyPermission,
     IsVolunteerPermission,
@@ -274,13 +275,56 @@ class VolunteerProfileView(generics.RetrieveAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProjectIncomesView(generics.CreateAPIView):
+class ProjectIncomesViewSet(viewsets.ModelViewSet):
+    """
+    Представление для заявок волонтеров в рамках проектов.
+    """
+
     queryset = ProjectIncomes.objects.all()
     serializer_class = ProjectIncomesSerializer
-    permission_classes = [IsVolunteerPermission]
 
+    def perform_create(self, serializer):
+        serializer.save()
 
-class ProjectIncomesDetailView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = ProjectIncomes.objects.all()
-    serializer_class = ProjectIncomesSerializer
-    permission_classes = [IsOwnerOrReadOnlyPermission]
+    def perform_destroy(self, instance):
+        instance.delete()
+
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsOrganizerOfRequestedProject],
+    )
+    def accept_incomes(self, request, pk):
+        """
+        Принимает заявку волонтера и добавляет его в участники проекта.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка волонтера
+        была принята и он добавлен в участники проекта.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.accept_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=['put'],
+        permission_classes=[IsOrganizerOfRequestedProject],
+    )
+    def reject_incomes(self, request, pk):
+        """
+        Отклоняет заявку волонтера.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка
+        волонтера была отклонена.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.reject_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)

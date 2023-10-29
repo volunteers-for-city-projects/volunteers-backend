@@ -279,13 +279,6 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
         read_only_fields = ('id', 'created_at')
 
-    def __init__(self, *args, **kwargs):
-        user = kwargs['context']['request'].user
-        self.Meta.model._meta.get_field(
-            'project'
-        ).queryset = Project.objects.filter(organizer=user.organizer_profile)
-        super(ProjectIncomesSerializer, self).__init__(*args, **kwargs)
-
     def create(self, validated_data):
         project = validated_data['project']
         volunteer = validated_data['volunteer']
@@ -321,7 +314,7 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
     def validate_status_incomes(self, value):
         return validate_status_incomes(value)
 
-    def accept_application(self, instance):
+    def accept_incomes(self, instance):
         """
         Принимает заявку волонтера и добавляет его в участники проекта.
         """
@@ -330,13 +323,15 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         ProjectParticipants.objects.create(
             project=instance.project, volunteer=instance.volunteer
         )
+        return {'message': 'Заявка волонтера принята.'}
 
-    def reject_application(self, instance):
+    def reject_incomes(self, instance):
         """
         Отклоняет заявку волонтера.
         """
         instance.status_incomes = ProjectIncomes.REJECTED
         instance.save()
+        return {'message': 'Заявка волонтера отклонена.'}
 
 
 class VolunteerGetSerializer(serializers.ModelSerializer):
