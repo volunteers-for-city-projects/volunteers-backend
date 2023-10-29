@@ -89,7 +89,6 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
-        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
@@ -102,11 +101,6 @@ class Volunteer(models.Model):
         blank=True,
         verbose_name='Фото',
     )
-    # activities = models.ForeignKey(
-    #     Activities,
-    #     on_delete=models.CASCADE,
-    #     verbose_name='Активности',
-    # )
     date_of_birth = models.DateField(
         blank=False,
         null=False,
@@ -223,7 +217,7 @@ class Project(models.Model):
         (PROJECT_COMPLETED, 'Проект завершен'),
     ]
 
-    STATUS_APPROVE = [
+    STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
         (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
@@ -269,8 +263,7 @@ class Project(models.Model):
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=True,
-        null=True,
+        blank=False,
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
@@ -306,7 +299,7 @@ class Project(models.Model):
         choices=STATUS_PROJECT,
         null=False,
         blank=False,
-        default=OPEN,
+        default=EDITING,
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
@@ -324,8 +317,8 @@ class Project(models.Model):
     )
     status_approve = models.CharField(
         max_length=50,
-        choices=STATUS_APPROVE,
-        default=EDITING,
+        choices=STATUS_CHOICES,
+        default=PENDING,
         verbose_name='Статус проверки',
     )
     skills = models.ManyToManyField(
@@ -342,7 +335,7 @@ class Project(models.Model):
 
     def __str__(self):
         return settings.PROJECT.format(
-            self.name, self.organization, self.category, self.city
+            self.name, self.organization, self.categories, self.city
         )
 
 
