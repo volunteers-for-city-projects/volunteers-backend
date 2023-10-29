@@ -221,22 +221,22 @@ SWAGGER_SETTINGS = {
 }
 
 # Constants
-MAX_LENGTH_NAME = 50
+# MAX_LENGTH_NAME = 50
 MAX_LENGTH_SLUG = 50
 MAX_LENGTH_PASSWORD = 20
 MAX_LENGTH_EMAIL = 256
-MIN_LENGTH_EMAIL = 5
+MIN_LENGTH_EMAIL = 6
 
 MAX_LEN_CHAR = 250
 LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
-MAX_LEN_NAME = 200
+MAX_LEN_NAME = 100
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
-MESSAGE_PHONE_REGEX = 'Номер должен начинаться с +7 и содержать {} цифр.'
+MESSAGE_PHONE_REGEX = f'Номер должен начинаться с +7 и содержать {LEN_PHONE} символов.'
 MESSAGE_EMAIL_VALID = (
-    f'"Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов"'
+    f'Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов'
 )
 
 ORGANIZATION = ' {} ОГРН: {} {}'
@@ -256,10 +256,20 @@ MESSAGE_NAME_USER_VALID = (
 )
 MESSAGE_NAME_USER_CYRILLIC = 'Введите имя кириллицей'
 
+MIN_LEN_TITLE = 2
+MAX_LEN_TITLE = 100
+MESSAGE_TITLE_VALID = (
+    f'Длина поля от {MIN_LEN_TITLE} до {MAX_LEN_TITLE} символов'
+)
+MESSAGE_TITLE_CYRILLIC = 'Введите название кириллицей'
+
 OGRN_ERROR_MESSAGE = 'ОГРН должен состоять из 13 цифр.'
 MAX_LENGTH_ROLE = 50
 MIN_LEN_TELEGRAM = 5
 MAX_LEN_TELEGRAM = 32
-TELEGRAM_ERROR_MESSAGE = 'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. От {} до {} символов.'
+TELEGRAM_ERROR_MESSAGE = (
+    f'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. '
+    f'Длина поля от {MIN_LEN_TELEGRAM} до {MAX_LEN_TELEGRAM} символов.'
+)
 
 VALUATIONS_ON_PAGE_ABOUT_US = 4

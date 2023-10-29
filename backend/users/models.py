@@ -49,19 +49,19 @@ class User(AbstractUser):
     username = None
     first_name = models.CharField(
         verbose_name='Имя',
-        max_length=settings.MAX_LENGTH_NAME,
+        max_length=settings.MAX_LEN_NAME_USER,
         blank=False,
         validators=[NameUserValidator.validate_name],
     )
     second_name = models.CharField(
         verbose_name='Отчество',
-        max_length=settings.MAX_LENGTH_NAME,
+        max_length=settings.MAX_LEN_NAME_USER,
         blank=False,
         validators=[NameUserValidator.validate_name],
     )
     last_name = models.CharField(
         verbose_name='Фамилия',
-        max_length=settings.MAX_LENGTH_NAME,
+        max_length=settings.MAX_LEN_NAME_USER,
         blank=False,
         validators=[NameUserValidator.validate_name],
     )
