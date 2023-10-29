@@ -20,10 +20,10 @@ def validate_ogrn(value):
         regex=r'^\d{13}$', message=settings.OGRN_ERROR_MESSAGE
     )
     ogrn_max_length = MaxLengthValidator(
-        13, message=settings.OGRN_ERROR_MESSAGE
+        settings.LEN_OGRN, message=settings.OGRN_ERROR_MESSAGE
     )
     ogrn_min_length = MinLengthValidator(
-        13, message=settings.OGRN_ERROR_MESSAGE
+        settings.LEN_OGRN, message=settings.OGRN_ERROR_MESSAGE
     )
 
     regex_validator(value)
@@ -44,20 +44,20 @@ def validate_phone_number(value):
     """
     regex_validator = RegexValidator(
         regex=r'^\+7\d{10}$',
-        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
+        message=settings.MESSAGE_PHONE_REGEX,
     )
-    phone_max_length = MaxLengthValidator(
-        settings.LEN_PHONE,
-        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
-    )
-    phone_min_length = MinLengthValidator(
-        settings.LEN_PHONE,
-        message=settings.MESSAGE_PHONE_REGEX.format(settings.LEN_PHONE),
-    )
+    # phone_max_length = MaxLengthValidator(
+    #     settings.LEN_PHONE,
+    #     message=settings.MESSAGE_PHONE_REGEX,
+    # )
+    # phone_min_length = MinLengthValidator(
+    #     settings.LEN_PHONE,
+    #     message=settings.MESSAGE_PHONE_REGEX,
+    # )
 
     regex_validator(value)
-    phone_max_length(value)
-    phone_min_length(value)
+    # phone_max_length(value)
+    # phone_min_length(value)
 
 
 def validate_telegram(value):
@@ -75,21 +75,37 @@ def validate_telegram(value):
     """
     regex_validator = RegexValidator(
         regex=r'^@[\w]+$',
-        message=settings.TELEGRAM_ERROR_MESSAGE.format(
-            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
-        ),
+        message=settings.TELEGRAM_ERROR_MESSAGE,
     )
     min_length_validator = MinLengthValidator(
         settings.MIN_LEN_TELEGRAM,
-        message=settings.TELEGRAM_ERROR_MESSAGE.format(
-            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
-        ),
+        message=settings.TELEGRAM_ERROR_MESSAGE,
     )
     max_length_validator = MaxLengthValidator(
         settings.MAX_LEN_TELEGRAM,
-        message=settings.TELEGRAM_ERROR_MESSAGE.format(
-            settings.MIN_LEN_TELEGRAM, settings.MAX_LEN_TELEGRAM
-        ),
+        message=settings.TELEGRAM_ERROR_MESSAGE,
+    )
+
+    regex_validator(value)
+    min_length_validator(value)
+    max_length_validator(value)
+
+
+def validate_title(value):
+    """
+    Валидирует длину и символы в Названии проекта.
+    """
+    regex_validator = RegexValidator(
+        regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!]+$',
+        message=settings.MESSAGE_TITLE_CYRILLIC,
+    )
+    min_length_validator = MinLengthValidator(
+        settings.MIN_LEN_TITLE,
+        message=settings.MESSAGE_TITLE_VALID,
+    )
+    max_length_validator = MaxLengthValidator(
+        settings.MAX_LEN_TITLE,
+        message=settings.MESSAGE_TITLE_VALID,
     )
 
     regex_validator(value)

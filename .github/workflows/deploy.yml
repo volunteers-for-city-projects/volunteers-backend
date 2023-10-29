@@ -26,7 +26,7 @@ jobs:
         strip_components: 1
 
     - name: Executing remote ssh commands to deploy
-      uses: appleboy/ssh-action@v1.0.0
+      uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USER }}
@@ -34,19 +34,18 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }}
         script: |
           cd better-together
-          sudo rm -f .env
-          sudo touch .env
-          sudo echo POSTGRES_DB=${{ vars.POSTGRES_DB }} >> .env
-          sudo echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
-          sudo echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-          sudo echo DB_HOST=db >> .env
-          sudo echo DB_HOST=5432 >> .env
-          sudo echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-          sudo echo DEBUG=True >> .env
-          sudo echo ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }} >> .env
-          sudo echo GMAIL_API_CLIENT_ID=${{ secrets.GMAIL_API_CLIENT_ID }} > .env
-          sudo echo GMAIL_API_CLIENT_SECRET=${{ secrets.GMAIL_API_CLIENT_SECRET }} >> .env
-          sudo echo GMAIL_API_REFRESH_TOKEN=${{ secrets.GMAIL_API_REFRESH_TOKEN }} >> .env
+          rm -f .env
+          echo POSTGRES_DB=${{ vars.POSTGRES_DB }} > .env
+          echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+          echo DB_HOST=db >> .env
+          echo DB_PORT=5432 >> .env
+          echo SECRET_KEY='${{ secrets.SECRET_KEY }}' >> .env
+          echo DEBUG=True >> .env
+          echo ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }} >> .env
+          echo GMAIL_API_CLIENT_ID=${{ secrets.GMAIL_API_CLIENT_ID }} >> .env
+          echo GMAIL_API_CLIENT_SECRET=${{ secrets.GMAIL_API_CLIENT_SECRET }} >> .env
+          echo GMAIL_API_REFRESH_TOKEN=${{ secrets.GMAIL_API_REFRESH_TOKEN }} >> .env
           sudo docker compose -f docker-compose.production.yml pull
           sudo docker compose -f docker-compose.production.yml down
           sudo docker compose -f docker-compose.production.yml up -d

@@ -33,7 +33,7 @@ from .filters import (
     SkillsFilter,
     TagFilter,
 )
-from .permissions import IsOrganizerPermission, IsVolunteerPermission
+from .permissions import IsOrganizer, IsOrganizerOfProject, IsVolunteer
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
@@ -103,7 +103,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    permission_classes = [IsOrganizerPermission]
+    permission_classes = [IsOrganizer]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -173,7 +173,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     @action(
         ['POST', 'DELETE'],
         detail=True,
-        permission_classes=(IsVolunteerPermission,),
+        permission_classes=(IsVolunteer,),
     )
     def favorite(self, request, **kwargs):
         """
@@ -270,59 +270,6 @@ class VolunteerProfileView(generics.RetrieveAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-# class ProjectIncomesView(generics.RetrieveAPIView):
-#     """
-#     Представление для отображения информации о проекте и его заявках.
-
-#     Параметры запроса:
-#     - pk: первичный ключ проекта.
-
-#     Методы:
-#     - GET: Получает информацию о проекте и его заявках в формате JSON.
-
-#     Возвращает JSON объект с информацией о проекте, включая:
-#     - Название проекта.
-#     - Дату начала приема заявок.
-#     - Город проекта.
-#     - Дату начала и окончания проекта.
-#     - Общее количество заявок на проекте.
-#     - Статус первой заявки на проекте.
-#     - Дату и время подачи первой заявки.
-#     - Информацию о волонтере, включая:
-#       - Имя, Фамилию и Отчество волонтера.
-#       - Навыки волонтера.
-#     """
-
-#     permission_classes = [IsOrganizerPermission]
-
-#     def get(self, request, *args, **kwargs):
-#         project = get_object_or_404(Project, pk=self.kwargs['pk'])
-#         if project.organization.contact_person != request.user:
-#             message = "У вас нет разрешения на просмотр этой страницы."
-#             return Response(
-#                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
-#             )
-#         project_incomes = ProjectIncomes.objects.filter(project=project)
-#         total_incomes = project_incomes.aggregate(total_incomes=Count('id'))[
-#             'total_incomes'
-#         ]
-#         project_serializer = ProjectSerializer(project)
-#         volunteers = project_incomes.values('volunteer')
-#         volunteer_serializer = VolunteerGetSerializer(
-#             Volunteer.objects.filter(pk__in=volunteers), many=True
-#         )
-#         response_data = {
-#             'project_name': project_serializer.data['name'],
-#             'application_date': project_serializer.data['application_date'],
-#             'city': project_serializer.data['city'],
-#             'start_datetime': project_serializer.data['start_datetime'],
-#             'end_datetime': project_serializer.data['end_datetime'],
-#             'total_incomes': total_incomes,
-#             'volunteers': volunteer_serializer.data,
-#         }
-#         return Response(response_data, status=status.HTTP_200_OK)
-
-
 class UserActivationView(APIView):
     def get(self, request, uid, token):
         protocol = 'https://' if request.is_secure() else 'http://'
@@ -334,3 +281,58 @@ class UserActivationView(APIView):
             return Response(status=result.status_code)
         else:
             return Response(result.json(), status=result.status_code)
+
+
+class ProjectIncomesViewSet(viewsets.ModelViewSet):
+    """
+    Представление для заявок волонтеров в рамках проектов.
+    """
+
+    queryset = ProjectIncomes.objects.all()
+    serializer_class = ProjectIncomesSerializer
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        instance.delete()
+
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsOrganizerOfProject],
+    )
+    def accept_incomes(self, request, pk):
+        """
+        Принимает заявку волонтера и добавляет его в участники проекта.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка волонтера
+        была принята и он добавлен в участники проекта.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.accept_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=['put'],
+        permission_classes=[IsOrganizerOfProject],
+    )
+    def reject_incomes(self, request, pk):
+        """
+        Отклоняет заявку волонтера.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка
+        волонтера была отклонена.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.reject_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)

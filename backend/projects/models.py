@@ -7,7 +7,12 @@ from django.db import models
 from content.models import City, Skills
 from users.models import User
 
-from .validators import validate_ogrn, validate_phone_number, validate_telegram
+from .validators import (
+    validate_ogrn,
+    validate_phone_number,
+    validate_telegram,
+    validate_title,
+)
 
 
 class Organization(models.Model):
@@ -22,7 +27,8 @@ class Organization(models.Model):
         verbose_name='Пользователь',
     )
     title = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_TITLE,
+        validators=[validate_title],
         blank=False,
         verbose_name='Название',
     )
@@ -174,6 +180,27 @@ class Category(models.Model):
         return self.name
 
 
+class Address(models.Model):
+    """
+    Адрес проведения проекта.
+    """
+
+    address_line = models.CharField(
+        max_length=100, verbose_name='Адрес в одну строчку'
+    )
+    street = models.CharField(max_length=75, verbose_name='Улица')
+    house = models.CharField(max_length=5, verbose_name='Дом')
+    block = models.CharField(max_length=5, verbose_name='Корпус')
+    building = models.CharField(max_length=5, verbose_name='Строение')
+
+    class Meta:
+        verbose_name = 'Адрес проекта'
+        verbose_name_plural = 'Адреса проектов'
+
+    def __str__(self):
+        return self.address_line
+
+
 class Project(models.Model):
     """
     Модель представляет собой информацию о проекте.
@@ -233,6 +260,13 @@ class Project(models.Model):
         blank=False,
         verbose_name='Цель мероприятия',
     )
+    event_address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name='Адрес проведения проекта',
+    )
     project_tasks = models.TextField(
         blank=False,
         verbose_name='Задачи проекта',
@@ -245,12 +279,6 @@ class Project(models.Model):
         blank=True,
         verbose_name='Организатор предоставляет',
     )
-    # event_card
-    # activities = models.ManyToManyField(
-    #     Activities,
-    #     related_name='projects',
-    #     verbose_name='Активности',
-    # )
     organization = models.ForeignKey(
         Organization,
         blank=False,
@@ -265,12 +293,11 @@ class Project(models.Model):
         related_name='project',
         verbose_name='Город',
     )
-    category = models.ForeignKey(
+    categories = models.ManyToManyField(
         Category,
         blank=False,
-        on_delete=models.CASCADE,
         related_name='projects',
-        verbose_name='Категория',
+        verbose_name='Категории',
     )
     status_project = models.CharField(
         max_length=100,
@@ -299,6 +326,13 @@ class Project(models.Model):
         default=PENDING,
         verbose_name='Статус проверки',
     )
+    skills = models.ManyToManyField(
+        Skills,
+        blank=True,
+        through='ProjectSkills',
+        related_name='projects',
+        verbose_name='Навыки',
+    )
 
     class Meta:
         verbose_name = 'Проект'
@@ -308,6 +342,15 @@ class Project(models.Model):
         return settings.PROJECT.format(
             self.name, self.organization, self.category, self.city
         )
+
+
+class ProjectSkills(models.Model):
+    """
+    Модель представляет собой связь между проектом и навыками.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
 
 
 class ProjectParticipants(models.Model):
