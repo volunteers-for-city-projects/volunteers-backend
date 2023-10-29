@@ -1,4 +1,3 @@
-from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
@@ -21,7 +20,6 @@ from projects.models import (
     Organization,
     Project,
     ProjectIncomes,
-    ProjectParticipants,
     Volunteer,
     VolunteerFavorite,
 )
@@ -36,7 +34,6 @@ from .filters import (
 from .permissions import (
     IsOrganizerOfRequestedProject,
     IsOrganizerPermission,
-    IsOwnerOrReadOnlyPermission,
     IsVolunteerPermission,
 )
 from .serializers import (
