@@ -1,14 +1,21 @@
 import os
 from csv import DictReader
 
-
 from django.core.management.base import BaseCommand
 
-from content.models import City, Skills, News, Valuation
-from projects.models import Category, Organization, Volunteer, VolunteerSkills, ProjectParticipants, Project
+from content.models import City, News, Skills, Valuation
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    ProjectParticipants,
+    Volunteer,
+    VolunteerSkills,
+)
 from users.models import User
 
 # import os # путь на сервер расскоментировать
+
 
 def load_cities():
     print('loading cities...')
@@ -27,6 +34,7 @@ def load_cities():
         City.objects.bulk_create(cities)
     print('cities loaded!')
 
+
 def load_skills():
     print('loading skills...')
     skills = []
@@ -44,10 +52,11 @@ def load_skills():
         Skills.objects.bulk_create(skills)
     print('skills loaded!')
 
+
 def load_categories():
     print('loading categories...')
     categories = []
-  #  путь для заливки на сервер не проверен
+    #  путь для заливки на сервер не проверен
     # file_path = "/app/data/categories.csv"   путь для заливки на сервер
     file_path = os.path.join(os.getcwd(), 'data', 'categories.csv')
     with open(file_path, encoding="utf-8-sig") as file:
@@ -62,6 +71,7 @@ def load_categories():
             categories.append(category)
             Category.objects.bulk_create(categories)
     print('categories loaded!')
+
 
 def load_news():
     print('loading news...')
@@ -84,6 +94,7 @@ def load_news():
         News.objects.bulk_create(news)
     print('news loaded!')
 
+
 def load_valuations():
     print('loading valuations...')
     valuations = []
@@ -101,6 +112,7 @@ def load_valuations():
             valuations.append(valuation)
         Valuation.objects.bulk_create(valuations)
     print('valuations loaded!')
+
 
 def load_users():
     print('loading users...')
@@ -122,6 +134,7 @@ def load_users():
             users.append(user)
         User.objects.bulk_create(users)
     print('users loaded!')
+
 
 def load_organizations():
     print('loading organizations...')
@@ -145,6 +158,7 @@ def load_organizations():
         Organization.objects.bulk_create(organizations)
     print('organizations loaded!')
 
+
 def load_volunteers():
     print('loading volunteers...')
     volunteers = []
@@ -166,6 +180,7 @@ def load_volunteers():
         Volunteer.objects.bulk_create(volunteers)
     print('volunteers loaded!')
 
+
 def load_volunteerskills():
     print('loading volunteerskills...')
     volunteerskills = []
@@ -183,6 +198,7 @@ def load_volunteerskills():
             volunteerskills.append(volunteerskill)
         VolunteerSkills.objects.bulk_create(volunteerskills)
     print('volunteerskills loaded!')
+
 
 def load_projects():
     print('loading projects...')
@@ -205,12 +221,13 @@ def load_projects():
                 city_id=row['city_id'],
                 category_id=row['category_id'],
                 status_project=row['status_project'],
-                #participants=row['participants'],
+                # participants=row['participants'],
                 status_approve=row['status_approve'],
             )
             projects.append(project)
         Project.objects.bulk_create(projects)
     print('projects loaded!')
+
 
 def load_projectparticipants():
     print('loading projectparticipants...')
@@ -230,8 +247,8 @@ def load_projectparticipants():
         ProjectParticipants.objects.bulk_create(projectparticipants)
     print('projectparticipants loaded!')
 
-class Command(BaseCommand):
 
+class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             load_cities()
