@@ -199,6 +199,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'photo_previous_event',
             'participants',
             'status_approve',
+            'skills',
         )
 
 
@@ -236,6 +237,9 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         read_only_fields = ('id', 'created_at')
 
     def create(self, validated_data):
+        """
+        Создает заявку волонтера.
+        """
         project = validated_data['project']
         volunteer = validated_data['volunteer']
         status_incomes = validated_data.get(
@@ -245,16 +249,13 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             project=project, volunteer=volunteer
         ).first()
         if existing_application:
-            existing_application.status_incomes = status_incomes
-            existing_application.save()
-            return existing_application
-        else:
-            project_income = ProjectIncomes.objects.create(
-                project=project,
-                volunteer=volunteer,
-                status_incomes=status_incomes,
-            )
-            return project_income
+            return 'Заявка волонтера на этот проект уже существует.'
+        project_income = ProjectIncomes.objects.create(
+            project=project,
+            volunteer=volunteer,
+            status_incomes=status_incomes,
+        )
+        return 'Заявка волонтера успешно создана.', project_income
 
     def delete(self, instance):
         """
@@ -262,10 +263,10 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         """
         if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
             instance.delete()
-        else:
-            raise serializers.ValidationError(
-                'Невозможно удалить заявку, если статус не "Заявка подана".'
-            )
+            return 'Заявка волонтера удалена.'
+        raise serializers.ValidationError(
+            'Невозможно удалить заявку, если статус не "Заявка подана".'
+        )
 
     def validate_status_incomes(self, value):
         return validate_status_incomes(value)
@@ -274,12 +275,22 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         """
         Принимает заявку волонтера и добавляет его в участники проекта.
         """
+        existing_participant = ProjectParticipants.objects.filter(
+            project=instance.project, volunteer=instance.volunteer
+        ).first()
+        if existing_participant:
+            raise serializers.ValidationError(
+                'Этот волонтер уже является участником проекта.'
+            )
         instance.status_incomes = ProjectIncomes.ACCEPTED
         instance.save()
         ProjectParticipants.objects.create(
             project=instance.project, volunteer=instance.volunteer
         )
-        return {'message': 'Заявка волонтера принята.'}
+        return {
+            'message': 'Заявка волонтера принята и добавлена в '
+            'участники проекта.'
+        }
 
     def reject_incomes(self, instance):
         """
@@ -293,25 +304,18 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         user = request.user
 
-        # Волонтер видит только свою заявку
         if (
             user.role == User.VOLUNTEER
             and instance.volunteer != user.volunteer
         ):
             return {}
-
-        # Организатор видит все заявки по своему проекту
         if (
             user.role == User.ORGANIZER
             and instance.project.organizer != user.organizer
         ):
             return {}
-
-        # Если пользователь - организатор, возвращаем полные данные
         if user.role == User.ORGANIZER:
             return super().to_representation(instance)
-
-        # Если пользователь - волонтер, скрываем чувствительные данные
         data = super().to_representation(instance)
         data['volunteer'] = {'id': instance.volunteer.id}
         return data
