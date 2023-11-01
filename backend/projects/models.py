@@ -205,6 +205,7 @@ class Project(models.Model):
     EDITING = 'editing'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    CANCELED_BY_ORGANIZER = 'canceled_by_organizer'
     OPEN = 'open'
     READY_FOR_FEEDBACK = 'ready_for_feedback'
     RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
@@ -222,6 +223,7 @@ class Project(models.Model):
         (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
+        (CANCELED_BY_ORGANIZER, 'Отменено организатором'),
     ]
 
     name = models.CharField(
