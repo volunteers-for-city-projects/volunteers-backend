@@ -244,15 +244,20 @@ class Project(models.Model):
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата начало мероприятия',
+        verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата окончания мероприятия',
+        verbose_name='Дата и время, окончания мероприятия',
     )
-    application_date = models.DateTimeField(verbose_name='Дата подачи заявки')
+    start_date_application = models.DateTimeField(
+        verbose_name='Дата и время, начало подачи заявок'
+    )
+    end_date_application = models.DateTimeField(
+        verbose_name='Дата и время, окончания подачи заявок'
+    )
     event_purpose = models.TextField(
         blank=False,
         verbose_name='Цель мероприятия',
