@@ -298,11 +298,6 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     # permission_classes = [IsVolunteer]
 
     # @permission_classes([IsVolunteer])
-    # @action(
-    #     detail=True,
-    #     methods=['post'],
-    #     permission_classes=[IsVolunteer],
-    # )
     def create(self, request):
         """
         Создает новую заявку волонтера для участия в проекте.
