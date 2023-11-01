@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_extra_fields.fields import Base64ImageField
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 from taggit.models import Tag
@@ -344,6 +345,7 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
+    photo = Base64ImageField()
 
     def create_skills(self, skills, volunteer):
         data = []
@@ -419,6 +421,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     """
 
     contact_person = UserCreateSerializer()
+    photo = Base64ImageField()
 
     @transaction.atomic
     def create(self, validated_data):
