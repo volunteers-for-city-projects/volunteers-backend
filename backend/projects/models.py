@@ -205,6 +205,7 @@ class Project(models.Model):
     EDITING = 'editing'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    CANCELED_BY_ORGANIZER = 'canceled_by_organizer'
     OPEN = 'open'
     READY_FOR_FEEDBACK = 'ready_for_feedback'
     RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
@@ -222,6 +223,7 @@ class Project(models.Model):
         (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
+        (CANCELED_BY_ORGANIZER, 'Отменено организатором'),
     ]
 
     name = models.CharField(
@@ -242,15 +244,20 @@ class Project(models.Model):
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата начало мероприятия',
+        verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата окончания мероприятия',
+        verbose_name='Дата и время, окончания мероприятия',
     )
-    application_date = models.DateTimeField(verbose_name='Дата подачи заявки')
+    start_date_application = models.DateTimeField(
+        verbose_name='Дата и время, начало подачи заявок'
+    )
+    end_date_application = models.DateTimeField(
+        verbose_name='Дата и время, окончания подачи заявок'
+    )
     event_purpose = models.TextField(
         blank=False,
         verbose_name='Цель мероприятия',
