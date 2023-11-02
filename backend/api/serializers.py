@@ -149,6 +149,16 @@ class ProjectCategorySerializer(serializers.ModelSerializer):
         exclude = ('description',)
 
 
+class SkillsSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения навыков.
+    """
+
+    class Meta:
+        model = Skills
+        fields = ('id', 'name')
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для проекта.
@@ -157,6 +167,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     event_address = AddressSerializer()
     # category = ProjectCategorySerializer()
     # city = CitySerializer()
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skills.objects.all(), many=True
+    )
 
     def validate(self, data):
         start_datetime = data['start_datetime']
@@ -202,16 +215,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
-
-
-class SkillsSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для отображения навыков.
-    """
-
-    class Meta:
-        model = Skills
-        fields = ('id', 'name')
 
 
 class TagSerializer(serializers.ModelSerializer):
