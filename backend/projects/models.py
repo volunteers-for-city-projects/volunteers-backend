@@ -301,7 +301,6 @@ class Project(models.Model):
     )
     categories = models.ManyToManyField(
         Category,
-        blank=False,
         related_name='projects',
         verbose_name='Категории',
     )
@@ -318,11 +317,8 @@ class Project(models.Model):
         null=True,
         verbose_name='Фото с мероприятия',
     )
-    participants = models.ForeignKey(
+    participants = models.ManyToManyField(
         'ProjectParticipants',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
         related_name='projects',
         verbose_name='Участники',
     )
@@ -334,7 +330,6 @@ class Project(models.Model):
     )
     skills = models.ManyToManyField(
         Skills,
-        blank=True,
         through='ProjectSkills',
         related_name='projects',
         verbose_name='Навыки',
@@ -350,6 +345,26 @@ class Project(models.Model):
         )
 
 
+class ProjectCategories(models.Model):
+    """
+    Модель представляет собой список категорий проекта.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        default_related_name = 'project_category'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'category'],
+                name='%(app_label)s%(class)s' '_unique_project_category',
+            )
+        ]
+        verbose_name = 'Категория проекта'
+        verbose_name_plural = 'Категории проекта'
+
+
 class ProjectSkills(models.Model):
     """
     Модель представляет собой связь между проектом и навыками.
@@ -357,6 +372,17 @@ class ProjectSkills(models.Model):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
+
+    class Meta:
+        default_related_name = 'project_skills'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'skill'],
+                name='%(app_label)s%(class)s' '_unique_project_skills',
+            )
+        ]
+        verbose_name = 'Навык проекта'
+        verbose_name_plural = 'Навыки проекта'
 
 
 class ProjectParticipants(models.Model):
