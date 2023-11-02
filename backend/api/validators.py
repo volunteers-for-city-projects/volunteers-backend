@@ -45,7 +45,7 @@ def validate_dates(event_start_date, event_end_date, application_date):
     return event_start_date, event_end_date, application_date
 
 
-# нужно передалть с учетом, изменений реализации статусов.
+# нужно переделать с учетом, изменений реализации статусов.
 def validate_reception_status(
     status_project, application_date, start_datetime, end_datetime
 ):
