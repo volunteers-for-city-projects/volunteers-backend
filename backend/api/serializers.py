@@ -348,7 +348,7 @@ class VolunteerCreateSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
-    photo = Base64ImageField()
+    photo = Base64ImageField(required=False)
 
     def create_skills(self, skills, volunteer):
         data = []
@@ -424,7 +424,7 @@ class OgranizationCreateSerializer(serializers.ModelSerializer):
     """
 
     contact_person = UserCreateSerializer()
-    photo = Base64ImageField()
+    photo = Base64ImageField(required=False)
 
     @transaction.atomic
     def create(self, validated_data):
