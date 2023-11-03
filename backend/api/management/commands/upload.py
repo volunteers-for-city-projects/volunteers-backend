@@ -16,7 +16,6 @@ from projects.models import (
 )
 from users.models import User
 
-
 TABLES_DICT = {
     City: 'cities.csv',
     Skills: 'skills.csv',
@@ -46,7 +45,8 @@ class Command(BaseCommand):
                     model.objects.bulk_create(model(**data) for data in reader)
                     self.stdout.write(
                         self.style.SUCCESS(
-                            f'Successfully load table of model {model.__name__}'
+                            f'Successfully load table'
+                            f'of model {model.__name__}'
                         )
                     )
             except Exception as error:
@@ -271,7 +271,7 @@ class Command(BaseCommand):
 #     print('loading projectparticipants...')
 #     projectparticipants = []
 #     #  путь для заливки на сервер не проверен
-#     # file_path = "/app/data/projectparticipants.csv"   путь для заливки на сервер
+#     # file_path = "/app/data/projectparticipants.csv"   путь для заливки на
 #     file_path = os.path.join(os.getcwd(), 'data', 'projectparticipants.csv')
 #     with open(file_path, encoding="utf-8-sig") as file:
 #         reader = DictReader(file)
