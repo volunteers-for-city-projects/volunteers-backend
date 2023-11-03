@@ -160,6 +160,45 @@ class SkillsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
+class ProjectGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для чтения данных проекта.
+    """
+
+    event_address = AddressSerializer(read_only=True)
+    # category = ProjectCategorySerializer(read_only=True)
+    # city = CitySerializer(read_only=True)
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skills.objects.all(), many=True, read_only=True
+    )
+
+    class Meta:
+        model = Project
+        fields = (
+            'name',
+            'description',
+            'picture',
+            'start_datetime',
+            'end_datetime',
+            'start_date_application',
+            'end_date_application',
+            'event_purpose',
+            'event_address',
+            'project_tasks',
+            'project_events',
+            'organizer_provides',
+            'organization',
+            'city',
+            'categories',
+            'status_project',
+            'photo_previous_event',
+            'participants',
+            'status_approve',
+            'skills',
+        )
+        read_only_fields = fields
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     """
     Сериализатор для проекта.
