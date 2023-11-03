@@ -1,8 +1,12 @@
+import re
+
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
     RegexValidator,
 )
+from django.utils.regex_helper import _lazy_re_compile
 
 from backend.settings import (
     MAX_LEN_NAME_USER,
@@ -35,3 +39,55 @@ class NameUserValidator:
         cls.name_regex(value)
         cls.name_max_length(value)
         cls.name_min_length(value)
+
+
+class PasswordMaximumLengthValidator:
+    """
+    Проверка максимальной длинны вводимого пароля.
+    """
+
+    def __init__(self, max_length=20):
+        self.max_length = max_length
+
+    def validate(self, password, user=None):
+        if len(password) > self.max_length:
+            raise ValidationError(
+                (
+                    'Пароль слишком длинный. Максимальная длинна: '
+                    '%(max_length)s символов.' % {
+                        'max_length': self.max_length}
+                ),
+                code='password_too_long',
+                params={'max_length': self.max_length},
+            )
+
+    def get_help_text(self):
+        return (
+            'Пароль слишком длинный. Максимальная длинна: '
+            '%(max_length)s символов.' % {'max_length': self.max_length}
+        ),
+
+
+class PasswordRegexValidator:
+    """
+    Проверка вводимого пароля на соответствие регулярному выражению.
+    """
+
+    def __init__(self, regex=None):
+        self.regex = _lazy_re_compile(regex, re.IGNORECASE)
+
+    def validate(self, password, user=None):
+        if self.regex is not None and not self.regex.match(password):
+            raise ValidationError(
+                (
+                    "В пароле допускаются цифры, буквы и спецсимовлы "
+                    "-!#$%&'*+/=?^_;():@,.<>`{}"
+                ),
+                code="password_incorect",
+            )
+
+    def get_help_text(self):
+        return (
+            "В пароле допускаются цифры, буквы и спецсимовлы "
+            "-!#$%&'*+/=?^_;():@,.<>`{}"
+        ),

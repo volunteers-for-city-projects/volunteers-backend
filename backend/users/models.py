@@ -3,6 +3,8 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+from core.validators import EmailValidator
+
 from .validators import NameUserValidator
 
 
@@ -69,7 +71,8 @@ class User(AbstractUser):
         verbose_name='Электронная почта',
         max_length=settings.MAX_LENGTH_EMAIL,
         unique=True,
-        blank=False
+        blank=False,
+        validators=[EmailValidator.validate_email],
     )
     role = models.CharField(
         verbose_name='Роль',
