@@ -16,13 +16,6 @@ from projects.models import (
 )
 from users.models import User
 
-# import os # путь на сервер расскоментировать
-
-# import csv
-
-# from django.conf import settings
-
-
 TABLES_DICT = {
     City: 'cities.csv',
     Skills: 'skills.csv',
@@ -50,12 +43,17 @@ class Command(BaseCommand):
                 with open(file_path, encoding="utf-8-sig") as csv_file:
                     reader = DictReader(csv_file)
                     model.objects.bulk_create(model(**data) for data in reader)
-                    self.stdout.write(self.style.SUCCESS(f'Successfully load table of model {model.__name__}'))
+                    self.stdout.write(
+                        self.style.SUCCESS(
+                            f'Successfully load table'
+                            f'of model {model.__name__}'
+                        )
+                    )
             except Exception as error:
-                print(f'{error} for model {model.__name__}')
+                self.stdout.write(
+                    self.style.ERROR(f'{error} for model {model.__name__}')
+                )
         self.stdout.write(self.style.SUCCESS('Finish load data'))
-
-
 
 # def load_cities():
 #     print('loading cities...')
@@ -273,7 +271,7 @@ class Command(BaseCommand):
 #     print('loading projectparticipants...')
 #     projectparticipants = []
 #     #  путь для заливки на сервер не проверен
-#     # file_path = "/app/data/projectparticipants.csv"   путь для заливки на сервер
+#     # file_path = "/app/data/projectparticipants.csv"   путь для заливки на
 #     file_path = os.path.join(os.getcwd(), 'data', 'projectparticipants.csv')
 #     with open(file_path, encoding="utf-8-sig") as file:
 #         reader = DictReader(file)
