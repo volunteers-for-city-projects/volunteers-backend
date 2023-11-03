@@ -7,7 +7,12 @@ from django.db import models
 from content.models import City, Skills
 from users.models import User
 
-from .validators import validate_ogrn, validate_phone_number, validate_telegram
+from .validators import (
+    validate_ogrn,
+    validate_phone_number,
+    validate_telegram,
+    validate_title,
+)
 
 
 class Organization(models.Model):
@@ -22,7 +27,8 @@ class Organization(models.Model):
         verbose_name='Пользователь',
     )
     title = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_TITLE,
+        validators=[validate_title],
         blank=False,
         verbose_name='Название',
     )
@@ -95,11 +101,6 @@ class Volunteer(models.Model):
         blank=True,
         verbose_name='Фото',
     )
-    # activities = models.ForeignKey(
-    #     Activities,
-    #     on_delete=models.CASCADE,
-    #     verbose_name='Активности',
-    # )
     date_of_birth = models.DateField(
         blank=False,
         null=False,
@@ -108,7 +109,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ДД.ММ.ГГГГ", пример: "01 01 2000".',
+        help_text='Введите дату в формате "ГГГГ.ММ.ДД", пример: "2000 01 01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
@@ -174,14 +175,37 @@ class Category(models.Model):
         return self.name
 
 
+class Address(models.Model):
+    """
+    Адрес проведения проекта.
+    """
+
+    address_line = models.CharField(
+        max_length=100, verbose_name='Адрес в одну строчку'
+    )
+    street = models.CharField(max_length=75, verbose_name='Улица')
+    house = models.CharField(max_length=5, verbose_name='Дом')
+    block = models.CharField(max_length=5, verbose_name='Корпус')
+    building = models.CharField(max_length=5, verbose_name='Строение')
+
+    class Meta:
+        verbose_name = 'Адрес проекта'
+        verbose_name_plural = 'Адреса проектов'
+
+    def __str__(self):
+        return self.address_line
+
+
 class Project(models.Model):
     """
     Модель представляет собой информацию о проекте.
     """
 
     APPROVED = 'approved'
+    EDITING = 'editing'
     PENDING = 'pending'
     REJECTED = 'rejected'
+    CANCELED_BY_ORGANIZER = 'canceled_by_organizer'
     OPEN = 'open'
     READY_FOR_FEEDBACK = 'ready_for_feedback'
     RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
@@ -196,8 +220,10 @@ class Project(models.Model):
 
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
+        (EDITING, 'Черновик'),
         (PENDING, 'На рассмотрении'),
         (REJECTED, 'Отклонено'),
+        (CANCELED_BY_ORGANIZER, 'Отменено организатором'),
     ]
 
     name = models.CharField(
@@ -214,29 +240,51 @@ class Project(models.Model):
         blank=True,
         verbose_name='Картинка',
     )
-    start_datatime = models.DateTimeField(
+    start_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата начало мероприятия',
+        verbose_name='Дата и время, начало мероприятия',
     )
-    end_datatime = models.DateTimeField(
+    end_datetime = models.DateTimeField(
         blank=False,
         auto_now=False,
         auto_now_add=False,
-        verbose_name='Дата окончания мероприятия',
+        verbose_name='Дата и время, окончания мероприятия',
     )
-    application_date = models.DateTimeField(verbose_name='Дата подачи заявки')
+    start_date_application = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Дата и время, начало подачи заявок',
+    )
+    end_date_application = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name='Дата и время, окончания подачи заявок',
+    )
     event_purpose = models.TextField(
         blank=False,
         verbose_name='Цель мероприятия',
     )
-    # event_card
-    # activities = models.ManyToManyField(
-    #     Activities,
-    #     related_name='projects',
-    #     verbose_name='Активности',
-    # )
+    event_address = models.ForeignKey(
+        Address,
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        verbose_name='Адрес проведения проекта',
+    )
+    project_tasks = models.TextField(
+        blank=False,
+        verbose_name='Задачи проекта',
+    )
+    project_events = models.TextField(
+        blank=True,
+        verbose_name='Мероприятия на проекте',
+    )
+    organizer_provides = models.TextField(
+        blank=True,
+        verbose_name='Организатор предоставляет',
+    )
     organization = models.ForeignKey(
         Organization,
         blank=False,
@@ -251,19 +299,17 @@ class Project(models.Model):
         related_name='project',
         verbose_name='Город',
     )
-    category = models.ForeignKey(
+    categories = models.ManyToManyField(
         Category,
-        blank=False,
-        on_delete=models.CASCADE,
         related_name='projects',
-        verbose_name='Категория',
+        verbose_name='Категории',
     )
     status_project = models.CharField(
         max_length=100,
         choices=STATUS_PROJECT,
-        null=True,
-        blank=True,
-        default=None,
+        null=False,
+        blank=False,
+        default=EDITING,
         verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
@@ -271,11 +317,8 @@ class Project(models.Model):
         null=True,
         verbose_name='Фото с мероприятия',
     )
-    participants = models.ForeignKey(
+    participants = models.ManyToManyField(
         'ProjectParticipants',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True,
         related_name='projects',
         verbose_name='Участники',
     )
@@ -285,6 +328,12 @@ class Project(models.Model):
         default=PENDING,
         verbose_name='Статус проверки',
     )
+    skills = models.ManyToManyField(
+        Skills,
+        through='ProjectSkills',
+        related_name='projects',
+        verbose_name='Навыки',
+    )
 
     class Meta:
         verbose_name = 'Проект'
@@ -292,8 +341,48 @@ class Project(models.Model):
 
     def __str__(self):
         return settings.PROJECT.format(
-            self.name, self.organization, self.category, self.city
+            self.name, self.organization, self.categories, self.city
         )
+
+
+class ProjectCategories(models.Model):
+    """
+    Модель представляет собой список категорий проекта.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        default_related_name = 'project_category'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'category'],
+                name='%(app_label)s%(class)s' '_unique_project_category',
+            )
+        ]
+        verbose_name = 'Категория проекта'
+        verbose_name_plural = 'Категории проекта'
+
+
+class ProjectSkills(models.Model):
+    """
+    Модель представляет собой связь между проектом и навыками.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
+
+    class Meta:
+        default_related_name = 'project_skills'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'skill'],
+                name='%(app_label)s%(class)s' '_unique_project_skills',
+            )
+        ]
+        verbose_name = 'Навык проекта'
+        verbose_name_plural = 'Навыки проекта'
 
 
 class ProjectParticipants(models.Model):
@@ -374,3 +463,23 @@ class ProjectIncomes(models.Model):
         return settings.PROJECTINCOMES.format(
             self.project, self.volunteer, self.status_incomes
         )
+
+
+class VolunteerFavorite(models.Model):
+    """
+    Модель избранных проектов волонтеров.
+    """
+
+    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('volunteer', 'project'),
+                name='unique_volunteer_favorites',
+            ),
+        )
+
+    def __str__(self):
+        return f'{self.volunteer} {self.project}'

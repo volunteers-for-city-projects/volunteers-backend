@@ -1,0 +1,55 @@
+name: Deploy backend and gateway to production server
+
+on:
+    workflow_call:
+
+jobs:
+
+  deploy:
+    name: Deploy backend and gateway to production server
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        ref: develop
+
+    - name: Copy docker-compose.production.yml via ssh
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        source: "infra_bt/docker-compose.production.yml"
+        target: "better-together/"
+        strip_components: 1
+
+    - name: Executing remote ssh commands to deploy
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.SSH_KEY }}
+        passphrase: ${{ secrets.SSH_PASSPHRASE }}
+        script: |
+          cd better-together
+          rm -f .env
+          echo POSTGRES_DB=${{ vars.POSTGRES_DB }} > .env
+          echo POSTGRES_USER=${{ vars.POSTGRES_USER }} >> .env
+          echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+          echo DB_HOST=db >> .env
+          echo DB_PORT=5432 >> .env
+          echo SECRET_KEY='${{ secrets.SECRET_KEY }}' >> .env
+          echo DEBUG=True >> .env
+          echo ALLOWED_HOSTS=${{ vars.ALLOWED_HOSTS }} >> .env
+          echo GMAIL_API_CLIENT_ID=${{ secrets.GMAIL_API_CLIENT_ID }} >> .env
+          echo GMAIL_API_CLIENT_SECRET=${{ secrets.GMAIL_API_CLIENT_SECRET }} >> .env
+          echo GMAIL_API_REFRESH_TOKEN=${{ secrets.GMAIL_API_REFRESH_TOKEN }} >> .env
+          sudo docker compose -f docker-compose.production.yml pull
+          sudo docker compose -f docker-compose.production.yml down
+          sudo docker compose -f docker-compose.production.yml up -d
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py migrate
+          sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
+          sudo docker compose -f dockr-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+          sudo docker system prune -f

@@ -85,33 +85,49 @@ class ProjectAdmin(ModelAdmin):
         'name',
         'description',
         'picture',
-        'start_datatime',
-        'end_datatime',
-        'application_date',
+        'start_datetime',
+        'end_datetime',
+        'start_date_application',
+        'end_date_application',
         'event_purpose',
         'organization',
         'city',
-        'category',
+        'get_categories_display',
         'photo_previous_event',
-        'participants',
+        'get_participants_display',
         'status_approve',
+        'get_skills_display',
     )
     search_fields = (
         'name',
-        'start_datatime',
+        'start_datetime',
         'organization',
         'city',
-        'category',
+        'categories',
     )
     list_filter = (
-        'start_datatime',
+        'start_datetime',
         'organization',
         'city',
-        'category',
+        'categories',
         'status_approve',
     )
     save_on_top = True
     empty_value_display = '-пусто-'
+
+    def get_categories_display(self, obj):
+        return ", ".join([category.name for category in obj.categories.all()])
+
+    get_categories_display.short_description = 'Categories'
+
+    def get_skills_display(self, obj):
+        return ", ".join([skill.name for skill in obj.skills.all()])
+
+    get_skills_display.short_description = 'Skills'
+
+    def get_participants_display(self, obj):
+        return ", ".join([volunteer.user.last_name for volunteer in obj.participants.all()])
+
 
 
 @register(ProjectParticipants)

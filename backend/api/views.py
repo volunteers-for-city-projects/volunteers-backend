@@ -1,7 +1,11 @@
+import requests
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, generics, mixins, status, viewsets
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from taggit.models import Tag
 
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
@@ -13,7 +17,14 @@ from content.models import (
     Skills,
     Valuation,
 )
-from projects.models import Category, Organization, Project, Volunteer
+from projects.models import (
+    Category,
+    Organization,
+    Project,
+    ProjectIncomes,
+    Volunteer,
+    VolunteerFavorite,
+)
 
 from .filters import (
     CityFilter,
@@ -22,7 +33,12 @@ from .filters import (
     SkillsFilter,
     TagFilter,
 )
-from .permissions import IsOrganizerPermission
+from .permissions import (
+    IsOrganizer,
+    IsOrganizerOfProject,
+    IsVolunteer,
+    IsVolunteerOfIncomes,
+)
 from .serializers import (
     CitySerializer,
     FeedbackSerializer,
@@ -33,10 +49,12 @@ from .serializers import (
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
+    ProjectIncomesSerializer,
     ProjectSerializer,
     SkillsSerializer,
     TagSerializer,
     VolunteerCreateSerializer,
+    VolunteerFavoriteGetSerializer,
     VolunteerGetSerializer,
     VolunteerProfileSerializer,
     VolunteerUpdateSerializer,
@@ -79,7 +97,7 @@ class FeedbackCreateView(generics.CreateAPIView):
 
 class ProjectViewSet(viewsets.ModelViewSet):
     """
-    Представление для управления проектами.
+    Представление для проектов.
 
     Позволяет создавать, просматривать, обновлять и удалять проекты.
     Только авторизованные пользователи-организаторы, связанные с проектом
@@ -90,7 +108,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    permission_classes = [IsOrganizerPermission]
+    permission_classes = [IsOrganizer]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -126,6 +144,55 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def add_to(self, volunteer, project, errors):
+        """
+        Добавить проект в избранное.
+        """
+        _, created = VolunteerFavorite.objects.get_or_create(
+            volunteer=volunteer, project=project
+        )
+        if not created:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        serializer = VolunteerFavoriteGetSerializer(instance=project)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def delete_from(self, volunteer, project, errors):
+        """
+        Удалить проект из избранного.
+        """
+        cnt_deleted, _ = VolunteerFavorite.objects.filter(
+            volunteer=volunteer, project=project
+        ).delete()
+
+        if cnt_deleted == 0:
+            return Response(
+                {'errors': errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        ['POST', 'DELETE'],
+        detail=True,
+        permission_classes=(IsVolunteer,),
+    )
+    def favorite(self, request, **kwargs):
+        """
+        Избранные проекты волонтера.
+        """
+        project = get_object_or_404(Project, pk=kwargs.get('pk'))
+        volunteer = get_object_or_404(Volunteer, user=request.user)
+        if request.method == 'POST':
+            return self.add_to(
+                volunteer, project, 'Данный проект уже есть в избранном!'
+            )
+        return self.delete_from(
+            volunteer, project, 'Данного проекта нет в избранном!'
+        )
 
 
 class VolunteerViewSet(viewsets.ModelViewSet):
@@ -206,3 +273,105 @@ class VolunteerProfileView(generics.RetrieveAPIView):
             )
         serializer = self.get_serializer(volunteer)
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class UserActivationView(APIView):
+    def get(self, request, uid, token):
+        protocol = 'https://' if request.is_secure() else 'http://'
+        web_url = protocol + request.get_host()
+        post_url = web_url + f"/api/auth/activation/{uid}/{token}/"
+        post_data = {'uid': uid, 'token': token}
+        result = requests.post(post_url, data=post_data)
+        if result.status_code == 204:
+            return Response(status=result.status_code)
+        else:
+            return Response(result.json(), status=result.status_code)
+
+
+class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+    """
+    Представление для заявок волонтеров в рамках проектов.
+    """
+
+    queryset = ProjectIncomes.objects.all()
+    serializer_class = ProjectIncomesSerializer
+    # permission_classes = [IsVolunteer]
+
+    @permission_classes([IsVolunteer])
+    def create(self, request):
+        """
+        Создает новую заявку волонтера для участия в проекте.
+
+        Parameters: pk (int): Идентификатор проекта, для которого
+        создается заявка.
+        Возвращает успешный ответ с сообщением о создании заявки.
+        """
+        project = self.get_object()
+        serializer = self.get_serializer(
+            data={
+                'project': project.id,
+                'volunteer': request.user.volunteer.id,
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        response_data = serializer.data
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=True,
+        methods=['delete'],
+        permission_classes=[IsVolunteerOfIncomes],
+    )
+    def delete_incomes(self, request, pk):
+        """
+        Удаляет заявку волонтера на участие в проекте.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка удалена.
+        Если удалить не получилось, возвращает исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.delete(instance)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsOrganizerOfProject],
+    )
+    def accept_incomes(self, request, pk):
+        """
+        Принимает заявку волонтера и добавляет его в участники проекта.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка волонтера
+        была принята и он добавлен в участники проекта.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.accept_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    @action(
+        detail=True,
+        methods=['put'],
+        permission_classes=[IsOrganizerOfProject],
+    )
+    def reject_incomes(self, request, pk):
+        """
+        Отклоняет заявку волонтера.
+
+        Parameters: pk (int): Идентификатор заявки волонтера.
+        Возвращает успешный ответ с сообщением о том, что заявка
+        волонтера была отклонена.
+        Если пользователь не является организатором проекта или заявка
+        волонтера не принадлежит данному проекту вернется исключение.
+        """
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        response_data = serializer.reject_incomes(instance)
+        return Response(response_data, status=status.HTTP_200_OK)
