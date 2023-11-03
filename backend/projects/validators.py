@@ -1,9 +1,14 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.core.validators import (
     MaxLengthValidator,
     MinLengthValidator,
     RegexValidator,
 )
+
+ERROR_MESSAGE_REGEX = 'Недопустимые символы. Разрешены латинские '
+'и кириллические буквы, цифры и спецсимволы.',
+REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@[\\]^_`{|}~]+$'
 
 
 def validate_ogrn(value):
@@ -93,7 +98,7 @@ def validate_telegram(value):
 
 def validate_title(value):
     """
-    Валидирует длину и символы в Названии проекта.
+    Валидирует длину и символы в Названии организации.
     """
     regex_validator = RegexValidator(
         regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!]+$',
@@ -111,3 +116,118 @@ def validate_title(value):
     regex_validator(value)
     min_length_validator(value)
     max_length_validator(value)
+
+
+def validate_name(value):
+    """
+    Валидация названия проекта.
+    """
+    MIN_LEN = 2
+    MAX_LEN = 150
+    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~]+$'
+
+    min_length_validator = MinLengthValidator(
+        MIN_LEN,
+        message=f'Минимальная длина поля должна быть: {MIN_LEN}.',
+    )
+    max_length_validator = MaxLengthValidator(
+        MAX_LEN,
+        message=f'Максимальная длина поля должна быть: {MAX_LEN}.',
+    )
+
+    regex_validator = RegexValidator(
+        regex=NAME_REGEX,
+        message='Недопустимые символы в названии проекта. Разрешены латинские '
+        'и кириллические буквы, цифры и спецсимволы.',
+    )
+
+    min_length_validator(value)
+    max_length_validator(value)
+    regex_validator(value)
+
+
+def validate_description(value):
+    """
+    Валидация описания проекта.
+    """
+    MIN_LEN = 2
+    MAX_LEN = 750
+
+    min_length_validator = MinLengthValidator(
+        MIN_LEN,
+        message='Минимальная длина поля должна быть: {MIN_LEN} ',
+    )
+    max_length_validator = MaxLengthValidator(
+        MAX_LEN,
+        message='Максимальное длина поля должна быть: {MAX_LEN} ',
+    )
+    min_length_validator(value)
+    max_length_validator(value)
+
+
+def regex_string_validator(value):
+    """
+    Проверяет, соответствует ли данное значение шаблону, который допускает
+    латинские и кириллические буквы, цифры и большинство специальных символов.
+    Аргументы: value (str): Строка для валидации.
+    Возвращает:
+    bool: True, если строка соответствует шаблону, иначе False.
+    """
+
+    try:
+        RegexValidator(
+            regex=REGEX_PATTERN, message=ERROR_MESSAGE_REGEX, code='invalid'
+        )(value)
+    except ValidationError:
+        raise
+    return True
+
+
+def length_validator_v1(value):
+    """
+    Проверяет, что длина данного значения находится в указанном диапазоне.
+    Аргументы: value (str): Строка для валидации.
+    Возвращает: bool: True, если длина строки находится в допустимом диапазоне.
+    Исключение: возбуждает ValidationError, если длина строки не соответствует
+    требованиям.
+    """
+
+    try:
+        MinLengthValidator(
+            settings.MIN_LEN_TEXT_FIELD_V1,
+            f'Длина строки должна быть не менее '
+            f'{settings.MIN_LEN_TEXT_FIELD_V1} символов.',
+        )(value)
+        MaxLengthValidator(
+            settings.MAX_LEN_TEXT_FIELD_V1,
+            f'Длина строки не должна превышать '
+            f'{settings.MAX_LEN_TEXT_FIELD_V1} символов.',
+        )(value)
+    except ValidationError as e:
+        raise ValidationError(e.messages)
+    return True
+
+
+def length_validator_v2(value):
+    """
+    Проверяет, что длина данного значения находится в указанном диапазоне.
+    Аргументы: value (str): Строка для валидации.
+    Возвращает: bool: True, если длина строки находится в допустимом диапазоне.
+    Исключение: возбуждает ValidationError, если длина строки не соответствует
+    требованиям.
+    """
+
+    try:
+        MinLengthValidator(
+            settings.MIN_LEN_TEXT_FIELD_V2,
+            f'Длина строки должна быть не менее '
+            f'{settings.MIN_LEN_TEXT_FIELD_V2} символов.',
+        )(value)
+        MaxLengthValidator(
+            settings.MAX_LEN_TEXT_FIELD_V2,
+            f'Длина строки не должна превышать '
+            f'{settings.MAX_LEN_TEXT_FIELD_V2} символов.',
+        )(value)
+    except ValidationError as e:
+        raise ValidationError(e.messages)
+    return True
