@@ -63,9 +63,10 @@ class ProjectFilter(FilterSet):
     """
 
     name = django_filters.CharFilter(lookup_expr='icontains')
-    status = django_filters.ChoiceFilter(
-        field_name='status_project', choices=Project.STATUS_PROJECT
-    )
+    # временно закоментировано логика статусов, будет менятся
+    # status = django_filters.ChoiceFilter(
+    #     field_name='status_project', choices=Project.STATUS_PROJECT
+    # )
     category = django_filters.CharFilter(
         field_name='category', lookup_expr='exact'
     )
@@ -75,4 +76,4 @@ class ProjectFilter(FilterSet):
 
     class Meta:
         model = Project
-        fields = ['name', 'status', 'category', 'organizer']
+        fields = ['name', 'category', 'organizer']

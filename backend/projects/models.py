@@ -8,7 +8,7 @@ from content.models import City, Skills
 from users.models import User
 
 from .validators import (
-    length_validator,
+    LengthValidator,
     regex_string_validator,
     validate_name,
     validate_ogrn,
@@ -230,7 +230,7 @@ class Project(models.Model):
     description = models.TextField(
         validators=[
             regex_string_validator,
-            length_validator(
+            LengthValidator(
                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
                 max_length=settings.MAX_LEN_TEXT_FIELD,
             ),
@@ -255,7 +255,7 @@ class Project(models.Model):
     event_purpose = models.TextField(
         validators=[
             regex_string_validator,
-            length_validator(
+            LengthValidator(
                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
                 max_length=settings.MAX_LEN_TEXT_FIELD,
             ),
@@ -270,7 +270,7 @@ class Project(models.Model):
     project_tasks = models.TextField(
         validators=[
             regex_string_validator,
-            length_validator(
+            LengthValidator(
                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
                 max_length=settings.MAX_LEN_TEXT_FIELD,
             ),
@@ -280,7 +280,7 @@ class Project(models.Model):
     project_events = models.TextField(
         validators=[
             regex_string_validator,
-            length_validator(
+            LengthValidator(
                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
                 max_length=settings.MAX_LEN_TEXT_FIELD,
             ),
@@ -291,7 +291,7 @@ class Project(models.Model):
         blank=True,
         validators=[
             regex_string_validator,
-            length_validator(
+            LengthValidator(
                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
                 max_length=settings.MAX_LEN_TEXT_FIELD,
             ),

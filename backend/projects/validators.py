@@ -5,6 +5,7 @@ from django.core.validators import (
     MinLengthValidator,
     RegexValidator,
 )
+from django.utils.deconstruct import deconstructible
 
 ERROR_MESSAGE_REGEX = 'Недопустимые символы. Разрешены латинские '
 'и кириллические буквы, цифры и спецсимволы.',
@@ -183,23 +184,19 @@ def regex_string_validator(value):
     return True
 
 
-def length_validator(min_length, max_length):
-    """
-    Проверяет, что длина данного значения находится в указанном диапазоне.
-    Аргументы: value (str): Строка для валидации.
-    Возвращает: bool: True, если длина строки находится в допустимом диапазоне.
-    Исключение: возбуждает ValidationError, если длина строки не соответствует
-    требованиям.
-    """
+@deconstructible
+class LengthValidator:
+    def __init__(self, min_length, max_length):
+        self.min_length = min_length
+        self.max_length = max_length
 
-    def validator(value):
-        if len(value) < min_length:
+    def __call__(self, value):
+        if len(value) < self.min_length:
             raise ValidationError(
-                f'Длина строки должна быть не менее {min_length} символов.'
+                f'Длина строки должна быть не менее '
+                f'{self.min_length} символов.'
             )
-        if len(value) > max_length:
+        if len(value) > self.max_length:
             raise ValidationError(
-                f'Длина строки не должна превышать {max_length} символов.'
+                f'Длина строки не должна превышать {self.max_length} символов.'
             )
-
-    return validator
