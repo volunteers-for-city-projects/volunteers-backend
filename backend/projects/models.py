@@ -8,8 +8,7 @@ from content.models import City, Skills
 from users.models import User
 
 from .validators import (
-    length_validator_v1,
-    length_validator_v2,
+    length_validator,
     regex_string_validator,
     validate_name,
     validate_ogrn,
@@ -229,8 +228,13 @@ class Project(models.Model):
         verbose_name='Название',
     )
     description = models.TextField(
-        max_length=150,
-        validators=[regex_string_validator, length_validator_v1],
+        validators=[
+            regex_string_validator,
+            length_validator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Описание',
     )
     picture = models.ImageField(
@@ -249,7 +253,13 @@ class Project(models.Model):
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        validators=[regex_string_validator, length_validator_v1],
+        validators=[
+            regex_string_validator,
+            length_validator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Цель проекта',
     )
     event_address = models.ForeignKey(
@@ -258,16 +268,34 @@ class Project(models.Model):
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        validators=[regex_string_validator, length_validator_v2],
+        validators=[
+            regex_string_validator,
+            length_validator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        validators=[regex_string_validator, length_validator_v2],
+        validators=[
+            regex_string_validator,
+            length_validator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Мероприятия на проекте',
     )
     organizer_provides = models.TextField(
         blank=True,
-        validators=[regex_string_validator, length_validator_v2],
+        validators=[
+            regex_string_validator,
+            length_validator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Организатор предоставляет',
     )
     organization = models.ForeignKey(

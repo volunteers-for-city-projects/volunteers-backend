@@ -183,7 +183,7 @@ def regex_string_validator(value):
     return True
 
 
-def length_validator_v1(value):
+def length_validator(min_length, max_length):
     """
     Проверяет, что длина данного значения находится в указанном диапазоне.
     Аргументы: value (str): Строка для валидации.
@@ -192,42 +192,14 @@ def length_validator_v1(value):
     требованиям.
     """
 
-    try:
-        MinLengthValidator(
-            settings.MIN_LEN_TEXT_FIELD_V1,
-            f'Длина строки должна быть не менее '
-            f'{settings.MIN_LEN_TEXT_FIELD_V1} символов.',
-        )(value)
-        MaxLengthValidator(
-            settings.MAX_LEN_TEXT_FIELD_V1,
-            f'Длина строки не должна превышать '
-            f'{settings.MAX_LEN_TEXT_FIELD_V1} символов.',
-        )(value)
-    except ValidationError as e:
-        raise ValidationError(e.messages)
-    return True
+    def validator(value):
+        if len(value) < min_length:
+            raise ValidationError(
+                f'Длина строки должна быть не менее {min_length} символов.'
+            )
+        if len(value) > max_length:
+            raise ValidationError(
+                f'Длина строки не должна превышать {max_length} символов.'
+            )
 
-
-def length_validator_v2(value):
-    """
-    Проверяет, что длина данного значения находится в указанном диапазоне.
-    Аргументы: value (str): Строка для валидации.
-    Возвращает: bool: True, если длина строки находится в допустимом диапазоне.
-    Исключение: возбуждает ValidationError, если длина строки не соответствует
-    требованиям.
-    """
-
-    try:
-        MinLengthValidator(
-            settings.MIN_LEN_TEXT_FIELD_V2,
-            f'Длина строки должна быть не менее '
-            f'{settings.MIN_LEN_TEXT_FIELD_V2} символов.',
-        )(value)
-        MaxLengthValidator(
-            settings.MAX_LEN_TEXT_FIELD_V2,
-            f'Длина строки не должна превышать '
-            f'{settings.MAX_LEN_TEXT_FIELD_V2} символов.',
-        )(value)
-    except ValidationError as e:
-        raise ValidationError(e.messages)
-    return True
+    return validator
