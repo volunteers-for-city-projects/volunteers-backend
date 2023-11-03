@@ -15,7 +15,6 @@ from .validators import (
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
-    validate_text_field,
     validate_title,
 )
 
