@@ -297,3 +297,6 @@ MAX_LEN_ABOUT_US = 750
 MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
+MESSAGE_ABOUT_US_REGEX_VALID = (
+    "Допускаются цифры, буквыб пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
+)
