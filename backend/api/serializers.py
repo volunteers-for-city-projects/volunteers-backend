@@ -186,7 +186,6 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'status_project',
             'photo_previous_event',
             'participants',
             'status_approve',
@@ -201,8 +200,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     """
 
     event_address = AddressSerializer()
-    # category = ProjectCategorySerializer()
-    # city = CitySerializer()
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
@@ -245,7 +242,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'status_project',
             'photo_previous_event',
             'participants',
             'status_approve',
