@@ -42,7 +42,7 @@ class Valuation(models.Model):
     """
 
     title = models.CharField(
-        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR, unique=True
     )
     description = models.TextField(verbose_name='Описание ценности')
 
