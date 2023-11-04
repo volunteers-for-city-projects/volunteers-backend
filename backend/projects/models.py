@@ -161,6 +161,7 @@ class Category(models.Model):
     name = models.CharField(
         max_length=settings.MAX_LEN_NAME,
         verbose_name='Название',
+        unique=True,
     )
     slug = models.SlugField(
         unique=True,
@@ -229,6 +230,7 @@ class Project(models.Model):
         max_length=settings.MAX_LEN_NAME,
         validators=[validate_name],
         verbose_name='Название',
+        unique=True,
     )
     description = models.TextField(
         validators=[

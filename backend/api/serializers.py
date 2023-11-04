@@ -27,7 +27,7 @@ from users.models import User
 
 from .validators import (
     validate_dates,
-    validate_reception_status,
+    # validate_reception_status,
     validate_status_incomes,
 )
 
@@ -208,11 +208,10 @@ class ProjectSerializer(serializers.ModelSerializer):
         start_datetime = data['start_datetime']
         end_datetime = data['end_datetime']
         application_date = data['application_date']
-        status_project = data.get('status_project')
 
         validate_dates(start_datetime, end_datetime, application_date)
         validate_reception_status(
-            status_project, application_date, start_datetime, end_datetime
+            application_date, start_datetime, end_datetime
         )
         return data
 
@@ -543,5 +542,4 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
             'name',
             'picture',
             'organization',
-            'status_project',
         )
