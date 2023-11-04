@@ -8,6 +8,7 @@ from content.models import City, Skills
 from users.models import User
 
 from .validators import (
+    validate_about,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
@@ -46,8 +47,10 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        blank=True,
         verbose_name='Об организации',
+        max_length=settings.MAX_LEN_ABOUT_US,
+        blank=True,
+        validators=[validate_about],
     )
     city = models.ForeignKey(
         City,
