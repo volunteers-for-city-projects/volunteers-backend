@@ -25,11 +25,7 @@ from projects.models import (
 )
 from users.models import User
 
-from .validators import (
-    validate_dates,
-    validate_reception_status,
-    validate_status_incomes,
-)
+from .validators import validate_status_incomes
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -204,17 +200,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=Skills.objects.all(), many=True
     )
 
-    def validate(self, data):
-        start_datetime = data['start_datetime']
-        end_datetime = data['end_datetime']
-        application_date = data['application_date']
-        status_project = data.get('status_project')
+    # def validate(self, data):
+    #     start_datetime = data['start_datetime']
+    #     end_datetime = data['end_datetime']
+    #     application_date = data['application_date']
 
-        validate_dates(start_datetime, end_datetime, application_date)
-        validate_reception_status(
-            status_project, application_date, start_datetime, end_datetime
-        )
-        return data
+    #     validate_dates(start_datetime, end_datetime, application_date)
+    #     validate_reception_status(
+    #         application_date, start_datetime, end_datetime
+    #     )
+    #     return data
 
     def create(self, validated_data):
         if validated_data.get('status_approve') not in (
@@ -543,5 +538,4 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
             'name',
             'picture',
             'organization',
-            'status_project',
         )

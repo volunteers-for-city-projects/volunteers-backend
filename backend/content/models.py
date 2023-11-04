@@ -157,7 +157,9 @@ class Skills(models.Model):
     """
 
     name = models.CharField(
-        verbose_name='Навык', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Навык',
+        max_length=settings.MAX_LEN_CHAR,
+        unique=True,
     )
 
     class Meta:

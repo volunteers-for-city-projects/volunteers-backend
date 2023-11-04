@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 
-from projects.models import Project, ProjectIncomes
+from projects.models import ProjectIncomes
 
 
 def validate_status_incomes(value):
@@ -46,35 +46,35 @@ def validate_dates(event_start_date, event_end_date, application_date):
 
 
 # нужно передалть с учетом, изменений реализации статусов.
-def validate_reception_status(
-    status_project, application_date, start_datetime, end_datetime
-):
-    """
-    Проверяет, что статус можно устанавливать
-    только после указанной даты.
-    """
-    now = timezone.now()
-    validation_rules = [
-        (
-            Project.RECEPTION_OF_RESPONSES_CLOSED,
-            application_date > now,
-            'Статус проекта "Прием откликов окончен" можно установить только '
-            'после окончания подачи заявок.',
-        ),
-        (
-            Project.READY_FOR_FEEDBACK,
-            now < start_datetime or now < application_date,
-            'Статус проекта "Готов к откликам" можно установить до начала '
-            'мероприятия и до даты подачи заявки.',
-        ),
-        (
-            Project.PROJECT_COMPLETED,
-            now < end_datetime,
-            'Статус проекта "Проект завершен" можно установить только '
-            'после окончания мероприятия.',
-        ),
-    ]
+# def validate_reception_status(
+#     status_project, application_date, start_datetime, end_datetime
+# ):
+#     """
+#     Проверяет, что статус можно устанавливать
+#     только после указанной даты.
+#     """
+#     now = timezone.now()
+#     validation_rules = [
+#         (
+#             Project.RECEPTION_OF_RESPONSES_CLOSED,
+#             application_date > now,
+#             'Статус проекта "Прием откликов окончен" можно установить только '
+#             'после окончания подачи заявок.',
+#         ),
+#         (
+#             Project.READY_FOR_FEEDBACK,
+#             now < start_datetime or now < application_date,
+#             'Статус проекта "Готов к откликам" можно установить до начала '
+#             'мероприятия и до даты подачи заявки.',
+#         ),
+#         (
+#             Project.PROJECT_COMPLETED,
+#             now < end_datetime,
+#             'Статус проекта "Проект завершен" можно установить только '
+#             'после окончания мероприятия.',
+#         ),
+#     ]
 
-    for project_status, condition, error_message in validation_rules:
-        if status_project == project_status and condition:
-            raise serializers.ValidationError(error_message)
+#     for project_status, condition, error_message in validation_rules:
+#         if status_project == project_status and condition:
+#             raise serializers.ValidationError(error_message)
