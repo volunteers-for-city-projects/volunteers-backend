@@ -25,11 +25,7 @@ from projects.models import (
 )
 from users.models import User
 
-from .validators import (
-    validate_dates,
-    # validate_reception_status,
-    validate_status_incomes,
-)
+from .validators import validate_status_incomes
 
 
 class AddressSerializer(serializers.ModelSerializer):
