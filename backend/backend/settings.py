@@ -306,4 +306,3 @@ MESSAGE_ABOUT_US_VALID = (
 MESSAGE_ABOUT_US_REGEX_VALID = (
     "Допускаются цифры, буквыб пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
 )
-

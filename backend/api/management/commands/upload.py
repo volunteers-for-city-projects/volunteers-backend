@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand
 
 from content.models import City, News, Skills, Valuation
 from projects.models import (
+    Address,
     Category,
     Organization,
     Project,
@@ -17,6 +18,7 @@ from projects.models import (
 from users.models import User
 
 TABLES_DICT = {
+    Address: 'address.csv',
     City: 'cities.csv',
     Skills: 'skills.csv',
     Category: 'categories.csv',

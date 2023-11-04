@@ -193,8 +193,12 @@ class Address(models.Model):
     )
     street = models.CharField(max_length=75, verbose_name='Улица')
     house = models.CharField(max_length=5, verbose_name='Дом')
-    block = models.CharField(max_length=5, verbose_name='Корпус')
-    building = models.CharField(max_length=5, verbose_name='Строение')
+    block = models.CharField(
+        max_length=5, blank=True, null=True, verbose_name='Корпус'
+    )
+    building = models.CharField(
+        max_length=5, blank=True, null=True, verbose_name='Строение'
+    )
 
     class Meta:
         verbose_name = 'Адрес проекта'
