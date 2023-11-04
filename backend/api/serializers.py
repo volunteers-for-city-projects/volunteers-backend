@@ -166,11 +166,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     """
 
     event_address = AddressSerializer(read_only=True)
-    # category = ProjectCategorySerializer(read_only=True)
-    # city = CitySerializer(read_only=True)
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True, read_only=True
-    )
+    skills = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = Project
