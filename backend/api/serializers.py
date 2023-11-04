@@ -200,8 +200,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     """
 
     event_address = AddressSerializer()
-    # category = ProjectCategorySerializer()
-    # city = CitySerializer()
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
