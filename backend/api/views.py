@@ -383,13 +383,13 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
         return Response(response_data, status=status.HTTP_200_OK)
 
 
-class ProjectMeViewSet(viewsets.ModelViewSet):
+class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """
     Представление позволяет авторизованным пользователям с ролью
     Волонтер или Организатор просматривать свои проекты.
     """
 
-    serializer_class = ProjectSerializer
+    serializer_class = ProjectGetSerializer
     filter_backends = [DjangoFilterBackend]
     # filterset_class = ProjectMeFilter
     permission_classes = [IsOrganizer, IsVolunteer]

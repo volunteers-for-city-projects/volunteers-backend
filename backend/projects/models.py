@@ -403,7 +403,9 @@ class ProjectParticipants(models.Model):
     Модель представляет собой список участников(волонтеров) проекта.
     """
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='participant'
+    )
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
     class Meta:
