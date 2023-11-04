@@ -199,8 +199,7 @@ DJOSER = {
     'ACTIVATION_URL': 'api/auth/activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
-    'SERIALIZERS': {
-    },
+    'SERIALIZERS': {},
 }
 
 EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'
@@ -252,7 +251,9 @@ MAX_LEN_TEXT_IN_ADMIN = 50
 MAX_LEN_NAME = 100
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
-MESSAGE_PHONE_REGEX = f'Номер должен начинаться с +7 и содержать {LEN_PHONE} символов.'
+MESSAGE_PHONE_REGEX = (
+    f'Номер должен начинаться с +7 и содержать {LEN_PHONE} символов.'
+)
 MESSAGE_EMAIL_VALID = (
     f'Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов'
 )
@@ -292,6 +293,11 @@ TELEGRAM_ERROR_MESSAGE = (
 
 VALUATIONS_ON_PAGE_ABOUT_US = 4
 
+
+MIN_LEN_TEXT_FIELD_V1 = 2
+MIN_LEN_TEXT_FIELD_V2 = 10
+MAX_LEN_TEXT_FIELD = 750
+
 MIN_LEN_ABOUT_US = 10
 MAX_LEN_ABOUT_US = 750
 MESSAGE_ABOUT_US_VALID = (
@@ -300,3 +306,4 @@ MESSAGE_ABOUT_US_VALID = (
 MESSAGE_ABOUT_US_REGEX_VALID = (
     "Допускаются цифры, буквыб пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
 )
+

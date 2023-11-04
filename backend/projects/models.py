@@ -8,6 +8,9 @@ from content.models import City, Skills
 from users.models import User
 
 from .validators import (
+    LengthValidator,
+    regex_string_validator,
+    validate_name,
     validate_about,
     validate_ogrn,
     validate_phone_number,
@@ -214,13 +217,6 @@ class Project(models.Model):
     RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
     PROJECT_COMPLETED = 'project_completed'
 
-    STATUS_PROJECT = [
-        (OPEN, 'Открыт'),
-        (READY_FOR_FEEDBACK, 'Готов к откликам'),
-        (RECEPTION_OF_RESPONSES_CLOSED, 'Прием откликов окончен'),
-        (PROJECT_COMPLETED, 'Проект завершен'),
-    ]
-
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
         (EDITING, 'Черновик'),
@@ -231,73 +227,88 @@ class Project(models.Model):
 
     name = models.CharField(
         max_length=settings.MAX_LEN_NAME,
-        blank=False,
+        validators=[validate_name],
         verbose_name='Название',
     )
     description = models.TextField(
-        blank=False,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Описание',
     )
     picture = models.ImageField(
-        null=True,
-        blank=True,
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
-        blank=False,
-        auto_now=False,
-        auto_now_add=False,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
-        blank=False,
-        auto_now=False,
-        auto_now_add=False,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
-        null=True,
-        blank=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
-        null=True,
-        blank=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        blank=False,
-        verbose_name='Цель мероприятия',
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Цель проекта',
     )
     event_address = models.ForeignKey(
         Address,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=False,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Мероприятия на проекте',
     )
     organizer_provides = models.TextField(
         blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Организатор предоставляет',
     )
     organization = models.ForeignKey(
         Organization,
-        blank=False,
         on_delete=models.CASCADE,
         related_name='projects',
         verbose_name='Организация',
     )
     city = models.ForeignKey(
         City,
-        blank=False,
         on_delete=models.CASCADE,
         related_name='project',
         verbose_name='Город',
@@ -306,14 +317,6 @@ class Project(models.Model):
         Category,
         related_name='projects',
         verbose_name='Категории',
-    )
-    status_project = models.CharField(
-        max_length=100,
-        choices=STATUS_PROJECT,
-        null=False,
-        blank=False,
-        default=EDITING,
-        verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
         blank=True,
