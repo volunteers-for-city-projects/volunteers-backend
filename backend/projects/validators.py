@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import (
@@ -119,6 +121,7 @@ def validate_title(value):
     max_length_validator(value)
 
 
+
 def validate_name(value):
     """
     Валидация названия проекта.
@@ -200,3 +203,27 @@ class LengthValidator:
             raise ValidationError(
                 f'Длина строки не должна превышать {self.max_length} символов.'
             )
+            
+def validate_about(value):
+    """
+    Валидирует длину и символы в информации об организации.
+    """
+    regex_validator = RegexValidator(
+        regex=r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ\s]+)\Z",
+        message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
+        flags=re.I
+    )
+    min_length_validator = MinLengthValidator(
+        settings.MIN_LEN_ABOUT_US,
+        message=settings.MESSAGE_ABOUT_US_VALID,
+    )
+    max_length_validator = MaxLengthValidator(
+        settings.MAX_LEN_ABOUT_US,
+        message=settings.MESSAGE_ABOUT_US_VALID,
+    )
+
+    regex_validator(value)
+    min_length_validator(value)
+    max_length_validator(value)
+    regex_validator(value)
+

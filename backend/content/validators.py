@@ -6,12 +6,15 @@ from django.core.validators import (
 
 from backend.settings import (
     LEN_PHONE,
+    MAX_LEN_ABOUT_US,
     MAX_LEN_NAME_USER,
     MAX_LEN_TEXT_FEEDBACK,
+    MESSAGE_ABOUT_US_VALID,
     MESSAGE_NAME_USER_CYRILLIC,
     MESSAGE_NAME_USER_VALID,
     MESSAGE_PHONE_REGEX,
     MESSAGE_TEXT_FEEDBACK_VALID,
+    MIN_LEN_ABOUT_US,
     MIN_LEN_NAME_USER,
     MIN_LEN_TEXT_FEEDBACK,
 )
@@ -83,5 +86,25 @@ class TextFeedbackValidator:
 
     @classmethod
     def validate_text(cls, value):
+        cls.text_max_length(value)
+        cls.text_min_length(value)
+
+
+class AboutUsValidator:
+    """
+    Валидация текста в поле о нас.
+    """
+
+    text_max_length = MaxLengthValidator(
+        MAX_LEN_ABOUT_US,
+        message=MESSAGE_ABOUT_US_VALID
+    )
+    text_min_length = MinLengthValidator(
+        MIN_LEN_ABOUT_US,
+        message=MESSAGE_ABOUT_US_VALID
+    )
+
+    @classmethod
+    def validate_about_us(cls, value):
         cls.text_max_length(value)
         cls.text_min_length(value)

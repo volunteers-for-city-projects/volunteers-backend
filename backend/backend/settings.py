@@ -128,6 +128,18 @@ AUTH_PASSWORD_VALIDATORS = [
             'min_length': 8,
         },
     },
+    {
+        'NAME': 'users.validators.PasswordMaximumLengthValidator',
+        'OPTIONS': {
+            'max_length': 20
+        },
+    },
+    {
+        'NAME': 'users.validators.PasswordRegexValidator',
+        'OPTIONS': {
+            'regex': r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ]+)\Z",
+        },
+    },
     # {
     #     'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
     # },
@@ -226,6 +238,11 @@ MAX_LENGTH_SLUG = 50
 MAX_LENGTH_PASSWORD = 20
 MAX_LENGTH_EMAIL = 256
 MIN_LENGTH_EMAIL = 6
+MAX_LENGTH_EMAIL_USER_PART = 64
+MESSAGE_EMAIL_NOT_VALID = 'Некорректный email!'
+MESSAGE_EMAIL_USER_PART_VALID = (
+    f'Максимальная длинна пользовательской части: {MAX_LENGTH_EMAIL_USER_PART} символа.'
+)
 
 MAX_LEN_CHAR = 250
 LEN_PHONE = 12
@@ -276,6 +293,17 @@ TELEGRAM_ERROR_MESSAGE = (
 
 VALUATIONS_ON_PAGE_ABOUT_US = 4
 
+
 MIN_LEN_TEXT_FIELD_V1 = 2
 MIN_LEN_TEXT_FIELD_V2 = 10
 MAX_LEN_TEXT_FIELD = 750
+
+MIN_LEN_ABOUT_US = 10
+MAX_LEN_ABOUT_US = 750
+MESSAGE_ABOUT_US_VALID = (
+    f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
+)
+MESSAGE_ABOUT_US_REGEX_VALID = (
+    "Допускаются цифры, буквыб пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
+)
+

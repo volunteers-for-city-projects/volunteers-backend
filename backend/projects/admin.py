@@ -126,8 +126,9 @@ class ProjectAdmin(ModelAdmin):
     get_skills_display.short_description = 'Skills'
 
     def get_participants_display(self, obj):
-        return ", ".join([volunteer.user.last_name for volunteer in obj.participants.all()])
-
+        return ", ".join(
+            [volunteer.user.last_name for volunteer in obj.participants.all()]
+        )
 
 
 @register(ProjectParticipants)
