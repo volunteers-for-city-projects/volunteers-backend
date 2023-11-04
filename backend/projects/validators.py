@@ -136,3 +136,4 @@ def validate_about(value):
     regex_validator(value)
     min_length_validator(value)
     max_length_validator(value)
+    regex_validator(value)
