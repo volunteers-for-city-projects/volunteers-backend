@@ -10,8 +10,8 @@ from users.models import User
 from .validators import (
     LengthValidator,
     regex_string_validator,
-    validate_name,
     validate_about,
+    validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
