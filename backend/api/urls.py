@@ -10,6 +10,7 @@ from api.views import (
     PlatformAboutView,
     ProjectCategoryViewSet,
     ProjectIncomesViewSet,
+    ProjectMeViewSet,
     ProjectViewSet,
     SearchListView,
     SkillsViewSet,
@@ -21,6 +22,7 @@ from api.views import (
 
 router = DefaultRouter()
 router.register(r'news', NewsViewSet, basename='news')
+router.register(r'projects/me', ProjectMeViewSet, basename='my_projects')
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'project_categories', ProjectCategoryViewSet)
 router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
