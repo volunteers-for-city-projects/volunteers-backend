@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -171,6 +172,30 @@ class ProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
+    is_favorited = serializers.BooleanField(default=False)
+    status = serializers.SerializerMethodField()
+
+    def get_status(self, data):
+
+        OPEN = 'open'
+        READY = 'ready_for_feedback'
+        CLOSED = 'reception_of_responses_closed'
+        COMPLETED = 'project_completed'
+        CANCELED = 'canceled_by_organizer'
+
+        now = timezone.now()
+        if data.status_approve == Project.CANCELED_BY_ORGANIZER:
+            return CANCELED
+        elif data.start_datetime <= now < data.start_date_application:
+            return OPEN
+        elif data.start_date_application <= now < data.end_date_application:
+            return READY
+        elif data.end_date_application <= now < data.end_datetime:
+            return CLOSED
+        elif data.end_datetime <= now:
+            return COMPLETED
+        else:
+            return 'Статус проекта не определен'
 
     def validate(self, data):
         start_datetime = data['start_datetime']
@@ -215,6 +240,8 @@ class ProjectSerializer(serializers.ModelSerializer):
             'participants',
             'status_approve',
             'skills',
+            'is_favorited',
+            'status',
         )
 
 

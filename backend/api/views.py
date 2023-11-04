@@ -1,4 +1,5 @@
 import requests
+from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
@@ -375,3 +376,38 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
         serializer = self.get_serializer(instance)
         response_data = serializer.reject_incomes(instance)
         return Response(response_data, status=status.HTTP_200_OK)
+
+
+class ProjectMeViewSet(viewsets.ModelViewSet):
+    """
+    Представление позволяет авторизованным пользователям с ролью
+    Волонтер или Организатор просматривать свои проекты.
+    """
+
+    serializer_class = ProjectSerializer
+    filter_backends = [DjangoFilterBackend]
+    # filterset_class = ProjectMeFilter
+    permission_classes = [IsOrganizer, IsVolunteer]
+
+    def get_queryset(self):
+        if self.request.user.is_volunteer:
+            volunteer = get_object_or_404(Volunteer, user=self.request.user.id)
+            from_volunteer_favorite = VolunteerFavorite.objects.filter(
+                project=OuterRef('pk'),
+                volunteer=volunteer
+            )
+            return (
+                Project.objects
+                .filter(participant__volunteer=volunteer)
+                # .select_related('organization')
+                # .prefetch_related('categories', 'skills')
+                .annotate(
+                    is_favorited=Exists(from_volunteer_favorite),
+                )
+            )
+        if self.request.user.is_organizer:
+            organization = get_object_or_404(
+                Organization,
+                contact_person=self.request.user.id
+            )
+            return Project.objects.filter(organization=organization)
