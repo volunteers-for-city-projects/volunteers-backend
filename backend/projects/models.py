@@ -95,6 +95,7 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
@@ -115,7 +116,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ГГГГ.ММ.ДД", пример: "2000 01 01".',
+        help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],

@@ -161,45 +161,8 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения данных проекта.
     """
-
     event_address = AddressSerializer(read_only=True)
-    skills = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
-
-    class Meta:
-        model = Project
-        fields = (
-            'name',
-            'description',
-            'picture',
-            'start_datetime',
-            'end_datetime',
-            'start_date_application',
-            'end_date_application',
-            'event_purpose',
-            'event_address',
-            'project_tasks',
-            'project_events',
-            'organizer_provides',
-            'organization',
-            'city',
-            'categories',
-            'photo_previous_event',
-            'participants',
-            'status_approve',
-            'skills',
-        )
-        read_only_fields = fields
-
-
-class ProjectSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для проекта.
-    """
-
-    event_address = AddressSerializer()
-    skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True
-    )
+    skills = SkillsSerializer(many=True, read_only=True)
     is_favorited = serializers.BooleanField(default=False)
     status = serializers.SerializerMethodField()
 
@@ -224,6 +187,44 @@ class ProjectSerializer(serializers.ModelSerializer):
             return COMPLETED
         else:
             return 'Статус проекта не определен'
+
+    class Meta:
+        model = Project
+        fields = (
+            'name',
+            'description',
+            'picture',
+            'start_datetime',
+            'end_datetime',
+            'start_date_application',
+            'end_date_application',
+            'event_purpose',
+            'event_address',
+            'project_tasks',
+            'project_events',
+            'organizer_provides',
+            'organization',
+            'city',
+            'categories',
+            'photo_previous_event',
+            'participants',
+            'status_approve',
+            'skills',
+            'is_favorited',
+            'status',
+        )
+        read_only_fields = fields
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для проекта.
+    """
+
+    event_address = AddressSerializer()
+    skills = serializers.PrimaryKeyRelatedField(
+        queryset=Skills.objects.all(), many=True
+    )
 
     # def validate(self, data):
     #     start_datetime = data['start_datetime']
@@ -266,8 +267,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'participants',
             'status_approve',
             'skills',
-            'is_favorited',
-            'status',
         )
 
 

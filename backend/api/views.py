@@ -50,6 +50,7 @@ from .serializers import (
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
+    ProjectGetSerializer,
     ProjectIncomesSerializer,
     ProjectSerializer,
     SkillsSerializer,
@@ -62,7 +63,6 @@ from .serializers import (
 )
 
 # from taggit.serializers import TaggitSerializer
-
 
 # from .filters import SearchFilter
 # from django.db.models import Q
@@ -106,10 +106,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Project.objects.all()
-    serializer_class = ProjectSerializer
+    # serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
     permission_classes = [IsOrganizer]
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return ProjectGetSerializer
+        return ProjectSerializer
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
