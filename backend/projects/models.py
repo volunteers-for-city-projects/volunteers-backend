@@ -332,6 +332,7 @@ class Project(models.Model):
     )
     participants = models.ManyToManyField(
         'ProjectParticipants',
+        blank=True,
         related_name='projects',
         verbose_name='Участники',
     )

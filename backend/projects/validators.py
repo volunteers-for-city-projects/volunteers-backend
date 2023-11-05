@@ -121,7 +121,6 @@ def validate_title(value):
     max_length_validator(value)
 
 
-
 def validate_name(value):
     """
     Валидация названия проекта.
@@ -203,7 +202,8 @@ class LengthValidator:
             raise ValidationError(
                 f'Длина строки не должна превышать {self.max_length} символов.'
             )
-            
+
+
 def validate_about(value):
     """
     Валидирует длину и символы в информации об организации.
@@ -226,4 +226,3 @@ def validate_about(value):
     min_length_validator(value)
     max_length_validator(value)
     regex_validator(value)
-
