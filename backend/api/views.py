@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action, permission_classes
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -30,6 +31,8 @@ from .filters import (
     ProjectCategoryFilter,
     ProjectFilter,
     SkillsFilter,
+    StatusProjectOrganizerFilter,
+    StatusProjectVolunteerFilter,
     TagFilter,
 )
 from .permissions import (
@@ -67,6 +70,14 @@ from .serializers import (
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
+    """
+    Отображает информацию о Платформе.
+
+    Любой пользователь может получить информацию о нас,
+    ценностях и email Платформы.
+
+    """
+
     serializer_class = PlatformAboutSerializer
 
     def get_object(self):
@@ -80,6 +91,12 @@ class PlatformAboutView(generics.RetrieveAPIView):
 
 
 class NewsViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для новостей.
+
+    Позволяет просматривать новости списком и по отдельности.
+    """
+
     queryset = News.objects.all()
     serializer_class = NewsSerializer
 
@@ -90,6 +107,13 @@ class NewsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class FeedbackCreateView(generics.CreateAPIView):
+    """
+    Представление для обращений.
+
+    Позволяет пользователям отправлять обращение
+    администратору платформы.
+    """
+
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
 
@@ -200,6 +224,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
 
 class VolunteerViewSet(viewsets.ModelViewSet):
+    """
+    Представление для волонтеров.
+
+    Позволяет получать, создавать, редактировать, удалять участника-волонтера.
+    """
+
     queryset = Volunteer.objects.all()
 
     def get_serializer_class(self):
@@ -211,6 +241,13 @@ class VolunteerViewSet(viewsets.ModelViewSet):
 
 
 class OrganizationViewSet(viewsets.ModelViewSet):
+    """
+    Представление для орагизаций - организаторов проекта.
+
+    Позволяет получать, создавать, редактировать,
+    удалять организацию-организатора проекта.
+    """
+
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -222,6 +259,10 @@ class OrganizationViewSet(viewsets.ModelViewSet):
 
 
 class CityViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для отображения городов.
+    """
+
     queryset = City.objects.all()
     serializer_class = CitySerializer
     pagination_class = None
@@ -229,6 +270,10 @@ class CityViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для отображения навыков.
+    """
+
     queryset = Skills.objects.all()
     serializer_class = SkillsSerializer
     pagination_class = None
@@ -236,6 +281,10 @@ class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для отображения тегов.
+    """
+
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -243,6 +292,10 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    Представление для отображения категорий проекта.
+    """
+
     queryset = Category.objects.all()
     serializer_class = ProjectCategorySerializer
     pagination_class = None
@@ -250,6 +303,10 @@ class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class SearchListView(generics.ListAPIView):
+    """
+    Представление для отображения строки поиска.
+    """
+
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
@@ -376,8 +433,8 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     serializer_class = ProjectGetSerializer
     filter_backends = [DjangoFilterBackend]
-    # filterset_class = ProjectMeFilter
-    permission_classes = [IsOrganizer, IsVolunteer]
+    filterset_class = None
+    permission_classes = [IsOrganizer | IsVolunteer]
 
     def get_queryset(self):
         if self.request.user.is_volunteer:
@@ -396,8 +453,24 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 )
             )
         if self.request.user.is_organizer:
-            organization = get_object_or_404(
-                Organization,
-                contact_person=self.request.user.id
+            return Project.objects.filter(
+                organization__contact_person=self.request.user
             )
-            return Project.objects.filter(organization=organization)
+            # organization = get_object_or_404(
+            #     Organization,
+            #     contact_person=self.request.user.id
+            # )
+            # return Project.objects.filter(organization=organization)
+
+        #  добавила иначе ошибка если заходить администратором
+        raise PermissionDenied(
+            detail='Вы не являетесь волонтером или организатором'
+        )
+
+    def get_filterset_class(self):
+        if self.request.user.is_volunteer:
+            return StatusProjectVolunteerFilter
+        elif self.request.user.is_organizer:
+            return StatusProjectOrganizerFilter
+        else:
+            return None

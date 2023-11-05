@@ -107,7 +107,7 @@ class NewsSerializer(serializers.ModelSerializer):
 
 class PreviewNewsSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для просмотра новостей списком
+    Сериализатор для просмотра новостей списком.
     """
 
     tags = TagListSerializerField()
@@ -119,7 +119,7 @@ class PreviewNewsSerializer(serializers.ModelSerializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для формы обратной связи.
+    Сериализатор для обращений.
     """
 
     class Meta:
