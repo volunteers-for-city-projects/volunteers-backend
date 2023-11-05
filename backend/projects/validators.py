@@ -11,7 +11,7 @@ from django.utils.deconstruct import deconstructible
 
 ERROR_MESSAGE_REGEX = 'Недопустимые символы. Разрешены латинские '
 'и кириллические буквы, цифры и спецсимволы.',
-REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@[\\]^_`{|}~]+$'
+REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@\[\]^_`{|}~]+$'
 
 
 def validate_ogrn(value):
@@ -121,14 +121,13 @@ def validate_title(value):
     max_length_validator(value)
 
 
-
 def validate_name(value):
     """
     Валидация названия проекта.
     """
     MIN_LEN = 2
     MAX_LEN = 150
-    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~]+$'
+    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
     min_length_validator = MinLengthValidator(
         MIN_LEN,
@@ -203,7 +202,8 @@ class LengthValidator:
             raise ValidationError(
                 f'Длина строки не должна превышать {self.max_length} символов.'
             )
-            
+
+
 def validate_about(value):
     """
     Валидирует длину и символы в информации об организации.
@@ -222,8 +222,6 @@ def validate_about(value):
         message=settings.MESSAGE_ABOUT_US_VALID,
     )
 
-    regex_validator(value)
     min_length_validator(value)
     max_length_validator(value)
     regex_validator(value)
-
