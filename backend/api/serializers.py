@@ -225,6 +225,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         queryset=Skills.objects.all(), many=True
     )
+    picture = Base64ImageField()
 
     # def validate(self, data):
     #     start_datetime = data['start_datetime']
@@ -564,4 +565,42 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
             'name',
             'picture',
             'organization',
+        )
+
+
+class GetIdOrganizationOrVolunteer(serializers.Serializer):
+    """
+    Вспомогательный класс.
+    Получает список id организаций или волонтера,
+    в зависимости от роли пользователя.
+    """
+
+    id_oranizer_or_volunteer = serializers.SerializerMethodField()
+
+    def get_id_oranizer_or_volunteer(self, obj):
+        user = self.context['request'].user
+
+        if user.is_organizer:
+            #  на случай если у контактного лица может быть
+            #  несколько организаций
+            #  organization = user.organization.first()
+            organization = user.organization
+            return organization.id if organization else None
+        elif user.is_volunteer:
+            volunteer = user.volunteers
+            return volunteer.id if volunteer else None
+        else:
+            return None
+
+
+class CustomCurrentSerializer(UserSerializer, GetIdOrganizationOrVolunteer):
+    """
+    Сериализатор текущего пользователя. используется по адресу auth/me.
+    """
+
+    class Meta:
+        model = User
+        fields = (
+            'id', 'first_name', 'second_name', 'last_name',
+            'email', 'role', 'id_oranizer_or_volunteer'
         )

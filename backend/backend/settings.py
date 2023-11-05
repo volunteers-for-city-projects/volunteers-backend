@@ -199,7 +199,9 @@ DJOSER = {
     'ACTIVATION_URL': '#/login/password-activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
-    'SERIALIZERS': {},
+    'SERIALIZERS': {
+        'current_user': 'api.serializers.CustomCurrentSerializer',
+    },
 }
 
 EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'

@@ -24,7 +24,7 @@ class Organization(models.Model):
     Модель представляет собой информацию об организации-организаторе проектов.
     """
 
-    contact_person = models.ForeignKey(
+    contact_person = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='organization',
