@@ -10,17 +10,18 @@ from api.views import (
     PlatformAboutView,
     ProjectCategoryViewSet,
     ProjectIncomesViewSet,
+    ProjectMeViewSet,
     ProjectViewSet,
     SearchListView,
     SkillsViewSet,
     TagViewSet,
-    UserActivationView,
     VolunteerProfileView,
     VolunteerViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'news', NewsViewSet, basename='news')
+router.register(r'projects/me', ProjectMeViewSet, basename='my_projects')
 router.register(r'projects', ProjectViewSet, basename='projects')
 router.register(r'project_categories', ProjectCategoryViewSet)
 router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
@@ -56,11 +57,15 @@ urlpatterns = [
         name='password_reset_confirm',
     ),
     path(
-        r'auth/activation/<uid>/<token>/',
+        r'auth/activation/',
         UserViewSet.as_view({'post': 'activation'}),
-        name='user-activation',
+        name='activation',
     ),
-    path(r'auth/activate/<uid>/<token>/', UserActivationView.as_view()),
+    path(
+        r'auth/resend_activation/',
+        UserViewSet.as_view({'post': 'resend_activation'}),
+        name='resend_activation',
+    ),
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),

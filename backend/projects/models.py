@@ -8,6 +8,10 @@ from content.models import City, Skills
 from users.models import User
 
 from .validators import (
+    LengthValidator,
+    regex_string_validator,
+    validate_about,
+    validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
@@ -20,7 +24,7 @@ class Organization(models.Model):
     Модель представляет собой информацию об организации-организаторе проектов.
     """
 
-    contact_person = models.ForeignKey(
+    contact_person = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='organization',
@@ -46,8 +50,10 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        blank=True,
         verbose_name='Об организации',
+        max_length=settings.MAX_LEN_ABOUT_US,
+        blank=True,
+        validators=[validate_about],
     )
     city = models.ForeignKey(
         City,
@@ -89,6 +95,7 @@ class Volunteer(models.Model):
     )
     telegram = models.CharField(
         max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
         validators=[validate_telegram],
     )
     skills = models.ManyToManyField(
@@ -109,7 +116,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ГГГГ.ММ.ДД", пример: "2000 01 01".',
+        help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
@@ -155,6 +162,7 @@ class Category(models.Model):
     name = models.CharField(
         max_length=settings.MAX_LEN_NAME,
         verbose_name='Название',
+        unique=True,
     )
     slug = models.SlugField(
         unique=True,
@@ -185,8 +193,12 @@ class Address(models.Model):
     )
     street = models.CharField(max_length=75, verbose_name='Улица')
     house = models.CharField(max_length=5, verbose_name='Дом')
-    block = models.CharField(max_length=5, verbose_name='Корпус')
-    building = models.CharField(max_length=5, verbose_name='Строение')
+    block = models.CharField(
+        max_length=5, blank=True, null=True, verbose_name='Корпус'
+    )
+    building = models.CharField(
+        max_length=5, blank=True, null=True, verbose_name='Строение'
+    )
 
     class Meta:
         verbose_name = 'Адрес проекта'
@@ -211,13 +223,6 @@ class Project(models.Model):
     RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
     PROJECT_COMPLETED = 'project_completed'
 
-    STATUS_PROJECT = [
-        (OPEN, 'Открыт'),
-        (READY_FOR_FEEDBACK, 'Готов к откликам'),
-        (RECEPTION_OF_RESPONSES_CLOSED, 'Прием откликов окончен'),
-        (PROJECT_COMPLETED, 'Проект завершен'),
-    ]
-
     STATUS_CHOICES = [
         (APPROVED, 'Одобрено'),
         (EDITING, 'Черновик'),
@@ -228,101 +233,106 @@ class Project(models.Model):
 
     name = models.CharField(
         max_length=settings.MAX_LEN_NAME,
-        blank=False,
+        validators=[validate_name],
         verbose_name='Название',
+        unique=True,
     )
     description = models.TextField(
-        blank=False,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Описание',
     )
     picture = models.ImageField(
-        null=True,
-        blank=True,
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
-        blank=False,
-        auto_now=False,
-        auto_now_add=False,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
-        blank=False,
-        auto_now=False,
-        auto_now_add=False,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
-        null=True,
-        blank=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
-        null=True,
-        blank=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        blank=False,
-        verbose_name='Цель мероприятия',
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Цель проекта',
     )
     event_address = models.ForeignKey(
         Address,
         on_delete=models.CASCADE,
-        blank=True,
-        null=True,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=False,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Мероприятия на проекте',
     )
     organizer_provides = models.TextField(
         blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
         verbose_name='Организатор предоставляет',
     )
     organization = models.ForeignKey(
         Organization,
-        blank=False,
         on_delete=models.CASCADE,
         related_name='projects',
         verbose_name='Организация',
     )
     city = models.ForeignKey(
         City,
-        blank=False,
         on_delete=models.CASCADE,
         related_name='project',
         verbose_name='Город',
     )
     categories = models.ManyToManyField(
         Category,
-        blank=False,
         related_name='projects',
         verbose_name='Категории',
-    )
-    status_project = models.CharField(
-        max_length=100,
-        choices=STATUS_PROJECT,
-        null=False,
-        blank=False,
-        default=EDITING,
-        verbose_name='Статус проекта',
     )
     photo_previous_event = models.ImageField(
         blank=True,
         null=True,
         verbose_name='Фото с мероприятия',
     )
-    participants = models.ForeignKey(
+    participants = models.ManyToManyField(
         'ProjectParticipants',
-        on_delete=models.SET_NULL,
         blank=True,
-        null=True,
         related_name='projects',
         verbose_name='Участники',
     )
@@ -334,13 +344,13 @@ class Project(models.Model):
     )
     skills = models.ManyToManyField(
         Skills,
-        blank=True,
         through='ProjectSkills',
         related_name='projects',
         verbose_name='Навыки',
     )
 
     class Meta:
+        ordering = ('start_datetime', )
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
@@ -348,6 +358,26 @@ class Project(models.Model):
         return settings.PROJECT.format(
             self.name, self.organization, self.categories, self.city
         )
+
+
+class ProjectCategories(models.Model):
+    """
+    Модель представляет собой список категорий проекта.
+    """
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE)
+
+    class Meta:
+        default_related_name = 'project_category'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'category'],
+                name='%(app_label)s%(class)s' '_unique_project_category',
+            )
+        ]
+        verbose_name = 'Категория проекта'
+        verbose_name_plural = 'Категории проекта'
 
 
 class ProjectSkills(models.Model):
@@ -358,13 +388,26 @@ class ProjectSkills(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     skill = models.ForeignKey(Skills, on_delete=models.CASCADE)
 
+    class Meta:
+        default_related_name = 'project_skills'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['project', 'skill'],
+                name='%(app_label)s%(class)s' '_unique_project_skills',
+            )
+        ]
+        verbose_name = 'Навык проекта'
+        verbose_name_plural = 'Навыки проекта'
+
 
 class ProjectParticipants(models.Model):
     """
     Модель представляет собой список участников(волонтеров) проекта.
     """
 
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE, related_name='participant'
+    )
     volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
 
     class Meta:

@@ -94,7 +94,7 @@ class ProjectAdmin(ModelAdmin):
         'city',
         'get_categories_display',
         'photo_previous_event',
-        'participants',
+        'get_participants_display',
         'status_approve',
         'get_skills_display',
     )
@@ -124,6 +124,11 @@ class ProjectAdmin(ModelAdmin):
         return ", ".join([skill.name for skill in obj.skills.all()])
 
     get_skills_display.short_description = 'Skills'
+
+    def get_participants_display(self, obj):
+        return ", ".join(
+            [volunteer.user.last_name for volunteer in obj.participants.all()]
+        )
 
 
 @register(ProjectParticipants)

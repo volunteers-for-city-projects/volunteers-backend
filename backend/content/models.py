@@ -2,9 +2,11 @@ from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
 
+from core.validators import EmailValidator
 from users.models import User
 
 from .validators import (
+    AboutUsValidator,
     NameFeedbackUserValidator,
     PhoneValidator,
     TextFeedbackValidator,
@@ -18,9 +20,15 @@ class PlatformAbout(models.Model):
 
     # photo = models.ImageField(upload_to='content/%Y/%m/%d/', blank=True)
     # # еще не определились надо ли менять фото из админки
-    about_us = models.TextField(verbose_name='Описание раздела "О нас"')
+    about_us = models.TextField(
+        verbose_name='Описание раздела "О нас"',
+        max_length=settings.MAX_LEN_ABOUT_US,
+        validators=[AboutUsValidator.validate_about_us],
+    )
     platform_email = models.EmailField(
-        verbose_name='email Платформы', max_length=settings.MAX_LENGTH_EMAIL
+        verbose_name='email Платформы',
+        max_length=settings.MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email],
     )
 
     class Meta:
@@ -34,7 +42,7 @@ class Valuation(models.Model):
     """
 
     title = models.CharField(
-        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR, unique=True
     )
     description = models.TextField(verbose_name='Описание ценности')
 
@@ -61,7 +69,11 @@ class Feedback(models.Model):
         max_length=settings.LEN_PHONE,
         validators=[PhoneValidator.validate_phone],
     )
-    email = models.EmailField(max_length=settings.MAX_LENGTH_EMAIL)
+    email = models.EmailField(
+        verbose_name="Почтовый адрес",
+        max_length=settings.MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email],
+    )
     text = models.CharField(
         verbose_name='Текст обращения',
         max_length=settings.MAX_LEN_TEXT_FEEDBACK,
@@ -145,7 +157,9 @@ class Skills(models.Model):
     """
 
     name = models.CharField(
-        verbose_name='Навык', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Навык',
+        max_length=settings.MAX_LEN_CHAR,
+        unique=True,
     )
 
     class Meta:
