@@ -618,5 +618,5 @@ class CustomCurrentSerializer(UserSerializer, GetIdOrganizationOrVolunteer):
         model = User
         fields = (
             'id', 'first_name', 'second_name', 'last_name',
-            'email', 'role', 'id_oranizer_or_volunteer'
+            'email', 'role', 'id_organizer_or_volunteer'
         )

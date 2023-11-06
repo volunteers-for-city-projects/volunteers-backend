@@ -350,7 +350,7 @@ class Project(models.Model):
     )
 
     class Meta:
-        ordering = ('-start_datetime')
+        ordering = ('start_datetime', )
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
