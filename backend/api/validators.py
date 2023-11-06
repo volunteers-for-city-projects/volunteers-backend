@@ -58,8 +58,8 @@ def validate_dates(event_start_date, event_end_date, application_date):
 #         (
 #             Project.RECEPTION_OF_RESPONSES_CLOSED,
 #             application_date > now,
-#             'Статус проекта "Прием откликов окончен" можно установить только '
-#             'после окончания подачи заявок.',
+#             'Статус проекта "Прием откликов окончен" можно установить '
+#             'только после окончания подачи заявок.',
 #         ),
 #         (
 #             Project.READY_FOR_FEEDBACK,

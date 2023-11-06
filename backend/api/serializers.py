@@ -239,12 +239,28 @@ class ProjectSerializer(serializers.ModelSerializer):
     #     return data
 
     def create(self, validated_data):
-        if validated_data.get('status_approve') not in (
-            Project.EDITING,
-            Project.PENDING,
+        status_approve = validated_data.get('status_approve')
+        if (
+            status_approve is not None
+            and status_approve not in (
+                Project.EDITING,
+                Project.PENDING,
+            )
         ):
             validated_data.pop('status_approve')
-        return super().create(validated_data)
+        categories = validated_data.pop('categories')
+        skills = validated_data.pop('skills')
+        with transaction.atomic():
+            address, status = Address.objects.get_or_create(
+                **validated_data.pop('event_address')
+            )
+            project_instanse = Project.objects.create(
+                event_address=address,
+                **validated_data
+            )
+            project_instanse.skills.set(skills)
+            project_instanse.categories.set(categories)
+        return project_instanse
 
     class Meta:
         model = Project
