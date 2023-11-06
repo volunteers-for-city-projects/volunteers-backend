@@ -591,9 +591,9 @@ class GetIdOrganizationOrVolunteer(serializers.Serializer):
     в зависимости от роли пользователя.
     """
 
-    id_oranizer_or_volunteer = serializers.SerializerMethodField()
+    id_organizer_or_volunteer = serializers.SerializerMethodField()
 
-    def get_id_oranizer_or_volunteer(self, obj):
+    def get_id_organizer_or_volunteer(self, obj):
         user = self.context['request'].user
 
         if user.is_organizer:
