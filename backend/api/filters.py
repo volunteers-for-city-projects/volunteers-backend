@@ -1,7 +1,6 @@
 import django_filters
-
-# from django.core.validators import RegexValidator
 from django.db.models import Q
+from django.utils import timezone
 from django_filters.rest_framework import FilterSet, filters
 from taggit.models import Tag
 
@@ -79,58 +78,6 @@ class ProjectFilter(FilterSet):
         fields = ['name', 'category', 'organizer']
 
 
-# class StatusProjectOrganizerFilter(django_filters.FilterSet):
-#    """
-#    Фильтр статусов для проектов в личном кабинете организатора.
-#    """
-#    # Фильтр для таба "Черновик"
-#    draft = django_filters.CharFilter(
-#        field_name='status_approve',
-#        lookup_expr='in',
-#        method='filter_draft'
-#    )
-#    # Фильтр для таба "Активен"
-#    active = django_filters.CharFilter(
-#        field_name='status_approve',
-#        lookup_expr='in',
-#        method='filter_active'
-#    )
-#    # Фильтр для таба "Завершен"
-#    completed = django_filters.CharFilter(
-#        field_name='status_approve',
-#        lookup_expr='in',
-#        method='filter_completed'
-#    )
-#    # Фильтр для таба "Архив"
-#    archive = django_filters.CharFilter(
-#        field_name='status_approve',
-#        lookup_expr='in',
-#        method='filter_archive'
-#    )
-#
-#    def filter_draft(self, queryset, name, value):
-#        return queryset.filter(
-#            status_approve__in=['EDITING', 'REJECTED', 'PENDING']
-#        )
-#
-#    def filter_active(self, queryset, name, value):
-#        return queryset.filter(
-#            status_approve__in=['APPROVED', 'Одобрено']
-#        ).filter(status__in=['OPEN', 'READY', 'CLOSED'])
-#
-#    def filter_completed(self, queryset, name, value):
-#        return queryset.filter(
-#            status_approve__in=['APPROVED', 'Одобрено']
-#        ).filter(status='COMPLETED')
-#
-#    def filter_archive(self, queryset, name, value):
-#        return queryset.filter(status_approve='CANCELED_BY_ORGANIZER')
-#
-#    class Meta:
-#        model = Project
-#        fields = []
-
-
 class StatusProjectOrganizerFilter(django_filters.FilterSet):
     """
     Фильтр статусов для проектов в личном кабинете организатора.
@@ -149,25 +96,26 @@ class StatusProjectOrganizerFilter(django_filters.FilterSet):
 
     def filter_draft(self, queryset, name, value):
         return queryset.filter(
-            Q(status_approve__in=['EDITING', 'REJECTED', 'PENDING'])
-            | Q(status__in=['OPEN', 'READY', 'CLOSED'])
+            Q(status_approve__in=['editing', 'rejected', 'pending'])
         )
 
     def filter_active(self, queryset, name, value):
+        now = timezone.now()
         return queryset.filter(
-            Q(status_approve='APPROVED') | Q(status='Одобрено')
-        ).filter(
-            Q(status__in=['OPEN', 'READY', 'CLOSED'])
+            Q(status_approve='approved'),
+            end_datetime__gt=now
         )
 
     def filter_completed(self, queryset, name, value):
+        now = timezone.now()
         return queryset.filter(
-            Q(status_approve='APPROVED') | Q(status='Одобрено')
-        ).filter(status='COMPLETED')
+            Q(status_approve='approved'),
+            end_datetime__lte=now
+        )
 
     def filter_archive(self, queryset, name, value):
         return queryset.filter(
-            Q(status_approve='CANCELED_BY_ORGANIZER') | Q(status='CANCELED')
+            Q(status_approve='canceled_by_organizer')
         )
 
     class Meta:

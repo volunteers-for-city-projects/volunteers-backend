@@ -32,7 +32,6 @@ from .filters import (
     ProjectFilter,
     SkillsFilter,
     StatusProjectOrganizerFilter,
-    StatusProjectVolunteerFilter,
     TagFilter,
 )
 from .permissions import (
@@ -433,7 +432,7 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     serializer_class = ProjectGetSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_class = None
+    filterset_class = StatusProjectOrganizerFilter
     permission_classes = [IsOrganizer | IsVolunteer]
 
     def get_queryset(self):
@@ -467,10 +466,10 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             detail='Вы не являетесь волонтером или организатором'
         )
 
-    def get_filterset_class(self):
-        if self.request.user.is_volunteer:
-            return StatusProjectVolunteerFilter
-        elif self.request.user.is_organizer:
-            return StatusProjectOrganizerFilter
-        else:
-            return None
+    # def get_filterset_class(self):
+    #     if self.request.user.is_volunteer:
+    #         return StatusProjectVolunteerFilter
+    #     elif self.request.user.is_organizer:
+    #         return StatusProjectOrganizerFilter
+    #     else:
+    #         return None

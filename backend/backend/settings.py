@@ -200,7 +200,7 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
-        'current_user': 'api.serializers.CustomCurrentSerializer',
+        'current_user': 'api.serializers.CurrentUserSerializer',
     },
 }
 
