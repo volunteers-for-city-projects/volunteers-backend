@@ -2,7 +2,7 @@ from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, mixins, status, viewsets
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
@@ -312,28 +312,6 @@ class SearchListView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     # filterset_class = SearchFilter
     search_fields = ['name', 'description', 'event_purpose']
-
-
-# class VolunteerProfileView(generics.RetrieveAPIView):
-#     """
-#     Представление для получения профиля волонтера (личный кабинет волонтера).
-
-#     Позволяет волонтерам получать свой собственный профиль. Доступно только
-#     авторизованным волонтерам.
-#     """
-
-#     queryset = Volunteer.objects.all()
-#     serializer_class = VolunteerProfileSerializer
-
-#     def retrieve(self, request, *args, **kwargs):
-#         volunteer = self.get_object()
-#         if volunteer.user != request.user:
-#             return Response(
-#                 {'error': 'Недостаточно прав доступа'},
-#                 status=status.HTTP_403_FORBIDDEN,
-#             )
-#         serializer = self.get_serializer(volunteer)
-#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class ProjectIncomesViewSet(

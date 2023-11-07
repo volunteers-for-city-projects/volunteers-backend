@@ -562,26 +562,6 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-# class VolunteerProfileSerializer(serializers.Serializer):
-#     """
-#     Сериализатор для личного кабинета волонтера.
-#     """
-
-#     user = VolunteerGetSerializer(read_only=True, source='*')
-#     projects = serializers.SerializerMethodField()
-#     project_incomes = ProjectIncomesSerializer(many=True, read_only=True)
-
-#     def get_projects(self, obj):
-#         project_participants = ProjectParticipants.objects.filter(
-#             volunteer__id=obj.id
-#         )
-#         projects = [
-#             participant.project for participant in project_participants
-#         ]
-#         project_serializer = ProjectSerializer(projects, many=True)
-#         return project_serializer.data
-
-
 class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения избранных проектов волонтера.
