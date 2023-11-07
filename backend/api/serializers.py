@@ -191,6 +191,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
+            'id',
             'name',
             'description',
             'picture',
@@ -584,22 +585,28 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
         )
 
 
-class GetIdOrganizationOrVolunteer(serializers.Serializer):
+class CurrentUserSerializer(UserSerializer):
     """
-    Вспомогательный класс.
-    Получает список id организаций или волонтера,
-    в зависимости от роли пользователя.
+    Сериализатор текущего пользователя. используется по адресу auth/me.
     """
 
-    id_organizer_or_volunteer = serializers.SerializerMethodField()
+    id_oranizer_or_volunteer = serializers.SerializerMethodField()
 
-    def get_id_organizer_or_volunteer(self, obj):
+    class Meta:
+        model = User
+        fields = (
+            'id', 'first_name', 'second_name', 'last_name',
+            'email', 'role', 'id_oranizer_or_volunteer'
+        )
+
+    def get_id_oranizer_or_volunteer(self, obj):
+        """
+        Метод получает список id организаций или волонтера,
+        в зависимости от роли пользователя.
+        """
         user = self.context['request'].user
 
         if user.is_organizer:
-            #  на случай если у контактного лица может быть
-            #  несколько организаций
-            #  organization = user.organization.first()
             organization = user.organization
             return organization.id if organization else None
         elif user.is_volunteer:
@@ -607,16 +614,3 @@ class GetIdOrganizationOrVolunteer(serializers.Serializer):
             return volunteer.id if volunteer else None
         else:
             return None
-
-
-class CustomCurrentSerializer(UserSerializer, GetIdOrganizationOrVolunteer):
-    """
-    Сериализатор текущего пользователя. используется по адресу auth/me.
-    """
-
-    class Meta:
-        model = User
-        fields = (
-            'id', 'first_name', 'second_name', 'last_name',
-            'email', 'role', 'id_organizer_or_volunteer'
-        )
