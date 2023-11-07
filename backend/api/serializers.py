@@ -590,16 +590,16 @@ class CurrentUserSerializer(UserSerializer):
     Сериализатор текущего пользователя. используется по адресу auth/me.
     """
 
-    id_oranizer_or_volunteer = serializers.SerializerMethodField()
+    id_organizer_or_volunteer = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
             'id', 'first_name', 'second_name', 'last_name',
-            'email', 'role', 'id_oranizer_or_volunteer'
+            'email', 'role', 'id_organizer_or_volunteer'
         )
 
-    def get_id_oranizer_or_volunteer(self, obj):
+    def get_id_organizer_or_volunteer(self, obj):
         """
         Метод получает список id организаций или волонтера,
         в зависимости от роли пользователя.
