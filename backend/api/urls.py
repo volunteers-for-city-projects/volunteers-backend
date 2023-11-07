@@ -15,7 +15,7 @@ from api.views import (
     SearchListView,
     SkillsViewSet,
     TagViewSet,
-    VolunteerProfileView,
+    # VolunteerProfileView,
     VolunteerViewSet,
 )
 
@@ -32,7 +32,7 @@ router.register(r'cities', CityViewSet)
 router.register(r'skills', SkillsViewSet)
 router.register(r'tags', TagViewSet)
 router.register(
-    r'projects/incomes', ProjectIncomesViewSet, basename='project_incomes'
+    r'incomes', ProjectIncomesViewSet, basename='project_incomes'
 )
 
 urlpatterns = [
@@ -70,5 +70,5 @@ urlpatterns = [
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
-    path('volunteers/<int:pk>/profile/', VolunteerProfileView.as_view()),
+    # path('volunteers/<int:pk>/profile/', VolunteerProfileView.as_view()),
 ]

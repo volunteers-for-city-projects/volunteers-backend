@@ -41,7 +41,7 @@ from .permissions import (
     IsVolunteer,
     IsVolunteerOfIncomes,
 )
-from .serializers import (
+from .serializers import (  # VolunteerProfileSerializer,
     CitySerializer,
     FeedbackSerializer,
     NewsSerializer,
@@ -52,6 +52,7 @@ from .serializers import (
     PreviewNewsSerializer,
     ProjectCategorySerializer,
     ProjectGetSerializer,
+    ProjectIncomesGetSerializer,
     ProjectIncomesSerializer,
     ProjectSerializer,
     SkillsSerializer,
@@ -59,7 +60,6 @@ from .serializers import (
     VolunteerCreateSerializer,
     VolunteerFavoriteGetSerializer,
     VolunteerGetSerializer,
-    VolunteerProfileSerializer,
     VolunteerUpdateSerializer,
 )
 
@@ -314,63 +314,67 @@ class SearchListView(generics.ListAPIView):
     search_fields = ['name', 'description', 'event_purpose']
 
 
-class VolunteerProfileView(generics.RetrieveAPIView):
-    """
-    Представление для получения профиля волонтера (личный кабинет волонтера).
+# class VolunteerProfileView(generics.RetrieveAPIView):
+#     """
+#     Представление для получения профиля волонтера (личный кабинет волонтера).
 
-    Позволяет волонтерам получать свой собственный профиль. Доступно только
-    авторизованным волонтерам.
-    """
+#     Позволяет волонтерам получать свой собственный профиль. Доступно только
+#     авторизованным волонтерам.
+#     """
 
-    queryset = Volunteer.objects.all()
-    serializer_class = VolunteerProfileSerializer
+#     queryset = Volunteer.objects.all()
+#     serializer_class = VolunteerProfileSerializer
 
-    def retrieve(self, request, *args, **kwargs):
-        volunteer = self.get_object()
-        if volunteer.user != request.user:
-            return Response(
-                {'error': 'Недостаточно прав доступа'},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-        serializer = self.get_serializer(volunteer)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+#     def retrieve(self, request, *args, **kwargs):
+#         volunteer = self.get_object()
+#         if volunteer.user != request.user:
+#             return Response(
+#                 {'error': 'Недостаточно прав доступа'},
+#                 status=status.HTTP_403_FORBIDDEN,
+#             )
+#         serializer = self.get_serializer(volunteer)
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
+class ProjectIncomesViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+):
     """
     Представление для заявок волонтеров в рамках проектов.
     """
 
     queryset = ProjectIncomes.objects.all()
-    serializer_class = ProjectIncomesSerializer
-    # permission_classes = [IsVolunteer]
 
-    @permission_classes([IsVolunteer])
-    def create(self, request):
-        """
-        Создает новую заявку волонтера для участия в проекте.
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return ProjectIncomesGetSerializer
+        return ProjectIncomesSerializer
 
-        Parameters: pk (int): Идентификатор проекта, для которого
-        создается заявка.
-        Возвращает успешный ответ с сообщением о создании заявки.
+    def get_permissions(self):
         """
-        project = self.get_object()
-        serializer = self.get_serializer(
-            data={
-                'project': project.id,
-                'volunteer': request.user.volunteer.id,
-            }
+        Метод для установки разрешений в зависимости от действия.
+        """
+        permission_classes_by_action = {
+            'create': [IsVolunteer],
+            'accept_incomes': [IsOrganizerOfProject],
+            'reject_incomes': [IsOrganizerOfProject],
+            'delete_incomes': [IsVolunteerOfIncomes],
+        }
+        permission_classes = permission_classes_by_action.get(
+            self.action, [IsOrganizerOfProject]
         )
+        return [permission() for permission in permission_classes]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        response_data = serializer.data
-        return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(
-        detail=True,
-        methods=['delete'],
-        permission_classes=[IsVolunteerOfIncomes],
-    )
+    @action(detail=True, methods=['delete'])
     def delete_incomes(self, request, pk):
         """
         Удаляет заявку волонтера на участие в проекте.
@@ -384,11 +388,7 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
         response_data = serializer.delete(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=True,
-        methods=['post'],
-        permission_classes=[IsOrganizerOfProject],
-    )
+    @action(detail=True, methods=['post'])
     def accept_incomes(self, request, pk):
         """
         Принимает заявку волонтера и добавляет его в участники проекта.
@@ -404,11 +404,7 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
         response_data = serializer.accept_incomes(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(
-        detail=True,
-        methods=['put'],
-        permission_classes=[IsOrganizerOfProject],
-    )
+    @action(detail=True, methods=['put'])
     def reject_incomes(self, request, pk):
         """
         Отклоняет заявку волонтера.
@@ -440,12 +436,10 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         if self.request.user.is_volunteer:
             volunteer = get_object_or_404(Volunteer, user=self.request.user.id)
             from_volunteer_favorite = VolunteerFavorite.objects.filter(
-                project=OuterRef('pk'),
-                volunteer=volunteer
+                project=OuterRef('pk'), volunteer=volunteer
             )
             return (
-                Project.objects
-                .filter(participant__volunteer=volunteer)
+                Project.objects.filter(participant__volunteer=volunteer)
                 # .select_related('organization')
                 # .prefetch_related('categories', 'skills')
                 .annotate(
