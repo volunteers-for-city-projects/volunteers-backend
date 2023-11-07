@@ -62,7 +62,8 @@ class ProjectFilter(FilterSet):
     """
 
     name = django_filters.CharFilter(lookup_expr='icontains')
-    # временно закоментировано логика статусов, будет менятся
+    # TODO: Пересмотреть логику статусов проекта,
+    # текущая реализация не актуальная.
     # status = django_filters.ChoiceFilter(
     #     field_name='status_project', choices=Project.STATUS_PROJECT
     # )
@@ -82,6 +83,7 @@ class StatusProjectOrganizerFilter(django_filters.FilterSet):
     """
     Фильтр статусов для проектов в личном кабинете организатора.
     """
+
     # Фильтр для таба "Черновик"
     draft = django_filters.CharFilter(method='filter_draft')
 
@@ -102,25 +104,23 @@ class StatusProjectOrganizerFilter(django_filters.FilterSet):
     def filter_active(self, queryset, name, value):
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'),
-            end_datetime__gt=now
+            Q(status_approve='approved'), end_datetime__gt=now
         )
 
     def filter_completed(self, queryset, name, value):
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'),
-            end_datetime__lte=now
+            Q(status_approve='approved'), end_datetime__lte=now
         )
 
     def filter_archive(self, queryset, name, value):
-        return queryset.filter(
-            Q(status_approve='canceled_by_organizer')
-        )
+        return queryset.filter(Q(status_approve='canceled_by_organizer'))
 
     class Meta:
         model = Project
         fields = []
+
+
 # /projects/me/?active=true
 # /projects/me/?draft=true
 
@@ -129,4 +129,5 @@ class StatusProjectVolunteerFilter(django_filters.FilterSet):
     """
     Фильтр статусов для проектов в личном кабинете волонтера.
     """
+
     pass
