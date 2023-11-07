@@ -32,7 +32,6 @@ from .filters import (
     ProjectFilter,
     SkillsFilter,
     StatusProjectOrganizerFilter,
-    # StatusProjectVolunteerFilter,
     TagFilter,
 )
 from .permissions import (
