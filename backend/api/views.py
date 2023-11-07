@@ -336,10 +336,12 @@ class ProjectIncomesViewSet(
         Метод для установки разрешений в зависимости от действия.
         """
         permission_classes_by_action = {
+            'list': [IsOrganizerOfProject],
             'create': [IsVolunteer],
             'accept_incomes': [IsOrganizerOfProject],
             'reject_incomes': [IsOrganizerOfProject],
             'delete_incomes': [IsVolunteerOfIncomes],
+            'retrieve': [IsOrganizerOfProject | IsVolunteerOfIncomes],
         }
         permission_classes = permission_classes_by_action.get(
             self.action, [IsOrganizerOfProject]
