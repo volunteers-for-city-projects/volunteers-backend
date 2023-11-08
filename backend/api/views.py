@@ -34,6 +34,7 @@ from .filters import (
     StatusProjectOrganizerFilter,
     TagFilter,
 )
+from .mixins import DestroyUserMixin
 from .permissions import (
     IsOrganizer,
     IsOrganizerOfProject,
@@ -222,7 +223,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
 
 
-class VolunteerViewSet(viewsets.ModelViewSet):
+class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     """
     Представление для волонтеров.
 
@@ -239,7 +240,7 @@ class VolunteerViewSet(viewsets.ModelViewSet):
         return VolunteerCreateSerializer
 
 
-class OrganizationViewSet(viewsets.ModelViewSet):
+class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     """
     Представление для орагизаций - организаторов проекта.
 
