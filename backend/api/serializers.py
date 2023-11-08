@@ -249,7 +249,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         categories = validated_data.pop('categories')
         skills = validated_data.pop('skills')
         with transaction.atomic():
-            address, status = Address.objects.get_or_create(
+            address, _ = Address.objects.get_or_create(
                 **validated_data.pop('event_address')
             )
             project_instanse = Project.objects.create(
@@ -415,9 +415,11 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         status_incomes = validated_data.get(
             'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
         )
-        if ProjectIncomes.objects.filter(
-            project=project, volunteer=volunteer
-        ).exists():
+        if (
+            ProjectIncomes.objects.filter(project=project, volunteer=volunteer)
+            .exclude(status_incomes=ProjectIncomes.REJECTED)
+            .exists()
+        ):
             raise serializers.ValidationError(
                 'Заявка волонтера на этот проект уже существует.'
             )
@@ -474,9 +476,12 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         request = self.context.get('request')
         user = request.user
-        if user.role == User.VOLUNTEER and hasattr(user, 'volunteer'):
-            if instance.volunteer != user.volunteer:
-                return {}
+        if (
+            user.role == User.VOLUNTEER
+            and hasattr(user, 'volunteer')
+            and instance.volunteer != user.volunteer
+        ):
+            return {}
         if (
             user.role == User.ORGANIZER
             and instance.project.organizer != user.organizer

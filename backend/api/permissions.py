@@ -25,9 +25,6 @@ class IsOrganizerOfProject(BasePermission):
     Разрешает доступ только организатору проекта.
     """
 
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_organizer
-
     def has_object_permission(self, request, view, obj):
         return (
             request.user.is_authenticated
@@ -48,7 +45,9 @@ class IsVolunteer(BasePermission):
 
 class IsVolunteerOfIncomes(BasePermission):
     """
-    Разрешает доступ только волонтеру, который создал заявку.
+    Разрешает доступ только волонтеру, который создал заявку. Проверяет,
+    что пользователь аутентифицирован и имеет связь с объектом Volunteer,
+    который соответствует волонтеру, указанному в заявке.
     """
 
     def has_permission(self, request, view):

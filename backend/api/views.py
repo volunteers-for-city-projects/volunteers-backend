@@ -325,8 +325,16 @@ class ProjectIncomesViewSet(
 
     queryset = ProjectIncomes.objects.all()
 
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_authenticated and user.is_organizer:
+            return ProjectIncomes.objects.filter(
+                project__organization__contact_person=user
+            )
+        return ProjectIncomes.objects.none()
+
     def get_serializer_class(self):
-        if self.action in ['list', 'retrieve']:
+        if self.request.method in SAFE_METHODS:
             return ProjectIncomesGetSerializer
         return ProjectIncomesSerializer
 
