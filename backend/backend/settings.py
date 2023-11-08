@@ -130,9 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'users.validators.PasswordMaximumLengthValidator',
-        'OPTIONS': {
-            'max_length': 20
-        },
+        'OPTIONS': {'max_length': 20},
     },
     {
         'NAME': 'users.validators.PasswordRegexValidator',
@@ -242,9 +240,7 @@ MAX_LENGTH_EMAIL = 256
 MIN_LENGTH_EMAIL = 6
 MAX_LENGTH_EMAIL_USER_PART = 64
 MESSAGE_EMAIL_NOT_VALID = 'Некорректный email!'
-MESSAGE_EMAIL_USER_PART_VALID = (
-    f'Максимальная длинна пользовательской части: {MAX_LENGTH_EMAIL_USER_PART} символа.'
-)
+MESSAGE_EMAIL_USER_PART_VALID = f'Максимальная длинна пользовательской части: {MAX_LENGTH_EMAIL_USER_PART} символа.'
 
 MAX_LEN_CHAR = 250
 LEN_PHONE = 12
@@ -306,5 +302,5 @@ MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
 MESSAGE_ABOUT_US_REGEX_VALID = (
-    "Допускаются цифры, буквыб пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
+    "Допускаются цифры, буквы пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
 )

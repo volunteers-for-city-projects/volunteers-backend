@@ -350,7 +350,7 @@ class Project(models.Model):
     )
 
     class Meta:
-        ordering = ('start_datetime', )
+        ordering = ('start_datetime',)
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
@@ -460,6 +460,18 @@ class ProjectIncomes(models.Model):
         choices=STATUS_INCOMES,
         default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
+    )
+    cover_letter = models.TextField(
+        verbose_name='Сопроводительное письмо',
+        blank=True,
+        null=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
