@@ -62,7 +62,8 @@ class ProjectFilter(FilterSet):
     """
 
     name = django_filters.CharFilter(lookup_expr='icontains')
-    # временно закоментировано логика статусов, будет менятся
+    # TODO: Пересмотреть логику статусов проекта,
+    # текущая реализация не актуальная.
     # status = django_filters.ChoiceFilter(
     #     field_name='status_project', choices=Project.STATUS_PROJECT
     # )
@@ -112,8 +113,7 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'),
-            end_datetime__gt=now
+            Q(status_approve='approved'), end_datetime__gt=now
         )
 
     def filter_completed(self, queryset):
@@ -122,8 +122,7 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'),
-            end_datetime__lte=now
+            Q(status_approve='approved'), end_datetime__lte=now
         )
 
     def filter_archive(self, queryset):
