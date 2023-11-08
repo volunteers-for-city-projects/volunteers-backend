@@ -211,7 +211,7 @@ def validate_about(value):
     regex_validator = RegexValidator(
         regex=r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ\s]+)\Z",
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
-        flags=re.I
+        flags=re.I,
     )
     min_length_validator = MinLengthValidator(
         settings.MIN_LEN_ABOUT_US,
