@@ -5,7 +5,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework.response import Response
 from taggit.models import Tag
 
@@ -64,6 +64,7 @@ from .serializers import (  # VolunteerProfileSerializer,
     VolunteerGetSerializer,
     VolunteerUpdateSerializer,
 )
+
 # from backend.api import permissions
 
 # from taggit.serializers import TaggitSerializer
