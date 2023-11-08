@@ -307,7 +307,16 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Volunteer
-        fields = '__all__'
+        fields = (
+            'id',
+            'user',
+            'city',
+            'telegram',
+            'skills',
+            'photo',
+            'date_of_birth',
+            'phone',
+        )
 
 
 class VolunteerCreateSerializer(serializers.ModelSerializer):

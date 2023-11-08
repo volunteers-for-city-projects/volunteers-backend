@@ -26,11 +26,7 @@ class IsOrganizerOfProject(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
-        return (
-            request.user.is_authenticated
-            and request.user.is_organizer
-            and obj.project.organization.contact_person == request.user
-        )
+        return obj.project.organization.contact_person == request.user
 
 
 class IsVolunteer(BasePermission):
@@ -54,11 +50,7 @@ class IsVolunteerOfIncomes(BasePermission):
         return request.user.is_authenticated and request.user.is_volunteer
 
     def has_object_permission(self, request, view, obj):
-        return (
-            request.user.is_authenticated
-            and request.user.is_volunteer
-            and obj.volunteer == request.user.volunteers
-        )
+        return obj.volunteer == request.user.volunteers
 
 
 class IsOwnerOrReadOnlyPermission(BasePermission):
