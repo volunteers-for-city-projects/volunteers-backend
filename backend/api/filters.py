@@ -79,55 +79,98 @@ class ProjectFilter(FilterSet):
         fields = ['name', 'category', 'organizer']
 
 
-class StatusProjectOrganizerFilter(django_filters.FilterSet):
+class StatusProjectFilter(django_filters.FilterSet):
     """
-    Фильтр статусов для проектов в личном кабинете организатора.
+    Фильтр статусов для проектов в личном кабинете.
+
+    Организатор может фильтровать проекты по одному из фильтров:
+    по фильтру "Черновик" /projects/me/?draft=true
+    по фильтру "Активен" /projects/me/?active=true
+    по фильтру "Завершен" /projects/me/?completed=true
+    по фильтру "Архив" /projects/me/?archive=true.
+
+    Волонтер может фильтровать проекты по одному из фильтров:
+    по фильтру "Активен" /projects/me/?active=true
+    по фильтру "Завершен" /projects/me/?completed=true.
     """
 
-    # Фильтр для таба "Черновик"
     draft = django_filters.CharFilter(method='filter_draft')
-
-    # Фильтр для таба "Активен"
     active = django_filters.CharFilter(method='filter_active')
-
-    # Фильтр для таба "Завершен"
     completed = django_filters.CharFilter(method='filter_completed')
-
-    # Фильтр для таба "Архив"
     archive = django_filters.CharFilter(method='filter_archive')
 
-    def filter_draft(self, queryset, name, value):
+    def filter_draft(self, queryset):
+        """
+        Фильтр для таба "Черновик".
+        """
         return queryset.filter(
             Q(status_approve__in=['editing', 'rejected', 'pending'])
         )
 
-    def filter_active(self, queryset, name, value):
+    def filter_active(self, queryset):
+        """
+        Фильтр для таба "Активен".
+        """
         now = timezone.now()
         return queryset.filter(
             Q(status_approve='approved'), end_datetime__gt=now
         )
 
-    def filter_completed(self, queryset, name, value):
+    def filter_completed(self, queryset):
+        """
+        Фильтр для таба "Завершен".
+        """
         now = timezone.now()
         return queryset.filter(
             Q(status_approve='approved'), end_datetime__lte=now
         )
 
-    def filter_archive(self, queryset, name, value):
-        return queryset.filter(Q(status_approve='canceled_by_organizer'))
+    def filter_archive(self, queryset):
+        """
+        Фильтр для таба "Архив".
+        """
+        return queryset.filter(
+            Q(status_approve='canceled_by_organizer')
+        )
+
+    #  TODO фильтры по статусам проекта в ЛК Волонтера
+    #  Простой код для понимания и дополнения статусов волнтеров
+    # def filter_queryset(self, queryset):
+    #     user = self.request.user
+    #     if user.is_organizer:
+    #         if self.data.get("draft"):
+    #             queryset = self.filter_draft(queryset)
+    #         elif self.data.get("active"):
+    #             queryset = self.filter_active(queryset)
+    #         elif self.data.get("completed"):
+    #             queryset = self.filter_completed(queryset)
+    #         elif self.data.get("archive"):
+    #             queryset = self.filter_archive(queryset)
+    #     elif user.is_volunteer:
+    #         if self.data.get("active"):
+    #             queryset = self.filter_active(queryset)
+    #         elif self.data.get("completed"):
+    #             queryset = self.filter_completed(queryset)
+    #     return queryset
+
+    def filter_queryset(self, queryset):
+        user = self.request.user
+        status_filter = None
+
+        if user.is_organizer:
+            status_filter = self.data.get("draft") and self.filter_draft or \
+                    self.data.get("active") and self.filter_active or \
+                    self.data.get("completed") and self.filter_completed or \
+                    self.data.get("archive") and self.filter_archive
+        elif user.is_volunteer:
+            status_filter = self.data.get("active") and self.filter_active or \
+                    self.data.get("completed") and self.filter_completed
+
+        if status_filter:
+            queryset = status_filter(queryset)
+
+        return queryset
 
     class Meta:
         model = Project
         fields = []
-
-
-# /projects/me/?active=true
-# /projects/me/?draft=true
-
-
-class StatusProjectVolunteerFilter(django_filters.FilterSet):
-    """
-    Фильтр статусов для проектов в личном кабинете волонтера.
-    """
-
-    pass

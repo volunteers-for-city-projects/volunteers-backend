@@ -1,6 +1,7 @@
 from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action, permission_classes
 from rest_framework.exceptions import PermissionDenied
@@ -8,6 +9,7 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 from taggit.models import Tag
 
+from api import schemas
 from backend.settings import VALUATIONS_ON_PAGE_ABOUT_US
 from content.models import (
     City,
@@ -31,7 +33,7 @@ from .filters import (
     ProjectCategoryFilter,
     ProjectFilter,
     SkillsFilter,
-    StatusProjectOrganizerFilter,
+    StatusProjectFilter,
     TagFilter,
 )
 from .mixins import DestroyUserMixin
@@ -261,6 +263,8 @@ class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
 class CityViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Представление для отображения городов.
+
+    ---
     """
 
     queryset = City.objects.all()
@@ -272,6 +276,8 @@ class CityViewSet(viewsets.ReadOnlyModelViewSet):
 class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Представление для отображения навыков.
+
+    ---
     """
 
     queryset = Skills.objects.all()
@@ -283,6 +289,8 @@ class SkillsViewSet(viewsets.ReadOnlyModelViewSet):
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Представление для отображения тегов.
+
+    ---
     """
 
     queryset = Tag.objects.all()
@@ -294,6 +302,8 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Представление для отображения категорий проекта.
+
+    ---
     """
 
     queryset = Category.objects.all()
@@ -305,6 +315,8 @@ class ProjectCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class SearchListView(generics.ListAPIView):
     """
     Представление для отображения строки поиска.
+
+    ---
     """
 
     queryset = Project.objects.all()
@@ -339,6 +351,8 @@ class VolunteerProfileView(generics.RetrieveAPIView):
 class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
     """
     Представление для заявок волонтеров в рамках проектов.
+
+    ---
     """
 
     queryset = ProjectIncomes.objects.all()
@@ -427,13 +441,15 @@ class ProjectIncomesViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
 
 class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """
+    Отображает проекты текущего пользователя.
+
     Представление позволяет авторизованным пользователям с ролью
     Волонтер или Организатор просматривать свои проекты.
     """
 
     serializer_class = ProjectGetSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_class = StatusProjectOrganizerFilter
+    filterset_class = StatusProjectFilter
     permission_classes = [IsOrganizer | IsVolunteer]
 
     def get_queryset(self):
@@ -452,6 +468,7 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                     is_favorited=Exists(from_volunteer_favorite),
                 )
             )
+
         if self.request.user.is_organizer:
             return Project.objects.filter(
                 organization__contact_person=self.request.user
@@ -467,10 +484,8 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             detail='Вы не являетесь волонтером или организатором'
         )
 
-    # def get_filterset_class(self):
-    #     if self.request.user.is_volunteer:
-    #         return StatusProjectVolunteerFilter
-    #     elif self.request.user.is_organizer:
-    #         return StatusProjectOrganizerFilter
-    #     else:
-    #         return None
+    @swagger_auto_schema(
+        manual_parameters=schemas.status_project_filter_params
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
