@@ -152,6 +152,8 @@ class ProjectIncomesAdmin(ModelAdmin):
         'project',
         'volunteer',
         'status_incomes',
+        'cover_letter',
+        'created_at',
     )
     search_fields = (
         'name',
