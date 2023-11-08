@@ -282,7 +282,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             'city',
             'categories',
             'photo_previous_event',
-            'participants',
             'status_approve',
             'skills',
         )
