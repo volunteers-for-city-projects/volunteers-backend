@@ -191,6 +191,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = (
+            'id',
             'name',
             'description',
             'picture',
@@ -577,35 +578,12 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
         )
 
 
-class GetIdOrganizationOrVolunteer(serializers.Serializer):
-    """
-    Вспомогательный класс.
-    Получает список id организаций или волонтера,
-    в зависимости от роли пользователя.
-    """
-
-    id_organizer_or_volunteer = serializers.SerializerMethodField()
-
-    def get_id_organizer_or_volunteer(self, obj):
-        user = self.context['request'].user
-
-        if user.is_organizer:
-            #  на случай если у контактного лица может быть
-            #  несколько организаций
-            #  organization = user.organization.first()
-            organization = user.organization
-            return organization.id if organization else None
-        elif user.is_volunteer:
-            volunteer = user.volunteers
-            return volunteer.id if volunteer else None
-        else:
-            return None
-
-
-class CustomCurrentSerializer(UserSerializer, GetIdOrganizationOrVolunteer):
+class CurrentUserSerializer(UserSerializer):
     """
     Сериализатор текущего пользователя. используется по адресу auth/me.
     """
+
+    id_organizer_or_volunteer = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -618,3 +596,19 @@ class CustomCurrentSerializer(UserSerializer, GetIdOrganizationOrVolunteer):
             'role',
             'id_organizer_or_volunteer',
         )
+
+    def get_id_organizer_or_volunteer(self, obj):
+        """
+        Метод получает список id организаций или волонтера,
+        в зависимости от роли пользователя.
+        """
+        user = self.context['request'].user
+
+        if user.is_organizer:
+            organization = user.organization
+            return organization.id if organization else None
+        elif user.is_volunteer:
+            volunteer = user.volunteers
+            return volunteer.id if volunteer else None
+        else:
+            return None
