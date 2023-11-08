@@ -20,6 +20,9 @@ class DestroyUserMixin:
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     def perform_destroy(self, instance):
-        if instance.photo.storage.exists(instance.photo.name):
+        if (
+            instance.photo.name
+            and instance.photo.storage.exists(instance.photo.name)
+        ):
             instance.photo.storage.delete(instance.photo.name)
         instance.delete()
