@@ -64,7 +64,7 @@ from .serializers import (  # VolunteerProfileSerializer,
     VolunteerGetSerializer,
     VolunteerUpdateSerializer,
 )
-from backend.api import permissions
+# from backend.api import permissions
 
 # from taggit.serializers import TaggitSerializer
 
