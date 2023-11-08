@@ -1,6 +1,6 @@
 from drf_yasg import openapi
 
-# параметры натройки для свагера, фильтр проектов в ЛК
+#  параметры натройки для свагера, фильтр проектов в ЛК
 status_project_filter_params = [
     openapi.Parameter(
         'draft', openapi.IN_QUERY, type=openapi.TYPE_STRING,
