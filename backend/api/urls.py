@@ -56,12 +56,12 @@ urlpatterns = [
         name='password_reset_confirm',
     ),
     path(
-        r'auth/activation/',
+        'auth/activation/',
         UserViewSet.as_view({'post': 'activation'}),
         name='activation',
     ),
     path(
-        r'auth/resend_activation/',
+        'auth/resend_activation/',
         UserViewSet.as_view({'post': 'resend_activation'}),
         name='resend_activation',
     ),

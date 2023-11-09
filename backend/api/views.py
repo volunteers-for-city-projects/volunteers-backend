@@ -41,10 +41,12 @@ from .permissions import (
     IsOrganizer,
     IsOrganizerOfProject,
     IsOrganizerOrReadOnly,
+    IsOwnerOrganization,
+    IsOwnerVolunteer,
     IsVolunteer,
     IsVolunteerOfIncomes,
 )
-from .serializers import (  # VolunteerProfileSerializer,
+from .serializers import (
     CitySerializer,
     FeedbackSerializer,
     NewsSerializer,
@@ -134,7 +136,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
     """
 
     queryset = Project.objects.all()
-    # serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
     permission_classes = [IsOrganizerOrReadOnly]
@@ -239,7 +240,7 @@ class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     Позволяет получать, создавать, редактировать, удалять участника-волонтера.
     """
 
-    permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
     queryset = Volunteer.objects.all()
 
     def get_serializer_class(self):
@@ -248,6 +249,14 @@ class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
         if self.request.method in ('PUT', 'PATCH'):
             return VolunteerUpdateSerializer
         return VolunteerCreateSerializer
+
+    def get_permissions(self):
+        if self.request.method in ('PUT', 'PATCH', 'DELETE'):
+            self.permission_classes = (IsOwnerVolunteer,)
+        else:
+            self.permission_classes = (AllowAny,)
+
+        return super(VolunteerViewSet, self).get_permissions()
 
 
 class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
@@ -258,7 +267,7 @@ class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     удалять организацию-организатора проекта.
     """
 
-    permission_classes = (AllowAny,)
+    # permission_classes = (AllowAny,)
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -267,6 +276,14 @@ class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
         if self.request.method in ('PUT', 'PATCH'):
             return OgranizationUpdateSerializer
         return OgranizationCreateSerializer
+
+    def get_permissions(self):
+        if self.request.method in ('PUT', 'PATCH', 'DELETE'):
+            self.permission_classes = (IsOwnerOrganization,)
+        else:
+            self.permission_classes = (AllowAny,)
+
+        return super(OrganizationViewSet, self).get_permissions()
 
 
 class CityViewSet(viewsets.ReadOnlyModelViewSet):
