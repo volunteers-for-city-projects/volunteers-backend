@@ -4,15 +4,19 @@ from users.models import User
 
 
 class IsAdmin(BasePermission):
-    """Разрешает доступ только пользователям с ролью администратора."""
+    """
+    Разрешает доступ только пользователям с ролью администратора.
+    """
 
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_admin
 
 
 class IsOrganizerOrReadOnly(BasePermission):
-    """Разрешает доступ для безопасных методов всем,
-    а для остальных только пользователям с ролью организатор."""
+    """
+    Разрешает доступ для безопасных методов всем, а для
+    остальных только пользователям с ролью организатор.
+    """
 
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS or (
@@ -22,7 +26,9 @@ class IsOrganizerOrReadOnly(BasePermission):
 
 
 class IsOrganizer(BasePermission):
-    """Разрешает доступ только пользователям с ролью организатор."""
+    """
+    Разрешает доступ только пользователям с ролью организатор.
+    """
 
     def has_permission(self, request, view):
         return bool(
@@ -42,13 +48,10 @@ class IsOrganizerOfProject(BasePermission):
 
 
 class IsVolunteer(BasePermission):
-    """Разрешает доступ только пользователям с ролью волонтер."""
+    """
+    Разрешает доступ только пользователям с ролью волонтер.
+    """
 
-    # def has_permission(self, request, view):
-    #     return (
-    #         request.user.is_authenticated
-    #         and request.user.role == User.VOLUNTEER
-    #     )
     def has_permission(self, request, view):
         return bool(
             request.user
@@ -72,9 +75,33 @@ class IsVolunteerOfIncomes(BasePermission):
 
 
 class IsOwnerOrReadOnlyPermission(BasePermission):
-    """Разрешает доступ только создателю объекта для изменения/удаления."""
+    """
+    Разрешает доступ только создателю объекта для изменения/удаления.
+    """
 
     def has_object_permission(self, request, view, obj):
-        if request.method in ['GET', 'HEAD', 'OPTIONS']:
+        if request.method in SAFE_METHODS:
             return True
         return obj.volunteer == request.user
+
+
+class IsOwnerVolunteer(BasePermission):
+    """
+    Разрешает доступ волонтеру для изменения/удаления только своего профиля.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
+
+class IsOwnerOrganization(BasePermission):
+    """
+    Разрешает доступ организатору для изменения/удаления только своего профиля.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        return obj.contact_person == request.user

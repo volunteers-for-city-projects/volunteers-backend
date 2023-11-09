@@ -594,7 +594,7 @@ class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
 
 class CurrentUserSerializer(UserSerializer):
     """
-    Сериализатор текущего пользователя. используется по адресу auth/me.
+    Сериализатор текущего пользователя, используется по адресу auth/me.
     """
 
     id_organizer_or_volunteer = serializers.SerializerMethodField()
