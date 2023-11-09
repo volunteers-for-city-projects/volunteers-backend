@@ -281,6 +281,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
+        read_only_fields = ('organization',)
 
 
 class TagSerializer(serializers.ModelSerializer):

@@ -40,6 +40,7 @@ from .mixins import DestroyUserMixin
 from .permissions import (
     IsOrganizer,
     IsOrganizerOfProject,
+    IsOrganizerOrReadOnly,
     IsVolunteer,
     IsVolunteerOfIncomes,
 )
@@ -120,6 +121,7 @@ class FeedbackCreateView(generics.CreateAPIView):
 
     queryset = Feedback.objects.all()
     serializer_class = FeedbackSerializer
+    permission_classes = (AllowAny,)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -135,19 +137,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
     # serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend]
     filterset_class = ProjectFilter
-    permission_classes = [IsOrganizer]
+    permission_classes = [IsOrganizerOrReadOnly]
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ProjectGetSerializer
         return ProjectSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            self.perform_create(serializer)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def perform_create(self, serializer):
+        serializer.save(organization=self.request.user.organization)
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     if serializer.is_valid():
+    #         self.perform_create(serializer)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -466,9 +471,9 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             # return Project.objects.filter(organization=organization)
 
         #  добавила иначе ошибка если заходить администратором
-        raise PermissionDenied(
-            detail='Вы не являетесь волонтером или организатором'
-        )
+        # raise PermissionDenied(
+        #     detail='Вы не являетесь волонтером или организатором'
+        # )
 
     @swagger_auto_schema(
         manual_parameters=schemas.status_project_filter_params
