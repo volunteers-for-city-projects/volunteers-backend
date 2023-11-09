@@ -4,7 +4,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
-# from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -442,7 +441,6 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     filter_backends = [DjangoFilterBackend]
     filterset_class = StatusProjectFilter
     permission_classes = [IsOrganizer | IsVolunteer]
-    # parmission_classes = AllowAny
 
     def get_queryset(self):
         if self.request.user.is_volunteer:
