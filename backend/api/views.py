@@ -233,6 +233,7 @@ class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
 
     Позволяет получать, создавать, редактировать, удалять участника-волонтера.
     """
+
     permission_classes = (AllowAny,)
     queryset = Volunteer.objects.all()
 
@@ -251,6 +252,7 @@ class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     Позволяет получать, создавать, редактировать,
     удалять организацию-организатора проекта.
     """
+
     permission_classes = (AllowAny,)
     queryset = Organization.objects.all()
 
@@ -348,7 +350,7 @@ class ProjectIncomesViewSet(
             return ProjectIncomes.objects.filter(
                 project__organization__contact_person=user
             )
-        return ProjectIncomes.objects.none()
+        raise PermissionDenied('Нет доступа к этой странице')
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
