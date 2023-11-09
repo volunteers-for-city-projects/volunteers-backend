@@ -10,12 +10,24 @@ class IsAdmin(BasePermission):
         return request.user.is_authenticated and request.user.is_admin
 
 
-class IsOrganizer(BasePermission):
-    """Разрешает доступ только пользователям с ролью организатор."""
+class IsOrganizerOrReadOnly(BasePermission):
+    """Разрешает доступ для безопасных методов всем,
+    а для остальных только пользователям с ролью организатор."""
 
     def has_permission(self, request, view):
         return request.method in SAFE_METHODS or (
             request.user.is_authenticated
+            and request.user.role == User.ORGANIZER
+        )
+
+
+class IsOrganizer(BasePermission):
+    """Разрешает доступ только пользователям с ролью организатор."""
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
             and request.user.role == User.ORGANIZER
         )
 
@@ -32,9 +44,15 @@ class IsOrganizerOfProject(BasePermission):
 class IsVolunteer(BasePermission):
     """Разрешает доступ только пользователям с ролью волонтер."""
 
+    # def has_permission(self, request, view):
+    #     return (
+    #         request.user.is_authenticated
+    #         and request.user.role == User.VOLUNTEER
+    #     )
     def has_permission(self, request, view):
-        return (
-            request.user.is_authenticated
+        return bool(
+            request.user
+            and request.user.is_authenticated
             and request.user.role == User.VOLUNTEER
         )
 
