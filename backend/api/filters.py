@@ -159,12 +159,12 @@ class StatusProjectFilter(django_filters.FilterSet):
 
         if user.is_organizer:
             status_filter = self.data.get("draft") and self.filter_draft or \
-                    self.data.get("active") and self.filter_active or \
-                    self.data.get("completed") and self.filter_completed or \
-                    self.data.get("archive") and self.filter_archive
+                self.data.get("active") and self.filter_active or \
+                self.data.get("completed") and self.filter_completed or \
+                self.data.get("archive") and self.filter_archive
         elif user.is_volunteer:
             status_filter = self.data.get("active") and self.filter_active or \
-                    self.data.get("completed") and self.filter_completed
+                self.data.get("completed") and self.filter_completed
 
         if status_filter:
             queryset = status_filter(queryset)

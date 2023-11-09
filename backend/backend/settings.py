@@ -28,8 +28,6 @@ CSRF_TRUSTED_ORIGINS = [
     'http://*.127.0.0.1',
 ]
 
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -42,7 +40,6 @@ INSTALLED_APPS = [
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    # 'rest_framework_swagger', # убираем
     'drf_yasg',
     'taggit',
     'gmailapi_backend',
@@ -199,6 +196,7 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
+        'token_create': 'core.auth.serialisers.CustomTokenCreateSerializer',
     },
 }
 
