@@ -2,8 +2,8 @@ from django.conf import settings
 from django.db import models
 from taggit.managers import TaggableManager
 
-from core.validators import EmailValidator
 from users.models import User
+from users.validators import EmailValidator
 
 from .validators import (
     AboutUsValidator,
