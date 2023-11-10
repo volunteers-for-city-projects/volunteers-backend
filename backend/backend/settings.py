@@ -196,7 +196,7 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': True,
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
-        'token_create': 'core.auth.serialisers.CustomTokenCreateSerializer',
+        'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
     },
 }
 

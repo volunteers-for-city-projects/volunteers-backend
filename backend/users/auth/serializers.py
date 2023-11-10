@@ -8,9 +8,6 @@ User = get_user_model()
 
 class CustomTokenCreateSerializer(TokenCreateSerializer):
     default_error_messages = {
-        'invalid_credentials': (
-            settings.CONSTANTS.messages.INVALID_CREDENTIALS_ERROR
-        ),
         'inactive_account': settings.CONSTANTS.messages.INACTIVE_ACCOUNT_ERROR,
         'missing_account': settings.CONSTANTS.messages.EMAIL_NOT_FOUND,
         'wrong_password': settings.CONSTANTS.messages.INVALID_PASSWORD_ERROR,
