@@ -104,7 +104,10 @@ class StatusProjectFilter(django_filters.FilterSet):
         Фильтр для таба "Черновик".
         """
         return queryset.filter(
-            Q(status_approve__in=['editing', 'rejected', 'pending'])
+            Q(status_approve__in=[
+                Project.EDITING, Project.REJECTED, Project.PENDING
+                ]
+              )
         )
 
     def filter_active(self, queryset):
@@ -113,7 +116,8 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'), end_datetime__gt=now
+            Q(status_approve=Project.APPROVED),
+            end_datetime__gt=now
         )
 
     def filter_completed(self, queryset):
@@ -122,7 +126,8 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve='approved'), end_datetime__lte=now
+            Q(status_approve=Project.APPROVED),
+            end_datetime__lte=now
         )
 
     def filter_archive(self, queryset):
@@ -130,7 +135,7 @@ class StatusProjectFilter(django_filters.FilterSet):
         Фильтр для таба "Архив".
         """
         return queryset.filter(
-            Q(status_approve='canceled_by_organizer')
+            Q(status_approve=Project.CANCELED_BY_ORGANIZER)
         )
 
     #  TODO фильтры по статусам проекта в ЛК Волонтера

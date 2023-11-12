@@ -1,5 +1,6 @@
 from django.db.models import Exists, OuterRef
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
@@ -46,6 +47,7 @@ from .permissions import (
 )
 from .serializers import (  # VolunteerProfileSerializer,
     CitySerializer,
+    DraftProjectSerializer,
     FeedbackSerializer,
     NewsSerializer,
     OgranizationCreateSerializer,
@@ -142,6 +144,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ProjectGetSerializer
+        if self.request.query_params.get('save_draft') == 'True':
+            return DraftProjectSerializer
         return ProjectSerializer
 
     def perform_create(self, serializer):
@@ -162,6 +166,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
+        if instance.status_approve == Project.APPROVED and \
+           instance.end_datetime < timezone.now():
+            return Response(
+                {"detail": "Вы не можете редактировать завершенные проекты"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial
@@ -172,6 +182,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Удаляет проект.
+
+        Удалить проект можно только организатору этого проекта и
+        только со статусом в Архиве(Отменен организатором) или Черновик.
+        """
         instance = self.get_object()
         self.check_object_permissions(request, instance)
         if instance.organization.contact_person != request.user:
@@ -179,6 +195,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
+        #  Проверяем статус проекта возможно нужно еще добавить какие то статусы
+        if instance.status_approve not in [
+            Project.EDITING, Project.CANCELED_BY_ORGANIZER
+        ]:
+            message = ('Вы не можете удалить проекты, '
+                       'не находящиеся в архиве или в черновике.')
+            return Response(
+                {"detail": message}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
