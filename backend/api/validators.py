@@ -23,29 +23,35 @@ def validate_dates(event_start_date, event_end_date, application_date):
     raises: serializers.ValidationError, если даты не соответствуют условиям.
     """
     now = timezone.now()
-    validation_rules = [
-        (
-            event_start_date <= now,
-            'Дата начала мероприятия должна быть в будущем.',
-        ),
-        (
-            event_end_date <= event_start_date,
-            'Дата окончания мероприятия должна быть позже даты начала.',
-        ),
-        (
-            not (application_date <= event_start_date <= event_end_date),
-            'Дата подачи заявки должна быть позже или равна дате начала '
-            'мероприятия и позже даты начала и раньше даты окончания.',
-        ),
-    ]
+    max_allowed_date = now + timezone.timedelta(days=365)
 
-    for condition, error_message in validation_rules:
-        if condition:
-            raise serializers.ValidationError(error_message)
+    if event_start_date < now:
+        raise serializers.ValidationError(
+            'Дата начала мероприятия должна быть в будущем.'
+        )
+
+    if event_end_date <= event_start_date:
+        raise serializers.ValidationError(
+            'Дата окончания мероприятия должна быть позже даты начала.'
+        )
+
+    if not (application_date <= event_start_date <= event_end_date):
+        raise serializers.ValidationError(
+            'Дата подачи заявки должна быть позже или равна дате начала '
+            'мероприятия и позже даты начала и раньше даты окончания.'
+        )
+
+    if any(
+        date > max_allowed_date
+        for date in [event_start_date, event_end_date, application_date]
+    ):
+        raise serializers.ValidationError(
+            'Мероприятие не может быть запланировано на более чем год вперед.'
+        )
     return event_start_date, event_end_date, application_date
 
 
-# нужно передалть с учетом, изменений реализации статусов.
+# TODO нужно передалть с учетом, изменений реализации статусов.
 # def validate_reception_status(
 #     status_project, application_date, start_datetime, end_datetime
 # ):
