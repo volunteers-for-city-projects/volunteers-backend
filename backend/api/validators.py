@@ -35,6 +35,8 @@ def validate_dates(event_start_date, event_end_date, application_date):
             'Дата окончания мероприятия должна быть позже даты начала.'
         )
 
+    # start_date_application ДОДЕЛАТЬ
+    # end_date_application ДОДЕЛАТЬ
     if not (application_date <= event_start_date <= event_end_date):
         raise serializers.ValidationError(
             'Дата подачи заявки должна быть позже или равна дате начала '

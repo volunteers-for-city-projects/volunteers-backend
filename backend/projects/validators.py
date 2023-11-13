@@ -137,13 +137,11 @@ def validate_name(value):
         MAX_LEN,
         message=f'Максимальная длина поля должна быть: {MAX_LEN}.',
     )
-
     regex_validator = RegexValidator(
         regex=NAME_REGEX,
         message='Недопустимые символы в названии проекта. Разрешены латинские '
         'и кириллические буквы, цифры и спецсимволы.',
     )
-
     min_length_validator(value)
     max_length_validator(value)
     regex_validator(value)
