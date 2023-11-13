@@ -54,6 +54,8 @@ services:
   frontend:
     build:
       context: https://github.com/volunteers-for-city-projects/volunteers-frontend.git#develop
+      args:
+        - SECRET_KEY=${REACT_APP_SECRET_KEY_RECAPTCHA}
     command:
       - /bin/sh
       - -c

@@ -230,6 +230,9 @@ SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,
 }
 
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+
 # Constants
 # MAX_LENGTH_NAME = 50
 MAX_LENGTH_SLUG = 50
