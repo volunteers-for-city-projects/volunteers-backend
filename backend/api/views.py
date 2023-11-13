@@ -5,7 +5,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -167,11 +166,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        if instance.status_approve == Project.APPROVED and \
-           instance.end_datetime < timezone.now():
+        if (
+            instance.status_approve == Project.APPROVED
+            and instance.end_datetime < timezone.now()
+        ):
             return Response(
                 {"detail": "Вы не можете редактировать завершенные проекты"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
@@ -198,10 +199,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             )
         #  Проверяем статус проекта возможно нужно еще добавить какие то статусы
         if instance.status_approve not in [
-            Project.EDITING, Project.CANCELED_BY_ORGANIZER
+            Project.EDITING,
+            Project.CANCELED_BY_ORGANIZER,
         ]:
-            message = ('Вы не можете удалить проекты, '
-                       'не находящиеся в архиве или в черновике.')
+            message = (
+                'Вы не можете удалить проекты, '
+                'не находящиеся в архиве или в черновике.'
+            )
             return Response(
                 {"detail": message}, status=status.HTTP_400_BAD_REQUEST
             )
