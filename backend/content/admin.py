@@ -76,7 +76,7 @@ class NewsAdmin(admin.ModelAdmin):
     )
     readonly_fields = ('created_at',)
     list_filter = ('title', 'created_at', 'author', 'tags')
-    search_fields = ('title', 'text', 'tags')
+    search_fields = ('title', 'text')  # tags - не ищет ломает админку
     ordering = ('created_at',)
     date_hierarchy = 'created_at'
     save_on_top = True
