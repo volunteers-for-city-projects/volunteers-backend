@@ -101,9 +101,10 @@ class ProjectAdmin(ModelAdmin):
     search_fields = (
         'name',
         'start_datetime',
-        'organization',
-        'city',
-        'categories',
+        'description',
+        # 'organization',
+        # 'city',
+        # 'categories',
     )
     list_filter = (
         'start_datetime',
@@ -114,6 +115,7 @@ class ProjectAdmin(ModelAdmin):
     )
     save_on_top = True
     empty_value_display = '-пусто-'
+    ordering = ('id',)
 
     def get_categories_display(self, obj):
         return ", ".join([category.name for category in obj.categories.all()])
