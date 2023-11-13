@@ -365,6 +365,7 @@ class ProjectIncomesViewSet(
     """
 
     queryset = ProjectIncomes.objects.all()
+    permission_classes = [IsOrganizerOfProject]
 
     def get_queryset(self):
         user = self.request.user
@@ -372,7 +373,6 @@ class ProjectIncomesViewSet(
             return ProjectIncomes.objects.filter(
                 project__organization__contact_person=user
             )
-        raise PermissionDenied('Нет доступа к этой странице')
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
