@@ -230,7 +230,7 @@ class Project(models.Model):
     ]
 
     name = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME_PROJECT,
         validators=[validate_name],
         unique=True,
         verbose_name='Название',

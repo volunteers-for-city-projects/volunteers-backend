@@ -125,8 +125,8 @@ def validate_name(value):
     """
     Валидация названия проекта.
     """
-    MIN_LEN = 2
-    MAX_LEN = 150
+    MIN_LEN = settings.MIN_LEN_NAME_PROJECT
+    MAX_LEN = settings.MAX_LEN_NAME_PROJECT
     NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
     min_length_validator = MinLengthValidator(
