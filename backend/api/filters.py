@@ -61,20 +61,11 @@ class ProjectFilter(FilterSet):
     Класс для фильтрации проектов по имени, статусу, категории, организации.
     """
 
-    name = django_filters.CharFilter(lookup_expr='icontains')
-    # TODO: Пересмотреть логику статусов проекта,
-    # текущая реализация не актуальная.
-    # status = django_filters.ChoiceFilter(
-    #     field_name='status_project', choices=Project.STATUS_PROJECT
-    # )
     category = django_filters.CharFilter(
         field_name='category', lookup_expr='exact'
     )
     skills = django_filters.CharFilter(
         field_name='skills', lookup_expr='exact'
-    )
-    organizer = django_filters.NumberFilter(
-        field_name='organization', lookup_expr='exact'
     )
     city = django_filters.CharFilter(
         field_name='city__name', lookup_expr='icontains'
