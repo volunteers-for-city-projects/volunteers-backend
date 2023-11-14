@@ -14,8 +14,8 @@ def validate_status_incomes(value):
 
 
 def validate_dates(
-    event_start_date,
-    event_end_date,
+    start_date,
+    end_date,
     start_date_application,
     end_date_application,
 ):
@@ -33,7 +33,7 @@ def validate_dates(
 
     if (
         start_date_application <= now
-        and start_date_application > max_allowed_date
+        and start_date_application < max_allowed_date
     ):
         raise serializers.ValidationError(
             'Начало подачи заявки должна быть текущим или будущем и '
@@ -42,32 +42,31 @@ def validate_dates(
     if (
         end_date_application
         <= start_date_application + timezone.timedelta(minutes=10)
-        and end_date_application > event_start_date
-        and end_date_application > max_allowed_date
+        and end_date_application < max_allowed_date
     ):
         raise serializers.ValidationError(
             'Окончания подачи заявки должна быть позже начала и '
             'не более чем через год после текущей даты.'
         )
     if (
-        event_start_date <= end_date_application
-        and event_start_date > max_allowed_date
+        start_date <= end_date_application
+        and start_date < max_allowed_date
     ):
         raise serializers.ValidationError(
             'Начало мероприятия должна быть в будущем после окончания '
             'подачи заявок и не более чем через год после текущей даты.'
         )
     if (
-        event_end_date <= event_start_date + timezone.timedelta(minutes=10)
-        and event_end_date > max_allowed_date
+        end_date <= start_date + timezone.timedelta(minutes=10)
+        and end_date < max_allowed_date
     ):
         raise serializers.ValidationError(
             'Дата окончания мероприятия должна быть позже начала и '
             'не более чем через год после текущей даты.'
         )
     return (
-        event_start_date,
-        event_end_date,
+        start_date,
+        end_date,
         start_date_application,
         end_date_application,
     )
