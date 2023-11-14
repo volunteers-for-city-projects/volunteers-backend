@@ -59,16 +59,23 @@ class TagFilter(FilterSet):
 class ProjectFilter(FilterSet):
     """
     Класс для фильтрации проектов по имени, статусу, категории, организации.
+
+    Примеры использования фильтров в URL:
+    - /projects/?categories={id_categories} 
+    - /projects/?skills={id_skill}
+    - /projects/?city={id_city}
+    - /projects/?start_datetime=01.01.2023
+    - /projects/?end_datetime=31.12.2023
     """
 
-    category = django_filters.CharFilter(
-        field_name='category', lookup_expr='exact'
+    categories = django_filters.CharFilter(
+        field_name='categories', lookup_expr='exact'
     )
     skills = django_filters.CharFilter(
         field_name='skills', lookup_expr='exact'
     )
     city = django_filters.CharFilter(
-        field_name='city__name', lookup_expr='icontains'
+        field_name='city', lookup_expr='exact'
     )
     start_datetime = django_filters.DateTimeFilter(
         field_name='start_datetime', lookup_expr='gte'
@@ -80,7 +87,7 @@ class ProjectFilter(FilterSet):
     class Meta:
         model = Project
         fields = [
-            'category',
+            'categories',
             'skills',
             'city',
             'start_datetime',
