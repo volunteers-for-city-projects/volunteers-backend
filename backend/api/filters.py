@@ -80,10 +80,8 @@ class ProjectFilter(FilterSet):
     class Meta:
         model = Project
         fields = [
-            'name',
             'category',
             'skills',
-            'organizer',
             'city',
             'start_datetime',
             'end_datetime',
