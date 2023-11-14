@@ -207,7 +207,7 @@ def validate_about(value):
     Валидирует длину и символы в информации об организации.
     """
     regex_validator = RegexValidator(
-        regex=r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ\s]+)\Z",
+        regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
         flags=re.I,
     )

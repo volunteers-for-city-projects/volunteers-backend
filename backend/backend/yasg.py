@@ -1,4 +1,4 @@
-from django.urls import path, re_path
+from django.urls import path
 from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
 from drf_yasg.views import get_schema_view
@@ -38,8 +38,8 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
-    re_path(
-        r'swagger(?P<format>\.json|\.yaml)',
+    path(
+        'swagger<format>/',
         schema_view.without_ui(cache_timeout=0),
         name='schema-json'
     ),
