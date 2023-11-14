@@ -13,44 +13,64 @@ def validate_status_incomes(value):
     return value
 
 
-def validate_dates(event_start_date, event_end_date, application_date):
+def validate_dates(
+    event_start_date,
+    event_end_date,
+    start_date_application,
+    end_date_application,
+):
     """
     Проверяет корректность дат для мероприятия.
 
     param event_start_date: Дата начала мероприятия.
     param event_end_date: Дата окончания мероприятия.
-    param application_date: Дата подачи заявки.
+    param start_date_application: Дата начало подачи заявки.
+    param end_date_application: Дата окончания подачи заявки.
     raises: serializers.ValidationError, если даты не соответствуют условиям.
     """
     now = timezone.now()
     max_allowed_date = now + timezone.timedelta(days=365)
 
-    if event_start_date < now:
-        raise serializers.ValidationError(
-            'Дата начала мероприятия должна быть в будущем.'
-        )
-
-    if event_end_date <= event_start_date:
-        raise serializers.ValidationError(
-            'Дата окончания мероприятия должна быть позже даты начала.'
-        )
-
-    # start_date_application ДОДЕЛАТЬ
-    # end_date_application ДОДЕЛАТЬ
-    if not (application_date <= event_start_date <= event_end_date):
-        raise serializers.ValidationError(
-            'Дата подачи заявки должна быть позже или равна дате начала '
-            'мероприятия и позже даты начала и раньше даты окончания.'
-        )
-
-    if any(
-        date > max_allowed_date
-        for date in [event_start_date, event_end_date, application_date]
+    if (
+        start_date_application <= now
+        and start_date_application > max_allowed_date
     ):
         raise serializers.ValidationError(
-            'Мероприятие не может быть запланировано на более чем год вперед.'
+            'Начало подачи заявки должна быть текущим или будущем и '
+            'не более чем через год после текущей даты.'
         )
-    return event_start_date, event_end_date, application_date
+    if (
+        end_date_application
+        <= start_date_application + timezone.timedelta(minutes=10)
+        and end_date_application > event_start_date
+        and end_date_application > max_allowed_date
+    ):
+        raise serializers.ValidationError(
+            'Окончания подачи заявки должна быть позже начала и '
+            'не более чем через год после текущей даты.'
+        )
+    if (
+        event_start_date <= end_date_application
+        and event_start_date > max_allowed_date
+    ):
+        raise serializers.ValidationError(
+            'Начало мероприятия должна быть в будущем после окончания '
+            'подачи заявок и не более чем через год после текущей даты.'
+        )
+    if (
+        event_end_date <= event_start_date + timezone.timedelta(minutes=10)
+        and event_end_date > max_allowed_date
+    ):
+        raise serializers.ValidationError(
+            'Дата окончания мероприятия должна быть позже начала и '
+            'не более чем через год после текущей даты.'
+        )
+    return (
+        event_start_date,
+        event_end_date,
+        start_date_application,
+        end_date_application,
+    )
 
 
 # TODO нужно передалть с учетом, изменений реализации статусов.
