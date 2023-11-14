@@ -151,12 +151,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(organization=self.request.user.organization)
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     if serializer.is_valid():
-    #         self.perform_create(serializer)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#    def create(self, request, *args, **kwargs):
+#        serializer = self.get_serializer(data=request.data)
+#        if serializer.is_valid():
+#            self.perform_create(serializer)
+#            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -197,7 +197,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        #  Проверяем статус проекта возможно нужно еще добавить какие то статусы
+        #  Проверяем статус проекта возможно нужно еще добавить
+        #  какие то статусы
         if instance.status_approve not in [
             Project.EDITING,
             Project.CANCELED_BY_ORGANIZER,
