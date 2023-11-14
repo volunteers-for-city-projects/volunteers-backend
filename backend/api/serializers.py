@@ -28,6 +28,7 @@ from projects.models import (
 from projects.validators import LengthValidator, regex_string_validator
 from users.models import User
 
+from .mixins import IsValidModifyErrorForFrontendMixin
 from .validators import validate_dates, validate_status_incomes
 
 
@@ -360,7 +361,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=City.objects.all(),
         required=True,
         allow_null=False,  # Запретить отправку значения None. если удасться
-        # убрать из модели null=True и чтоб не ломалась админка то можно удалить полностью city из сериализатор
+        # убрать из модели null=True и чтоб не ломалась админка то можно
+        #  удалить полностью city из сериализатор
     )
 
     class Meta:
@@ -494,7 +496,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 #         # Handle other nested fields in a similar fashion if necessary
 
-#         return super(ProjectSerializer, self).update(instance, validated_data)
+#        return super(ProjectSerializer, self).update(instance, validated_data)
 
 #     class Meta:
 #         model = Project
@@ -556,7 +558,8 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerCreateSerializer(serializers.ModelSerializer):
+class VolunteerCreateSerializer(IsValidModifyErrorForFrontendMixin,
+                                serializers.ModelSerializer):
     """
     Сериализатор для создания волонтера.
     """
@@ -752,7 +755,8 @@ class OrganizationGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OgranizationCreateSerializer(serializers.ModelSerializer):
+class OgranizationCreateSerializer(IsValidModifyErrorForFrontendMixin,
+                                   serializers.ModelSerializer):
     """
     Сериализатор для создания организации-организатора.
     """
