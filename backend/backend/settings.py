@@ -132,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'users.validators.PasswordRegexValidator',
         'OPTIONS': {
-            'regex': r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ]+)\Z",
+            'regex': r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ]+)\Z",
         },
     },
     # {
@@ -302,5 +302,5 @@ MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
 MESSAGE_ABOUT_US_REGEX_VALID = (
-    "Допускаются цифры, буквы пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
+    """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
 )
