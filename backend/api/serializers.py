@@ -28,7 +28,7 @@ from projects.models import (
 from projects.validators import LengthValidator, regex_string_validator
 from users.models import User
 
-from .validators import validate_status_incomes
+from .validators import validate_dates, validate_status_incomes
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -196,8 +196,9 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             now = timezone.now()
             if data.start_datetime <= now < data.start_date_application:
                 return OPEN
-            elif (data.start_date_application <= now <
-                  data.end_date_application):
+            elif (
+                data.start_date_application <= now < data.end_date_application
+            ):
                 return READY
             elif data.end_date_application <= now < data.end_datetime:
                 return CLOSED
@@ -291,7 +292,10 @@ class DraftProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
-        read_only_fields = ('organization', 'status_approve',)
+        read_only_fields = (
+            'organization',
+            'status_approve',
+        )
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -381,20 +385,29 @@ class ProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
-        read_only_fields = ('organization', 'status_approve',)
+        read_only_fields = (
+            'organization',
+            'status_approve',
+        )
         extra_kwargs = {field: {'required': True} for field in fields}
         extra_kwargs['photo_previous_event'] = {'required': False}
 
-    # def validate(self, data):
-    #     start_datetime = data['start_datetime']
-    #     end_datetime = data['end_datetime']
-    #     application_date = data['application_date']
+    def validate(self, data):
+        start_datetime = data['start_datetime']
+        end_datetime = data['end_datetime']
+        start_date_application = data['start_date_application']
+        end_date_application = data['end_date_application']
 
-    #     validate_dates(start_datetime, end_datetime, application_date)
-    #     validate_reception_status(
-    #         application_date, start_datetime, end_datetime
-    #     )
-    #     return data
+        validate_dates(
+            start_datetime,
+            end_datetime,
+            start_date_application,
+            end_date_application,
+        )
+        # validate_reception_status(
+        #     application_date, start_datetime, end_datetime
+        # )
+        return data
 
     def create(self, validated_data):
         status_approve = validated_data.get('status_approve')
