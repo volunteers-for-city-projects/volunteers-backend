@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
@@ -25,7 +24,6 @@ from projects.models import (
     Volunteer,
     VolunteerSkills,
 )
-from projects.validators import LengthValidator, regex_string_validator
 from users.models import User
 
 from .validators import validate_status_incomes
@@ -236,7 +234,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
 
 # =====================================start====================================
 
-# ЭТО ЧЕРНОВИК без валидации!!!!!!!!!!!!!!!!!!!!
+# ЭТО ЧЕРНОВИК c валидацией, поля необязательные!!!!!!!!!!!!!!!!!!!!
 
 
 class DraftProjectSerializer(serializers.ModelSerializer):
@@ -248,7 +246,15 @@ class DraftProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Skills.objects.all(), many=True
     )
-    picture = Base64ImageField(required=False)
+    picture = NonEmptyBase64ImageField(required=False)
+    # picture = Base64ImageField(required=False)
+
+    def validate_status_approve(self, value):
+        if value != Project.EDITING:
+            raise serializers.ValidationError(
+                'Вы передаете невверный статус для черновика.'
+            )
+        return value
 
     def create(self, validated_data):
         project_instance = super().create(validated_data)
@@ -261,7 +267,7 @@ class DraftProjectSerializer(serializers.ModelSerializer):
         status_approve = instance.status_approve
         if (
             status_approve != Project.EDITING
-            and status_approve != Project.REJECTED
+            or status_approve != Project.REJECTED
         ):
             raise serializers.ValidationError(
                 'Редактирование разрешено только для проектов '
@@ -291,7 +297,9 @@ class DraftProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
-        read_only_fields = ('organization', 'status_approve',)
+        read_only_fields = ('organization',)
+        extra_kwargs = {'status_approve': {'required': False},
+                        'categories': {'required': False}}
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -302,62 +310,68 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     event_address = AddressSerializer()
     skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True
+        queryset=Skills.objects.all(), many=True,  allow_null=False
     )
     picture = NonEmptyBase64ImageField()
-    description = serializers.CharField(
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
-    )
-    event_purpose = serializers.CharField(
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
-    )
-    project_tasks = serializers.CharField(
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
-    )
-    project_events = serializers.CharField(
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
-    )
-    organizer_provides = serializers.CharField(
-        allow_blank=True,
-        required=False,
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
-    )
+    # description = serializers.CharField(
+    #     validators=[
+    #         regex_string_validator,
+    #         LengthValidator(
+    #             min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+    #             max_length=settings.MAX_LEN_TEXT_FIELD,
+    #         ),
+    #     ],
+    # )
+    # event_purpose = serializers.CharField(allow_blank=False)
+    # event_purpose = serializers.CharField(
+    #     validators=[
+    #         regex_string_validator,
+    #         LengthValidator(
+    #             min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+    #             max_length=settings.MAX_LEN_TEXT_FIELD,
+    #         ),
+    #     ],
+    # )
+    # project_tasks = serializers.CharField(
+    #     validators=[
+    #         regex_string_validator,
+    #         LengthValidator(
+    #             min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+    #             max_length=settings.MAX_LEN_TEXT_FIELD,
+    #         ),
+    #     ],
+    # )
+    # project_events = serializers.CharField(
+    #     validators=[
+    #         regex_string_validator,
+    #         LengthValidator(
+    #             min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+    #             max_length=settings.MAX_LEN_TEXT_FIELD,
+    #         ),
+    #     ],
+    # )
+    # organizer_provides = serializers.CharField(
+    #     allow_blank=True,
+    #     required=False,
+    #     validators=[
+    #         regex_string_validator,
+    #         LengthValidator(
+    #             min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+    #             max_length=settings.MAX_LEN_TEXT_FIELD,
+    #         ),
+    #     ],
+    # )
     city = serializers.PrimaryKeyRelatedField(
         queryset=City.objects.all(),
         required=True,
         allow_null=False,  # Запретить отправку значения None. если удасться
         # убрать из модели null=True и чтоб не ломалась админка то можно удалить полностью city из сериализатор
     )
+
+    def validate_skills(self, value):
+        if not value:
+            raise serializers.ValidationError("Выберите хоть один навык.")
+        return value
 
     class Meta:
         model = Project
@@ -381,9 +395,16 @@ class ProjectSerializer(serializers.ModelSerializer):
             'status_approve',
             'skills',
         )
-        read_only_fields = ('organization', 'status_approve',)
+        read_only_fields = ('organization',)
         extra_kwargs = {field: {'required': True} for field in fields}
-        extra_kwargs['photo_previous_event'] = {'required': False}
+        extra_kwargs = {
+            'photo_previous_event': {'required': False},
+            'status_approve': {'required': False},
+            'event_purpose': {'allow_blank': False, 'required': True},
+            'project_tasks': {'allow_blank': False, 'required': True},
+            'project_events': {'allow_blank': False, 'required': True},
+            'organizer_provides': {'allow_blank': False, 'required': False},
+        }
 
     # def validate(self, data):
     #     start_datetime = data['start_datetime']
@@ -396,13 +417,38 @@ class ProjectSerializer(serializers.ModelSerializer):
     #     )
     #     return data
 
+    # def validate_status_approve(self, value):
+    #     project_status_approve = []
+    #     for status, _ in Project.STATUS_CHOICES:
+    #         project_status_approve.append(status)
+    #     if (
+    #         value not in project_status_approve
+    #     ):
+    #         raise serializers.ValidationError(
+    #             'Некооректный статус аппрув.'
+    #         )
+    # def validate_status_approve(self, value):
+    #     if value is None:
+    #         value = Project.PENDING
+    #     return value
+
+    def validate_status_approve(self, value):
+        if value != Project.PENDING:
+            raise serializers.ValidationError(
+                'Вы передаете невверный статус для создания проекта.'
+            )
+        return value
+
     def create(self, validated_data):
-        status_approve = validated_data.get('status_approve')
-        if status_approve is not None and status_approve not in (
-            Project.EDITING,
-            Project.PENDING,
-        ):
-            validated_data.pop('status_approve')
+        # status_approve = validated_data.get('status_approve', Project.PENDING)
+        # if status_approve not in (Project.EDITING, Project.PENDING):
+        #     validated_data.pop('status_approve', None)
+        # status_approve = validated_data.get('status_approve')
+        # if status_approve is not None and status_approve not in (
+        #     Project.EDITING,
+        #     Project.PENDING,
+        # ):
+        #     validated_data.pop('status_approve')
         categories = validated_data.pop('categories')
         skills = validated_data.pop('skills')
         with transaction.atomic():
@@ -425,6 +471,165 @@ class ProjectSerializer(serializers.ModelSerializer):
             address.save()
         return super(ProjectSerializer, self).update(instance, validated_data)
 
+
+# РАбочий сериализатор ...
+
+# class ProjectSerializer(serializers.ModelSerializer):
+
+#     """
+#     Сериализатор для создания/редактирования проекта.
+#     """
+
+#     event_address = AddressSerializer()
+#     skills = serializers.PrimaryKeyRelatedField(
+#         queryset=Skills.objects.all(), many=True
+#     )
+#     picture = NonEmptyBase64ImageField()
+#     description = serializers.CharField(
+#         validators=[
+#             regex_string_validator,
+#             LengthValidator(
+#                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+#                 max_length=settings.MAX_LEN_TEXT_FIELD,
+#             ),
+#         ],
+#     )
+#     event_purpose = serializers.CharField(
+#         validators=[
+#             regex_string_validator,
+#             LengthValidator(
+#                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+#                 max_length=settings.MAX_LEN_TEXT_FIELD,
+#             ),
+#         ],
+#     )
+#     project_tasks = serializers.CharField(
+#         validators=[
+#             regex_string_validator,
+#             LengthValidator(
+#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+#                 max_length=settings.MAX_LEN_TEXT_FIELD,
+#             ),
+#         ],
+#     )
+#     project_events = serializers.CharField(
+#         validators=[
+#             regex_string_validator,
+#             LengthValidator(
+#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+#                 max_length=settings.MAX_LEN_TEXT_FIELD,
+#             ),
+#         ],
+#     )
+#     organizer_provides = serializers.CharField(
+#         allow_blank=True,
+#         required=False,
+#         validators=[
+#             regex_string_validator,
+#             LengthValidator(
+#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+#                 max_length=settings.MAX_LEN_TEXT_FIELD,
+#             ),
+#         ],
+#     )
+#     city = serializers.PrimaryKeyRelatedField(
+#         queryset=City.objects.all(),
+#         required=True,
+#         allow_null=False,  # Запретить отправку значения None. если удасться
+#         # убрать из модели null=True и чтоб не ломалась админка то можно удалить полностью city из сериализатор
+#     )
+
+#     class Meta:
+#         model = Project
+#         fields = (
+#             'name',
+#             'description',
+#             'picture',
+#             'start_datetime',
+#             'end_datetime',
+#             'start_date_application',
+#             'end_date_application',
+#             'event_purpose',
+#             'event_address',
+#             'project_tasks',
+#             'project_events',
+#             'organizer_provides',
+#             'organization',
+#             'city',
+#             'categories',
+#             'photo_previous_event',
+#             'status_approve',
+#             'skills',
+#         )
+#         read_only_fields = ('organization',)
+#         extra_kwargs = {field: {'required': True} for field in fields}
+#         extra_kwargs['photo_previous_event'] = {'required': False}
+#         extra_kwargs['status_approve'] = {'required': False}
+
+#     # def validate(self, data):
+#     #     start_datetime = data['start_datetime']
+#     #     end_datetime = data['end_datetime']
+#     #     application_date = data['application_date']
+
+#     #     validate_dates(start_datetime, end_datetime, application_date)
+#     #     validate_reception_status(
+#     #         application_date, start_datetime, end_datetime
+#     #     )
+#     #     return data
+
+#     # def validate_status_approve(self, value):
+#     #     project_status_approve = []
+#     #     for status, _ in Project.STATUS_CHOICES:
+#     #         project_status_approve.append(status)
+#     #     if (
+#     #         value not in project_status_approve
+#     #     ):
+#     #         raise serializers.ValidationError(
+#     #             'Некооректный статус аппрув.'
+#     #         )
+#     # def validate_status_approve(self, value):
+#     #     if value is None:
+#     #         value = Project.PENDING
+#     #     return value
+
+#     def validate_status_approve(self, value):
+#         if value != Project.PENDING:
+#             raise serializers.ValidationError(
+#                 'Вы передаете невверный статус для создания проекта.'
+#             )
+#         return value
+
+#     def create(self, validated_data):
+#         # status_approve = validated_data.get('status_approve', Project.PENDING)
+#         # if status_approve not in (Project.EDITING, Project.PENDING):
+#         #     validated_data.pop('status_approve', None)
+#         # status_approve = validated_data.get('status_approve')
+#         # if status_approve is not None and status_approve not in (
+#         #     Project.EDITING,
+#         #     Project.PENDING,
+#         # ):
+#         #     validated_data.pop('status_approve')
+#         categories = validated_data.pop('categories')
+#         skills = validated_data.pop('skills')
+#         with transaction.atomic():
+#             address, _ = Address.objects.get_or_create(
+#                 **validated_data.pop('event_address')
+#             )
+#             project_instanse = Project.objects.create(
+#                 event_address=address, **validated_data
+#             )
+#             project_instanse.skills.set(skills)
+#             project_instanse.categories.set(categories)
+#         return project_instanse
+
+#     def update(self, instance, validated_data):
+#         address_data = validated_data.pop('event_address', None)
+#         if address_data:
+#             address = instance.event_address
+#             for attr, value in address_data.items():
+#                 setattr(address, attr, value)
+#             address.save()
+#         return super(ProjectSerializer, self).update(instance, validated_data)
 
 # =====================================END====================================
 
@@ -506,7 +711,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 #             'skills',
 #         )
 #         read_only_fields = ('organization', 'status_approve',)
-
+#  ++++++++++++++++++++++++++++++++++++
 
 class TagSerializer(serializers.ModelSerializer):
     """

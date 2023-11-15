@@ -210,155 +210,7 @@ class Address(models.Model):
 #  ===================================draf start===============================
 
 
-class Project(models.Model):
-    APPROVED = 'approved'
-    EDITING = 'editing'
-    PENDING = 'pending'
-    REJECTED = 'rejected'
-    CANCELED_BY_ORGANIZER = 'canceled_by_organizer'
-    OPEN = 'open'
-    READY_FOR_FEEDBACK = 'ready_for_feedback'
-    RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
-    PROJECT_COMPLETED = 'project_completed'
-
-    STATUS_CHOICES = [
-        (APPROVED, 'Одобрено'),
-        (EDITING, 'Черновик'),
-        (PENDING, 'На рассмотрении'),
-        (REJECTED, 'Отклонено'),
-        (CANCELED_BY_ORGANIZER, 'Отменено организатором'),
-    ]
-
-    name = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
-        validators=[validate_name],
-        unique=True,
-        verbose_name='Название',
-    )
-    description = models.TextField(
-        blank=True,
-        # null=True,
-        verbose_name='Описание',
-    )
-    picture = models.ImageField(
-        blank=True,
-        null=True,
-        verbose_name='Картинка',
-    )
-    start_datetime = models.DateTimeField(
-        blank=True,
-        # null=True,
-        verbose_name='Дата и время, начало мероприятия',
-    )
-    end_datetime = models.DateTimeField(
-        blank=True,
-        # null=True,
-        verbose_name='Дата и время, окончания мероприятия',
-    )
-    start_date_application = models.DateTimeField(
-        blank=True,
-        # null=True,
-        verbose_name='Дата и время, начало подачи заявок',
-    )
-    end_date_application = models.DateTimeField(
-        blank=True,
-        # null=True,
-        verbose_name='Дата и время, окончания подачи заявок',
-    )
-    event_purpose = models.TextField(
-        blank=True,
-        # null=True,
-        verbose_name='Цель проекта',
-    )
-    event_address = models.ForeignKey(
-        Address,
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True,
-        verbose_name='Адрес проведения проекта',
-    )
-    project_tasks = models.TextField(
-        blank=True,
-        # null=True,
-        verbose_name='Задачи проекта',
-    )
-    project_events = models.TextField(
-        blank=True,
-        # null=True,
-        verbose_name='Мероприятия на проекте',
-    )
-    organizer_provides = models.TextField(
-        blank=True,
-        # null=True,
-        verbose_name='Организатор предоставляет',
-    )
-    organization = models.ForeignKey(
-        Organization,
-        on_delete=models.CASCADE,
-        related_name='projects',
-        # blank=True,
-        # null=True,
-        verbose_name='Организация',
-    )
-    city = models.ForeignKey(
-        City,
-        on_delete=models.CASCADE,
-        related_name='project',
-        blank=True,
-        null=True,  # если убрать null=True,то админка не показывает
-        #  проект с пустым городами
-        verbose_name='Город',
-    )
-    categories = models.ManyToManyField(
-        Category,
-        related_name='projects',
-        blank=True,
-        verbose_name='Категории',
-    )
-    photo_previous_event = models.ImageField(
-        blank=True,
-        null=True,
-        verbose_name='Фото с мероприятия',
-    )
-    participants = models.ManyToManyField(
-        'ProjectParticipants',
-        blank=True,
-        related_name='projects',
-        verbose_name='Участники',
-    )
-    status_approve = models.CharField(
-        max_length=50,
-        choices=STATUS_CHOICES,
-        default=PENDING,
-        verbose_name='Статус проверки',
-    )
-    skills = models.ManyToManyField(
-        Skills,
-        through='ProjectSkills',
-        related_name='projects',
-        blank=True,
-        verbose_name='Навыки',
-    )
-
-    class Meta:
-        ordering = ('start_datetime',)
-        verbose_name = 'Проект'
-        verbose_name_plural = 'Проекты'
-
-    def __str__(self):
-        return settings.PROJECT.format(
-            self.name, self.organization, self.categories, self.city
-        )
-
-#  ======================================end======================================
-
-#  Модель ранее
-
 # class Project(models.Model):
-#     """
-#     Модель представляет собой информацию о проекте.
-#     """
-
 #     APPROVED = 'approved'
 #     EDITING = 'editing'
 #     PENDING = 'pending'
@@ -380,130 +232,299 @@ class Project(models.Model):
 #     name = models.CharField(
 #         max_length=settings.MAX_LEN_NAME,
 #         validators=[validate_name],
-#         verbose_name='Название',
 #         unique=True,
+#         verbose_name='Название',
 #     )
 #     description = models.TextField(
-#         validators=[
-#             regex_string_validator,
-#             LengthValidator(
-#                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-#                 max_length=settings.MAX_LEN_TEXT_FIELD,
-#             ),
-#         ],
+#         blank=True,
+#         # null=True,
 #         verbose_name='Описание',
 #     )
 #     picture = models.ImageField(
-#         verbose_name='Картинка',
-#     )
-#     start_datetime = models.DateTimeField(
-#         verbose_name='Дата и время, начало мероприятия',
-#     )
-#     end_datetime = models.DateTimeField(
-#         verbose_name='Дата и время, окончания мероприятия',
-#     )
-#     start_date_application = models.DateTimeField(
-#         verbose_name='Дата и время, начало подачи заявок',
-#     )
-#     end_date_application = models.DateTimeField(
-#         verbose_name='Дата и время, окончания подачи заявок',
-#     )
-#     event_purpose = models.TextField(
-#         validators=[
-#             regex_string_validator,
-#             LengthValidator(
-#                 min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-#                 max_length=settings.MAX_LEN_TEXT_FIELD,
-#             ),
-#         ],
-#         verbose_name='Цель проекта',
-#     )
-#     event_address = models.ForeignKey(
-#         Address,
-#         on_delete=models.CASCADE,
-#         verbose_name='Адрес проведения проекта',
-#     )
-#     project_tasks = models.TextField(
-#         validators=[
-#             regex_string_validator,
-#             LengthValidator(
-#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-#                 max_length=settings.MAX_LEN_TEXT_FIELD,
-#             ),
-#         ],
-#         verbose_name='Задачи проекта',
-#     )
-#     project_events = models.TextField(
-#         validators=[
-#             regex_string_validator,
-#             LengthValidator(
-#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-#                 max_length=settings.MAX_LEN_TEXT_FIELD,
-#             ),
-#         ],
-#         verbose_name='Мероприятия на проекте',
-#     )
-#     organizer_provides = models.TextField(
-#         blank=True,
-#         validators=[
-#             regex_string_validator,
-#             LengthValidator(
-#                 min_length=settings.MIN_LEN_TEXT_FIELD_V1,
-#                 max_length=settings.MAX_LEN_TEXT_FIELD,
-#             ),
-#         ],
-#         verbose_name='Организатор предоставляет',
-#     )
-#     organization = models.ForeignKey(
-#         Organization,
-#         on_delete=models.CASCADE,
-#         related_name='projects',
-#         verbose_name='Организация',
-#     )
-#     city = models.ForeignKey(
-#         City,
-#         on_delete=models.CASCADE,
-#         related_name='project',
-#         verbose_name='Город',
-#     )
-#     categories = models.ManyToManyField(
-#         Category,
-#         related_name='projects',
-#         verbose_name='Категории',
-#     )
-#     photo_previous_event = models.ImageField(
 #         blank=True,
 #         null=True,
-#         verbose_name='Фото с мероприятия',
+#         verbose_name='Картинка',
 #     )
-#     participants = models.ManyToManyField(
-#         'ProjectParticipants',
-#         blank=True,
-#         related_name='projects',
-#         verbose_name='Участники',
-#     )
-#     status_approve = models.CharField(
-#         max_length=50,
-#         choices=STATUS_CHOICES,
-#         default=EDITING,
-#         verbose_name='Статус проверки',
-#     )
-#     skills = models.ManyToManyField(
-#         Skills,
-#         through='ProjectSkills',
-#         related_name='projects',
-#         verbose_name='Навыки',
-#     )
+    # start_datetime = models.DateTimeField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Дата и время, начало мероприятия',
+    # )
+    # end_datetime = models.DateTimeField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Дата и время, окончания мероприятия',
+    # )
+    # start_date_application = models.DateTimeField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Дата и время, начало подачи заявок',
+    # )
+    # end_date_application = models.DateTimeField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Дата и время, окончания подачи заявок',
+    # )
+    # event_purpose = models.TextField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Цель проекта',
+    # )
+    # event_address = models.ForeignKey(
+    #     Address,
+    #     on_delete=models.CASCADE,
+    #     blank=True,
+    #     null=True,
+    #     verbose_name='Адрес проведения проекта',
+    # )
+    # project_tasks = models.TextField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Задачи проекта',
+    # )
+    # project_events = models.TextField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Мероприятия на проекте',
+    # )
+    # organizer_provides = models.TextField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Организатор предоставляет',
+    # )
+    # organization = models.ForeignKey(
+    #     Organization,
+    #     on_delete=models.CASCADE,
+    #     related_name='projects',
+    #     # blank=True,
+    #     # null=True,
+    #     verbose_name='Организация',
+    # )
+    # city = models.ForeignKey(
+    #     City,
+    #     on_delete=models.CASCADE,
+    #     related_name='project',
+    #     blank=True,
+    #     null=True,  # если убрать null=True,то админка не показывает
+    #     #  проект с пустым городами
+    #     verbose_name='Город',
+    # )
+    # categories = models.ManyToManyField(
+    #     Category,
+    #     related_name='projects',
+    #     blank=True,
+    #     verbose_name='Категории',
+    # )
+    # photo_previous_event = models.ImageField(
+    #     blank=True,
+    #     null=True,
+    #     verbose_name='Фото с мероприятия',
+    # )
+    # participants = models.ManyToManyField(
+    #     'ProjectParticipants',
+    #     blank=True,
+    #     related_name='projects',
+    #     verbose_name='Участники',
+    # )
+    # status_approve = models.CharField(
+    #     max_length=50,
+    #     choices=STATUS_CHOICES,
+    #     default=PENDING,
+    #     verbose_name='Статус проверки',
+    # )
+    # skills = models.ManyToManyField(
+    #     Skills,
+    #     through='ProjectSkills',
+    #     related_name='projects',
+    #     blank=True,
+    #     verbose_name='Навыки',
+    # )
 
-#     class Meta:
-#         ordering = ('start_datetime',)
-#         verbose_name = 'Проект'
-#         verbose_name_plural = 'Проекты'
+    # class Meta:
+    #     ordering = ('start_datetime',)
+    #     verbose_name = 'Проект'
+    #     verbose_name_plural = 'Проекты'
 
-#     def __str__(self):
-#         return settings.PROJECT.format(
-#             self.name, self.organization, self.categories, self.city
-#         )
+    # def __str__(self):
+    #     return settings.PROJECT.format(
+    #         self.name, self.organization, self.categories, self.city
+    #     )
+
+#  ======================================end======================================
+
+#  Модель ранее
+
+class Project(models.Model):
+    """
+    Модель представляет собой информацию о проекте.
+    """
+
+    APPROVED = 'approved'
+    EDITING = 'editing'
+    PENDING = 'pending'
+    REJECTED = 'rejected'
+    CANCELED_BY_ORGANIZER = 'canceled_by_organizer'
+    OPEN = 'open'
+    READY_FOR_FEEDBACK = 'ready_for_feedback'
+    RECEPTION_OF_RESPONSES_CLOSED = 'reception_of_responses_closed'
+    PROJECT_COMPLETED = 'project_completed'
+
+    STATUS_CHOICES = [
+        (APPROVED, 'Одобрено'),
+        (EDITING, 'Черновик'),
+        (PENDING, 'На рассмотрении'),
+        (REJECTED, 'Отклонено'),
+        (CANCELED_BY_ORGANIZER, 'Отменено организатором'),
+    ]
+
+    name = models.CharField(
+        max_length=settings.MAX_LEN_NAME,
+        validators=[validate_name],
+        verbose_name='Название',
+        unique=True
+    )
+    description = models.TextField(
+        blank=True,  # добавила
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Описание',
+    )
+    picture = models.ImageField(
+        # blank=True,   #  добавилено для черновика
+        # null=True,   #  добавила
+        verbose_name='Картинка',
+    )
+    start_datetime = models.DateTimeField(
+        blank=True,   # добавилено для черновика
+        null=True,
+        verbose_name='Дата и время, начало мероприятия',
+    )
+    end_datetime = models.DateTimeField(
+        blank=True,   # добавилено для черновика
+        null=True,
+        verbose_name='Дата и время, окончания мероприятия',
+    )
+    start_date_application = models.DateTimeField(
+        blank=True,   # добавилено для черновика
+        null=True,
+        verbose_name='Дата и время, начало подачи заявок',
+    )
+    end_date_application = models.DateTimeField(
+        blank=True,   # добавилено для черновика
+        null=True,
+        verbose_name='Дата и время, окончания подачи заявок',
+    )
+    event_purpose = models.TextField(
+        blank=True,   # добавилено для черновика
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Цель проекта',
+    )
+    event_address = models.ForeignKey(
+        Address,
+        blank=True,   # добавилено для черновика
+        null=True,  # добавила
+        on_delete=models.CASCADE,
+        verbose_name='Адрес проведения проекта',
+    )
+    project_tasks = models.TextField(
+        blank=True,   # добавилено для черновика
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Задачи проекта',
+    )
+    project_events = models.TextField(
+        blank=True,   # добавилено для черновика
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Мероприятия на проекте',
+    )
+    organizer_provides = models.TextField(
+        blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Организатор предоставляет',
+    )
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name='projects',
+        verbose_name='Организация',
+    )
+    city = models.ForeignKey(
+        City,
+        on_delete=models.CASCADE,
+        related_name='project',
+        blank=True,  # добавила
+        null=True,  # если убрать null=True,то админка не показывает
+        #  проект с пустым городами
+        verbose_name='Город',
+    )
+    categories = models.ManyToManyField(
+        Category,
+        related_name='projects',
+        # blank=True,  # добавила
+        verbose_name='Категории',
+    )
+    photo_previous_event = models.ImageField(
+        blank=True,
+        # null=True,
+        verbose_name='Фото с мероприятия',
+    )
+    participants = models.ManyToManyField(
+        'ProjectParticipants',
+        blank=True,
+        related_name='projects',
+        verbose_name='Участники',
+    )
+    status_approve = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default=PENDING,
+        verbose_name='Статус проверки',
+    )
+    skills = models.ManyToManyField(
+        Skills,
+        through='ProjectSkills',
+        related_name='projects',
+        # blank=True,  # добавила
+        verbose_name='Навыки',
+    )
+
+    class Meta:
+        ordering = ('start_datetime',)
+        verbose_name = 'Проект'
+        verbose_name_plural = 'Проекты'
+
+    def __str__(self):
+        return settings.PROJECT.format(
+            self.name, self.organization, self.categories, self.city
+        )
 
 
 class ProjectCategories(models.Model):
