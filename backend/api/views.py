@@ -144,8 +144,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ProjectGetSerializer
-        if self.request.query_params.get('save_draft') == 'True':
-            return DraftProjectSerializer
+        # if self.request.method == 'POST' and self.request.data.get('status_approve') == Project.EDITING:
+        #     print('Черновик DraftProjectSerializer')
+            # return DraftProjectSerializer
+        # if self.request.query_params.get('save_draft') == 'True':
+        #     return DraftProjectSerializer
+        print('Сериализатор ProjectSerializer')
         return ProjectSerializer
 
     def perform_create(self, serializer):
@@ -262,6 +266,30 @@ class ProjectViewSet(viewsets.ModelViewSet):
         return self.delete_from(
             volunteer, project, 'Данного проекта нет в избранном!'
         )
+
+    @action(
+        methods=['POST'],
+        detail=False, url_path='draft',
+        permission_classes=(IsOrganizer,),
+        serializer_class=DraftProjectSerializer
+    )
+    def save_draft(self, request):
+        # status_approve = request.data.get('status_approve')
+
+        # if status_approve == Project.EDITING:
+        # # Если это POST-запрос с status_approve == EDITING, создаем черновик
+        # serializer = DraftProjectSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            self.perform_create(serializer)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # return Response(
+        #     {'error': 'Неподдерживаемый метод запроса или статус проекта'},
+        #     status=status.HTTP_400_BAD_REQUEST
+        # )
 
 
 class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
