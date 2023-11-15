@@ -194,6 +194,7 @@ DJOSER = {
     'ACTIVATION_URL': '#/login/password-activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
         'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
