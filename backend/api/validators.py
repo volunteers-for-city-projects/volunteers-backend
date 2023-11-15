@@ -32,7 +32,7 @@ def validate_dates(
     MAX_ALLOWED_DATE = NOW + timezone.timedelta(days=365)
     MIN_DURATION = timezone.timedelta(minutes=10)
 
-    if not (NOW <= start_date_application < MAX_ALLOWED_DATE):
+    if not (NOW <= start_date_application <= MAX_ALLOWED_DATE):
         raise serializers.ValidationError(
             'Начало подачи заявки должно быть в пределах от текущей даты и '
             'времени до года вперед.'
@@ -40,18 +40,18 @@ def validate_dates(
     if not (
         start_date_application + MIN_DURATION
         <= end_date_application
-        < MAX_ALLOWED_DATE
+        <= MAX_ALLOWED_DATE
     ):
         raise serializers.ValidationError(
             'Окончания подачи заявки должна быть позже начало подачи заявок и '
             'не более чем через год после текущей даты.'
         )
-    if not (end_date_application <= start_date < MAX_ALLOWED_DATE):
+    if not (end_date_application <= start_date <= MAX_ALLOWED_DATE):
         raise serializers.ValidationError(
             'Начало мероприятия должна быть в будущем после окончания '
             'подачи заявок и не более чем через год после текущей даты.'
         )
-    if not (start_date + MIN_DURATION <= end_date < MAX_ALLOWED_DATE):
+    if not (start_date + MIN_DURATION <= end_date <= MAX_ALLOWED_DATE):
         raise serializers.ValidationError(
             'Дата окончания мероприятия должна быть позже начала и '
             'не более чем через год после текущей даты.'

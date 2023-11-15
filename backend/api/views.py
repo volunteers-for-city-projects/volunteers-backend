@@ -395,7 +395,7 @@ class ProjectIncomesViewSet(
     """
 
     queryset = ProjectIncomes.objects.all()
-    permission_classes = [IsOrganizerOfProject]
+    permission_classes = [IsVolunteer]
 
     def get_queryset(self):
         user = self.request.user
@@ -409,6 +409,7 @@ class ProjectIncomesViewSet(
             return ProjectIncomesGetSerializer
         return ProjectIncomesSerializer
 
+    # данную функцию скорее всего будем переделывать в будущем.
     def get_permissions(self):
         """
         Метод для установки разрешений в зависимости от действия.
@@ -426,13 +427,11 @@ class ProjectIncomesViewSet(
         )
         return [permission() for permission in permission_classes]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=['delete'])
+    @action(
+        detail=True,
+        methods=['delete'],
+        permission_classes=[IsVolunteerOfIncomes],
+    )
     def delete_incomes(self, request, pk):
         """
         Удаляет заявку волонтера на участие в проекте.
@@ -446,7 +445,11 @@ class ProjectIncomesViewSet(
         response_data = serializer.delete(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsOrganizerOfProject],
+    )
     def accept_incomes(self, request, pk):
         """
         Принимает заявку волонтера и добавляет его в участники проекта.
@@ -462,7 +465,11 @@ class ProjectIncomesViewSet(
         response_data = serializer.accept_incomes(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['put'])
+    @action(
+        detail=True,
+        methods=['put'],
+        permission_classes=[IsOrganizerOfProject],
+    )
     def reject_incomes(self, request, pk):
         """
         Отклоняет заявку волонтера.
