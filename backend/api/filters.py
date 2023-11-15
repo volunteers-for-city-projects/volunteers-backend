@@ -59,24 +59,38 @@ class TagFilter(FilterSet):
 class ProjectFilter(FilterSet):
     """
     Класс для фильтрации проектов по имени, статусу, категории, организации.
+
+    Примеры использования фильтров в URL:
+    - /projects/?categories={id_categories}
+    - /projects/?skills={id_skill}
+    - /projects/?city={id_city}
+    - /projects/?start_datetime=01.01.2023
+    - /projects/?end_datetime=31.12.2023
     """
 
-    name = django_filters.CharFilter(lookup_expr='icontains')
-    # TODO: Пересмотреть логику статусов проекта,
-    # текущая реализация не актуальная.
-    # status = django_filters.ChoiceFilter(
-    #     field_name='status_project', choices=Project.STATUS_PROJECT
-    # )
-    category = django_filters.CharFilter(
-        field_name='category', lookup_expr='exact'
+    categories = django_filters.CharFilter(
+        field_name='categories', lookup_expr='exact'
     )
-    organizer = django_filters.NumberFilter(
-        field_name='organization', lookup_expr='exact'
+    skills = django_filters.CharFilter(
+        field_name='skills', lookup_expr='exact'
+    )
+    city = django_filters.CharFilter(field_name='city', lookup_expr='exact')
+    start_datetime = django_filters.DateTimeFilter(
+        field_name='start_datetime', lookup_expr='gte'
+    )
+    end_datetime = django_filters.DateTimeFilter(
+        field_name='end_datetime', lookup_expr='lte'
     )
 
     class Meta:
         model = Project
-        fields = ['name', 'category', 'organizer']
+        fields = [
+            'categories',
+            'skills',
+            'city',
+            'start_datetime',
+            'end_datetime',
+        ]
 
 
 class StatusProjectFilter(django_filters.FilterSet):
@@ -104,10 +118,13 @@ class StatusProjectFilter(django_filters.FilterSet):
         Фильтр для таба "Черновик".
         """
         return queryset.filter(
-            Q(status_approve__in=[
-                Project.EDITING, Project.REJECTED, Project.PENDING
+            Q(
+                status_approve__in=[
+                    Project.EDITING,
+                    Project.REJECTED,
+                    Project.PENDING,
                 ]
-              )
+            )
         )
 
     def filter_active(self, queryset):
@@ -116,8 +133,7 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve=Project.APPROVED),
-            end_datetime__gt=now
+            Q(status_approve=Project.APPROVED), end_datetime__gt=now
         )
 
     def filter_completed(self, queryset):
@@ -126,17 +142,15 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
         now = timezone.now()
         return queryset.filter(
-            Q(status_approve=Project.APPROVED),
-            end_datetime__lte=now
+            Q(status_approve=Project.APPROVED), end_datetime__lte=now
         )
 
     def filter_archive(self, queryset):
         """
         Фильтр для таба "Архив".
         """
-        return queryset.filter(
-            Q(status_approve=Project.CANCELED_BY_ORGANIZER)
-        )
+
+        return queryset.filter(Q(status_approve=Project.CANCELED_BY_ORGANIZER))
 
     #  TODO фильтры по статусам проекта в ЛК Волонтера
     #  Простой код для понимания и дополнения статусов волнтеров
@@ -163,13 +177,23 @@ class StatusProjectFilter(django_filters.FilterSet):
         status_filter = None
 
         if user.is_organizer:
-            status_filter = self.data.get("draft") and self.filter_draft or \
-                self.data.get("active") and self.filter_active or \
-                self.data.get("completed") and self.filter_completed or \
-                self.data.get("archive") and self.filter_archive
+            status_filter = (
+                self.data.get("draft")
+                and self.filter_draft
+                or self.data.get("active")
+                and self.filter_active
+                or self.data.get("completed")
+                and self.filter_completed
+                or self.data.get("archive")
+                and self.filter_archive
+            )
         elif user.is_volunteer:
-            status_filter = self.data.get("active") and self.filter_active or \
-                self.data.get("completed") and self.filter_completed
+            status_filter = (
+                self.data.get("active")
+                and self.filter_active
+                or self.data.get("completed")
+                and self.filter_completed
+            )
 
         if status_filter:
             queryset = status_filter(queryset)

@@ -26,7 +26,8 @@ from projects.models import (
 )
 from users.models import User
 
-from .validators import validate_status_incomes
+from .mixins import IsValidModifyErrorForFrontendMixin
+from .validators import validate_dates, validate_status_incomes
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -166,6 +167,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     skills = SkillsSerializer(many=True, read_only=True)
     is_favorited = serializers.BooleanField(default=False)
     status = serializers.SerializerMethodField()
+    city = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     def get_status(self, data):
         OPEN = 'open'
@@ -194,8 +196,9 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             now = timezone.now()
             if data.start_datetime <= now < data.start_date_application:
                 return OPEN
-            elif (data.start_date_application <= now <
-                  data.end_date_application):
+            elif (
+                data.start_date_application <= now < data.end_date_application
+            ):
                 return READY
             elif data.end_date_application <= now < data.end_datetime:
                 return CLOSED
@@ -365,7 +368,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         queryset=City.objects.all(),
         required=True,
         allow_null=False,  # Запретить отправку значения None. если удасться
-        # убрать из модели null=True и чтоб не ломалась админка то можно удалить полностью city из сериализатор
+        # убрать из модели null=True и чтоб не ломалась админка то можно
+        #  удалить полностью city из сериализатор
     )
 
     def validate_skills(self, value):
@@ -406,16 +410,22 @@ class ProjectSerializer(serializers.ModelSerializer):
             'organizer_provides': {'allow_blank': False, 'required': False},
         }
 
-    # def validate(self, data):
-    #     start_datetime = data['start_datetime']
-    #     end_datetime = data['end_datetime']
-    #     application_date = data['application_date']
+    def validate(self, data):
+        start_datetime = data['start_datetime']
+        end_datetime = data['end_datetime']
+        start_date_application = data['start_date_application']
+        end_date_application = data['end_date_application']
 
-    #     validate_dates(start_datetime, end_datetime, application_date)
-    #     validate_reception_status(
-    #         application_date, start_datetime, end_datetime
-    #     )
-    #     return data
+        validate_dates(
+            start_datetime,
+            end_datetime,
+            start_date_application,
+            end_date_application,
+        )
+        # validate_reception_status(
+        #     application_date, start_datetime, end_datetime
+        # )
+        return data
 
     # def validate_status_approve(self, value):
     #     project_status_approve = []
@@ -686,7 +696,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 #         # Handle other nested fields in a similar fashion if necessary
 
-#         return super(ProjectSerializer, self).update(instance, validated_data)
+#        return super(ProjectSerializer, self).update(instance, validated_data)
 
 #     class Meta:
 #         model = Project
@@ -748,7 +758,8 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerCreateSerializer(serializers.ModelSerializer):
+class VolunteerCreateSerializer(IsValidModifyErrorForFrontendMixin,
+                                serializers.ModelSerializer):
     """
     Сериализатор для создания волонтера.
     """
@@ -944,7 +955,8 @@ class OrganizationGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OgranizationCreateSerializer(serializers.ModelSerializer):
+class OgranizationCreateSerializer(IsValidModifyErrorForFrontendMixin,
+                                   serializers.ModelSerializer):
     """
     Сериализатор для создания организации-организатора.
     """

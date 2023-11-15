@@ -132,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'users.validators.PasswordRegexValidator',
         'OPTIONS': {
-            'regex': r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ]+)\Z",
+            'regex': r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ]+)\Z",
         },
     },
     # {
@@ -194,6 +194,7 @@ DJOSER = {
     'ACTIVATION_URL': '#/login/password-activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
         'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
@@ -245,6 +246,8 @@ LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 100
+MIN_LEN_NAME_PROJECT = 2
+MAX_LEN_NAME_PROJECT = 150
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = (
@@ -300,5 +303,5 @@ MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
 MESSAGE_ABOUT_US_REGEX_VALID = (
-    "Допускаются цифры, буквы пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
+    """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
 )

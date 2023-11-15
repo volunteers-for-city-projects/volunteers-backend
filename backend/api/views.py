@@ -5,7 +5,6 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, generics, mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS, AllowAny
 from rest_framework.response import Response
 from taggit.models import Tag
@@ -156,12 +155,12 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(organization=self.request.user.organization)
 
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     if serializer.is_valid():
-    #         self.perform_create(serializer)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#    def create(self, request, *args, **kwargs):
+#        serializer = self.get_serializer(data=request.data)
+#        if serializer.is_valid():
+#            self.perform_create(serializer)
+#            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -171,11 +170,13 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        if instance.status_approve == Project.APPROVED and \
-           instance.end_datetime < timezone.now():
+        if (
+            instance.status_approve == Project.APPROVED
+            and instance.end_datetime < timezone.now()
+        ):
             return Response(
                 {"detail": "Вы не можете редактировать завершенные проекты"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
@@ -200,12 +201,16 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        #  Проверяем статус проекта возможно нужно еще добавить какие то статусы
+        #  Проверяем статус проекта возможно нужно еще добавить
+        #  какие то статусы
         if instance.status_approve not in [
-            Project.EDITING, Project.CANCELED_BY_ORGANIZER
+            Project.EDITING,
+            Project.CANCELED_BY_ORGANIZER,
         ]:
-            message = ('Вы не можете удалить проекты, '
-                       'не находящиеся в архиве или в черновике.')
+            message = (
+                'Вы не можете удалить проекты, '
+                'не находящиеся в архиве или в черновике.'
+            )
             return Response(
                 {"detail": message}, status=status.HTTP_400_BAD_REQUEST
             )
@@ -419,6 +424,7 @@ class ProjectIncomesViewSet(
     """
 
     queryset = ProjectIncomes.objects.all()
+    permission_classes = [IsVolunteer]
 
     def get_queryset(self):
         user = self.request.user
@@ -426,13 +432,13 @@ class ProjectIncomesViewSet(
             return ProjectIncomes.objects.filter(
                 project__organization__contact_person=user
             )
-        raise PermissionDenied('Нет доступа к этой странице')
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ProjectIncomesGetSerializer
         return ProjectIncomesSerializer
 
+    # данную функцию скорее всего будем переделывать в будущем.
     def get_permissions(self):
         """
         Метод для установки разрешений в зависимости от действия.
@@ -450,13 +456,11 @@ class ProjectIncomesViewSet(
         )
         return [permission() for permission in permission_classes]
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    @action(detail=True, methods=['delete'])
+    @action(
+        detail=True,
+        methods=['delete'],
+        permission_classes=[IsVolunteerOfIncomes],
+    )
     def delete_incomes(self, request, pk):
         """
         Удаляет заявку волонтера на участие в проекте.
@@ -470,7 +474,11 @@ class ProjectIncomesViewSet(
         response_data = serializer.delete(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['post'])
+    @action(
+        detail=True,
+        methods=['post'],
+        permission_classes=[IsOrganizerOfProject],
+    )
     def accept_incomes(self, request, pk):
         """
         Принимает заявку волонтера и добавляет его в участники проекта.
@@ -486,7 +494,11 @@ class ProjectIncomesViewSet(
         response_data = serializer.accept_incomes(instance)
         return Response(response_data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=['put'])
+    @action(
+        detail=True,
+        methods=['put'],
+        permission_classes=[IsOrganizerOfProject],
+    )
     def reject_incomes(self, request, pk):
         """
         Отклоняет заявку волонтера.
