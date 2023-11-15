@@ -168,6 +168,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     skills = SkillsSerializer(many=True, read_only=True)
     is_favorited = serializers.BooleanField(default=False)
     status = serializers.SerializerMethodField()
+    city = serializers.SlugRelatedField(slug_field='name', read_only=True)
 
     def get_status(self, data):
         OPEN = 'open'
