@@ -26,7 +26,7 @@ class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
                 {
                     class_name: {
                         settings.LOGIN_FIELD:
-                        self.default_error_messages.get('missing_account')
+                        [self.default_error_messages.get('missing_account')]
                     }
                 },
             )
@@ -35,7 +35,7 @@ class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
                 {
                     class_name: {
                         'password':
-                        self.default_error_messages.get('wrong_password')
+                        [self.default_error_messages.get('wrong_password')]
                     }
                 },
             )
@@ -48,7 +48,7 @@ class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
             {
                 class_name: {
                     'not_active':
-                    self.default_error_messages.get('inactive_account')
+                    [self.default_error_messages.get('inactive_account')]
                 }
             },
         )
