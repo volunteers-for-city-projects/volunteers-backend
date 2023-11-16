@@ -178,7 +178,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
@@ -302,6 +302,4 @@ MAX_LEN_ABOUT_US = 750
 MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
-MESSAGE_ABOUT_US_REGEX_VALID = (
-    """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
-)
+MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
