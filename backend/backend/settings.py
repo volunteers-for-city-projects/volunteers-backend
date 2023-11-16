@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -230,8 +231,15 @@ SWAGGER_SETTINGS = {
     'SHOW_REQUEST_HEADERS': True,
 }
 
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/1'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/2'
+
+CELERY_BEAT_SCHEDULE = {
+    'delete_not_active_users': {
+        'task': 'users.tasks.delete_not_active_users',
+        'schedule': crontab(minute='*/2'),
+    },
+}
 
 # Constants
 # MAX_LENGTH_NAME = 50
