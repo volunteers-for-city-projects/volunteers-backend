@@ -198,6 +198,7 @@ DJOSER = {
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
         'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
+        'password_reset': 'users.auth.serializers.CustomSendEmailResetSerializer',
     },
 }
 
@@ -232,8 +233,9 @@ SWAGGER_SETTINGS = {
     'JSON_EDITOR': True,
     'SHOW_REQUEST_HEADERS': True,
     'DEFAULT_MODEL_RENDERING': 'model',  # Отображение моделей (model, example)
-    'DEFAULT_MODEL_DEPTH': 2,  # Глубина отображения моделей (-1 - без ограничений)
-    'DOC_EXPANSION': 'list',  # full, none 
+    # Глубина отображения моделей (-1 - без ограничений)
+    'DEFAULT_MODEL_DEPTH': 2,
+    'DOC_EXPANSION': 'list',  # full, none
     'OPERATIONS_SORTER': 'alpha',  # Сортировка операций (alpha, method)
     'TAGS_SORTER': 'alpha',  # Сортировка тегов (alpha, order)
 }
