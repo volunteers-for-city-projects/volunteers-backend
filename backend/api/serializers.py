@@ -263,20 +263,18 @@ class DraftProjectSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         status_approve = instance.status_approve
-        if (
-            status_approve != Project.EDITING
-            and status_approve != Project.REJECTED
-        ):
+        if status_approve not in (Project.EDITING, Project.REJECTED):
             raise serializers.ValidationError(
                 'Сохранять как черновик можно проекты  '
-                'со статусом "Editing" или "Rejected".'
+                f'со статусом {Project.EDITING} или {Project.REJECTED}.'
             )
         address_data = validated_data.pop('event_address', None)
         if address_data:
             address = instance.event_address
-            for attr, value in address_data.items():
-                setattr(address, attr, value)
-            address.save()
+            if address:
+                for attr, value in address_data.items():
+                    setattr(address, attr, value)
+                address.save()
         return super().update(instance, validated_data)
 
     class Meta:
@@ -302,8 +300,11 @@ class DraftProjectSerializer(serializers.ModelSerializer):
             'skills',
         )
         read_only_fields = ('organization',)
-        extra_kwargs = {'status_approve': {'required': False},
-                        'categories': {'required': False, 'allow_empty': True}}
+        extra_kwargs = {
+            'status_approve': {'required': False},
+            'categories': {'required': False, 'allow_empty': True},
+            'event_address': {'required': False, 'allow_empty': True}
+        }
 
 
 class ProjectSerializer(serializers.ModelSerializer):

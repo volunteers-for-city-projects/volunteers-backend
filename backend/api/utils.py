@@ -28,13 +28,13 @@ def is_correct_status_change(status_before, status_new):
     """
 
     allowed_status_changes = {
-        Project.EDITING: [Project.EDITING, Project.PENDING],
-        Project.PENDING: [Project.APPROVED, Project.REJECTED],
-        Project.REJECTED: [Project.EDITING, Project.PENDING],
-        Project.APPROVED: [Project.APPROVED, Project.CANCELED_BY_ORGANIZER],
-        # Project.CANCELED_BY_ORGANIZER: [Project.EDITING],  # Может измениться
+        Project.EDITING: (Project.EDITING, Project.PENDING),
+        Project.PENDING: (Project.APPROVED, Project.REJECTED),
+        Project.REJECTED: (Project.EDITING, Project.PENDING),
+        Project.APPROVED: (Project.APPROVED, Project.CANCELED_BY_ORGANIZER),
+        # Project.CANCELED_BY_ORGANIZER: [Project.EDITING],  # Может изменится
     }
-    return status_new in allowed_status_changes.get(status_before, [])
+    return status_new in allowed_status_changes.get(status_before, ())
 
 
 class NonEmptyBase64ImageField(Base64ImageField):
