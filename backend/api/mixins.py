@@ -4,6 +4,8 @@ from rest_framework.validators import ValidationError
 
 from projects.models import Organization, Volunteer
 
+from .utils import modify_errors
+
 
 class DestroyUserMixin:
     """
@@ -34,16 +36,14 @@ class IsValidModifyErrorForFrontendMixin:
         try:
             super().is_valid(raise_exception=True)
         except ValidationError as error:
-            keys = error.detail.keys()
-            modified_errors = {}
-            for key in keys:
-                if isinstance(error.detail.get(key), dict):
-                    modified_errors.update(error.detail.get(key))
-                else:
-                    modified_errors[key] = error.detail.get(key)
+            errors_db, errors_valid = modify_errors(
+                error.get_full_details(), {}
+            )
+            errors_db.update({'ValidationErrors': errors_valid})
             raise ValidationError(
                 {
-                    self.__class__.__name__: modified_errors
+                    self.__class__.__name__:
+                    errors_db
                 }
             )
         return bool(self._errors)
