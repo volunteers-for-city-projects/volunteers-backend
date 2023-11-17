@@ -223,12 +223,19 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
+            'description': 'Use your token in the following format: <strong>Token <em>&lt;your-token&gt;</em></strong> ',
         },
-        'Basic': {'type': 'basic'},  # базова авторизация
+
+        # 'Basic': {'type': 'basic'},  # базова авторизация
     },
     'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
     'JSON_EDITOR': True,
     'SHOW_REQUEST_HEADERS': True,
+    'DEFAULT_MODEL_RENDERING': 'model',  # Отображение моделей (model, example)
+    'DEFAULT_MODEL_DEPTH': 2,  # Глубина отображения моделей (-1 - без ограничений)
+    'DOC_EXPANSION': 'list',  # full, none 
+    'OPERATIONS_SORTER': 'alpha',  # Сортировка операций (alpha, method)
+    'TAGS_SORTER': 'alpha',  # Сортировка тегов (alpha, order)
 }
 
 # Constants

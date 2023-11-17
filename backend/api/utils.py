@@ -3,6 +3,8 @@ from djoser.conf import settings
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework.serializers import ValidationError
 
+from projects.models import Project
+
 
 def create_user(self, serializer, data):
     user_serializer = serializer(data=data)
@@ -19,11 +21,28 @@ def create_user(self, serializer, data):
     return user
 
 
+def is_correct_status_change(status_before, status_new):
+    """
+    Метод проверяет может ли текущий статус проекта
+    переходить в новый(запрашиваемый) статус
+    """
+
+    allowed_status_changes = {
+        Project.EDITING: (Project.EDITING, Project.PENDING),
+        Project.PENDING: (Project.APPROVED, Project.REJECTED),
+        Project.REJECTED: (Project.EDITING, Project.PENDING),
+        Project.APPROVED: (Project.APPROVED, Project.CANCELED_BY_ORGANIZER),
+        # Project.CANCELED_BY_ORGANIZER: [Project.EDITING],  # Может изменится
+    }
+    return status_new in allowed_status_changes.get(status_before, ())
+
+
 class NonEmptyBase64ImageField(Base64ImageField):
 
     def to_internal_value(self, data):
         """
-        Преобразует в класс, не позволяющий отправлять пустую строку.
+        Преобразует в класс, не позволяющий отправлять пустую строку
+        в изображении.
         """
 
         value = super().to_internal_value(data)
