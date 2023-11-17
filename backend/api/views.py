@@ -47,6 +47,7 @@ from .permissions import (
     IsVolunteerOfIncomes,
 )
 from .serializers import (
+    ActiveProjectEditSerializer,
     CitySerializer,
     DraftProjectSerializer,
     FeedbackSerializer,
@@ -68,13 +69,9 @@ from .serializers import (
     VolunteerGetSerializer,
     VolunteerUpdateSerializer,
 )
-
-# from backend.api import permissions
+from .utils import is_correct_status_change
 
 # from taggit.serializers import TaggitSerializer
-
-# from .filters import SearchFilter
-# from django.db.models import Q
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -144,23 +141,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ProjectGetSerializer
-        # if self.request.method == 'POST' and self.request.data.get('status_approve') == Project.EDITING:
-        #     print('Черновик DraftProjectSerializer')
-            # return DraftProjectSerializer
-        # if self.request.query_params.get('save_draft') == 'True':
-        #     return DraftProjectSerializer
-        print('Сериализатор ProjectSerializer')
+        if self.request.method in ["PUT", "PATCH"]:
+            instance = self.get_object()
+            if ("status_approve" in self.request.data
+               and self.request.data["status_approve"] == Project.EDITING):
+                return DraftProjectSerializer
+            if (instance.status_approve == Project.APPROVED
+               and instance.end_datetime > timezone.now()):
+                return ActiveProjectEditSerializer
+            # else:
+            #     return ProjectSerializer
         return ProjectSerializer
 
     def perform_create(self, serializer):
         serializer.save(organization=self.request.user.organization)
-
-#    def create(self, request, *args, **kwargs):
-#        serializer = self.get_serializer(data=request.data)
-#        if serializer.is_valid():
-#            self.perform_create(serializer)
-#            return Response(serializer.data, status=status.HTTP_201_CREATED)
-#        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -178,6 +172,23 @@ class ProjectViewSet(viewsets.ModelViewSet):
                 {"detail": "Вы не можете редактировать завершенные проекты"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        status_before = instance.status_approve
+        status_new = request.data.get("status_approve", status_before)
+        allowed_statuses = dict(Project.STATUS_CHOICES).keys()
+        if status_new not in allowed_statuses:
+            return Response(
+                {"detail": f"Вы передаете некорректный статус: {status_new}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not is_correct_status_change(status_before, status_new):
+            message = (
+                f"Вы не можете перевести проект со статуса {status_before} "
+                f"в статус {status_new}"
+            )
+            return Response(
+                {"detail": message}, status=status.HTTP_400_BAD_REQUEST
+            )
+
         partial = kwargs.pop('partial', False)
         serializer = self.get_serializer(
             instance, data=request.data, partial=partial
@@ -274,18 +285,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
         serializer_class=DraftProjectSerializer
     )
     def save_draft(self, request):
-        # status_approve = request.data.get('status_approve')
+        """
+        Сохранение черновика.
 
-        # if status_approve == Project.EDITING:
-        # # Если это POST-запрос с status_approve == EDITING, создаем черновик
-        # serializer = DraftProjectSerializer(data=request.data)
+        ---
+        """
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             self.perform_create(serializer)
             return Response(serializer.data)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
         # return Response(
         #     {'error': 'Неподдерживаемый метод запроса или статус проекта'},
         #     status=status.HTTP_400_BAD_REQUEST
