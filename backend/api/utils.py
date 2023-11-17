@@ -49,3 +49,30 @@ class NonEmptyBase64ImageField(Base64ImageField):
         if value in [None, ""]:
             raise ValidationError("Поле c изображением не может быть пустым.")
         return value
+
+
+def modify_errors(details, errors_valid):
+    keys = details.keys()
+    errors_db = {}
+    for key in keys:
+        if isinstance(details.get(key), dict):
+            inner_details, inner_valid = modify_errors(
+                details.get(key), errors_valid)
+            for key_in in inner_details.keys():
+                errors_db.setdefault(
+                    key_in,
+                    []
+                ).append(inner_details.get(key_in)[0])
+        else:
+            for i in range(len(details.get(key))):
+                if details.get(key)[i]['code'] in ['unique', 'not_exist']:
+                    errors_db.setdefault(
+                        key,
+                        []
+                    ).append(str(details.get(key)[i].get('message')))
+                else:
+                    errors_valid.setdefault(
+                        key,
+                        []
+                    ).append(str(details.get(key)[i].get('message')))
+    return errors_db, errors_valid
