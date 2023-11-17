@@ -369,6 +369,17 @@ class Project(models.Model):
         # blank=True,  # добавила
         verbose_name='Навыки',
     )
+    admin_comments = models.TextField(
+        blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Комментарии администратора',
+    )
 
     class Meta:
         ordering = ('start_datetime',)
