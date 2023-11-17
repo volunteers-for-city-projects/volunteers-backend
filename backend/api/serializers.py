@@ -303,7 +303,7 @@ class DraftProjectSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'status_approve': {'required': False},
             'categories': {'required': False, 'allow_empty': True},
-            'event_address': {'required': False, 'allow_empty': True}
+            'event_address': {'required': False, 'allow_empty': True},
         }
 
 
@@ -315,7 +315,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     event_address = AddressSerializer()
     skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True,  allow_null=False
+        queryset=Skills.objects.all(), many=True, allow_null=False
     )
     picture = NonEmptyBase64ImageField()
     city = serializers.PrimaryKeyRelatedField(
@@ -370,13 +370,17 @@ class ProjectSerializer(serializers.ModelSerializer):
         end_datetime = data['end_datetime']
         start_date_application = data['start_date_application']
         end_date_application = data['end_date_application']
-
-        validate_dates(
-            start_datetime,
-            end_datetime,
-            start_date_application,
-            end_date_application,
-        )
+        try:
+            validate_dates(
+                start_datetime,
+                end_datetime,
+                start_date_application,
+                end_date_application,
+            )
+        except serializers.ValidationError as errors:
+            raise serializers.ValidationError(
+                {self.__class__.__name__: errors.detail}
+            )
         # validate_reception_status(
         #     application_date, start_datetime, end_datetime
         # )
@@ -434,7 +438,7 @@ class ActiveProjectEditSerializer(ProjectSerializer):
             'city',
             'categories',
             'photo_previous_event',
-            'skills'
+            'skills',
         )
 
 
@@ -473,8 +477,9 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerCreateSerializer(IsValidModifyErrorForFrontendMixin,
-                                serializers.ModelSerializer):
+class VolunteerCreateSerializer(
+    IsValidModifyErrorForFrontendMixin, serializers.ModelSerializer
+):
     """
     Сериализатор для создания волонтера.
     """
@@ -670,8 +675,9 @@ class OrganizationGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OgranizationCreateSerializer(IsValidModifyErrorForFrontendMixin,
-                                   serializers.ModelSerializer):
+class OgranizationCreateSerializer(
+    IsValidModifyErrorForFrontendMixin, serializers.ModelSerializer
+):
     """
     Сериализатор для создания организации-организатора.
     """
