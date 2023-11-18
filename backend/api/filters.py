@@ -1,5 +1,6 @@
 import django_filters
 from django.db.models import Q
+from django.http import Http404
 from django.utils import timezone
 from django_filters.rest_framework import FilterSet, filters
 from taggit.models import Tag
@@ -81,6 +82,15 @@ class ProjectFilter(FilterSet):
     end_datetime = django_filters.DateTimeFilter(
         field_name='end_datetime', lookup_expr='lte'
     )
+
+    def filter_queryset(self, queryset):
+        for name, value in self.data.items():
+            try:
+                queryset = super().filter_queryset(queryset)
+            except (ValueError, self.Meta.model.DoesNotExist):
+                raise Http404("Invalid filter value for {}".format(name))
+
+        return queryset
 
     class Meta:
         model = Project
