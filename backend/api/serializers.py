@@ -175,6 +175,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
         CLOSED = 'reception_of_responses_closed'
         COMPLETED = 'project_completed'
         CANCELED = 'canceled_by_organizer'
+        EDITING = 'editing'
 
         # now = timezone.now()
         # if data.status_approve == Project.CANCELED_BY_ORGANIZER:
@@ -204,7 +205,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
                 return CLOSED
             elif data.end_datetime <= now:
                 return COMPLETED
-        return 'Статус проекта не определен'
+        return EDITING
 
     class Meta:
         model = Project
