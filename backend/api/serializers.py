@@ -573,7 +573,16 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
+        fields = (
+            'id',
+            'project',
+            'volunteer',
+            'status_incomes',
+            'phone',
+            'telegram',
+            'cover_letter',
+            'created_at',
+        )
         read_only_fields = ('id', 'created_at')
 
     def create(self, validated_data):
@@ -597,6 +606,9 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             project=project,
             volunteer=volunteer,
             status_incomes=status_incomes,
+            phone=validated_data.get('phone', ''),
+            telegram=validated_data.get('telegram', ''),
+            cover_letter=validated_data.get('cover_letter', ''),
         )
         return project_income
 

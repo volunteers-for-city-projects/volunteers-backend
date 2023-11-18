@@ -235,7 +235,7 @@ class Project(models.Model):
         max_length=settings.MAX_LEN_NAME_PROJECT,
         validators=[validate_name],
         verbose_name='Название',
-        unique=True
+        unique=True,
     )
     description = models.TextField(
         blank=True,  # добавила
@@ -254,27 +254,27 @@ class Project(models.Model):
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -286,13 +286,13 @@ class Project(models.Model):
     )
     event_address = models.ForeignKey(
         Address,
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,  # добавила
         on_delete=models.CASCADE,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -303,7 +303,7 @@ class Project(models.Model):
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -492,6 +492,18 @@ class ProjectIncomes(models.Model):
         choices=STATUS_INCOMES,
         default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
+    )
+    phone = models.CharField(
+        validators=[validate_phone_number],
+        max_length=settings.LEN_PHONE,
+        blank=True,
+        verbose_name='Телефон',
+    )
+    telegram = models.CharField(
+        max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
+        validators=[validate_telegram],
+        verbose_name='Телеграм',
     )
     cover_letter = models.TextField(
         verbose_name='Сопроводительное письмо',
