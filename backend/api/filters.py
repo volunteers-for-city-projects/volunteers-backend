@@ -1,8 +1,8 @@
 import django_filters
 from django.db.models import Q
-from django.http import Http404
 from django.utils import timezone
 from django_filters.rest_framework import FilterSet, filters
+from rest_framework.exceptions import ParseError
 from taggit.models import Tag
 
 from content.models import City, Skills
@@ -88,7 +88,7 @@ class ProjectFilter(FilterSet):
             try:
                 queryset = super().filter_queryset(queryset)
             except (ValueError, self.Meta.model.DoesNotExist):
-                raise Http404("Invalid filter value for {}".format(name))
+                raise ParseError("Invalid filter value for {}".format(name))
 
         return queryset
 
