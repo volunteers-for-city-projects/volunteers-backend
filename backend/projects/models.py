@@ -509,13 +509,7 @@ class ProjectIncomes(models.Model):
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
+        validators=[validate_about],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
