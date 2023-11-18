@@ -11,6 +11,15 @@ User = get_user_model()
 
 class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
                                   TokenCreateSerializer):
+    """
+    Класс создания токена для аутентификации с переопределенным методом
+    валидации принимаемых данных.
+    Проверяется:
+        - существование логина
+        - соответствие пароля
+        - активирован ли аккаунт
+    """
+
     default_error_messages = {
         'inactive_account': settings.CONSTANTS.messages.INACTIVE_ACCOUNT_ERROR,
         'missing_account': settings.CONSTANTS.messages.EMAIL_NOT_FOUND,
@@ -38,7 +47,7 @@ class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
                         'password':
                         [self.default_error_messages.get('wrong_password')]
                     }
-                }, code='invalid'
+                }, code='wrong'
             )
         self.user = authenticate(
             request=self.context.get('request'), **params, password=password
@@ -51,12 +60,17 @@ class CustomTokenCreateSerializer(IsValidModifyErrorForFrontendMixin,
                     'not_active':
                     [self.default_error_messages.get('inactive_account')]
                 }
-            }, code='invalid'
+            }, code='wrong'
         )
 
 
 class CustomSendEmailResetSerializer(IsValidModifyErrorForFrontendMixin,
                                      SendEmailResetSerializer):
+    """
+    Класс отправки ссылки для сброса пароля.
+    Переопределен метод получения пользователя. Возбуждается ошибка валидации
+    со структурой деталей ошибки более удобной для фронтов.
+    """
 
     def get_user(self, is_active=True):
         try:
