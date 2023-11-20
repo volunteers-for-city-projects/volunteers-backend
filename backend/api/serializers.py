@@ -197,20 +197,6 @@ class ProjectGetSerializer(serializers.ModelSerializer):
         CANCELED = 'canceled_by_organizer'
         EDITING = 'editing'
 
-        # now = timezone.now()
-        # if data.status_approve == Project.CANCELED_BY_ORGANIZER:
-        #     return CANCELED
-        # elif data.start_datetime <= now < data.start_date_application:
-        #     return OPEN
-        # elif data.start_date_application <= now < data.end_date_application:
-        #     return READY
-        # elif data.end_date_application <= now < data.end_datetime:
-        #     return CLOSED
-        # elif data.end_datetime <= now:
-        #     return COMPLETED
-        # else:
-        #     return 'Статус проекта не определен'
-
         if data.status_approve == Project.CANCELED_BY_ORGANIZER:
             return CANCELED
         elif data.status_approve == Project.APPROVED:
@@ -248,6 +234,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             'city',
             'categories',
             'participants',
+            'admin_comments',
             'status_approve',
             'skills',
             'is_favorited',
