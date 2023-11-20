@@ -3,6 +3,7 @@ from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from taggit.models import Tag
 
 from api.utils import NonEmptyBase64ImageField, create_user
@@ -762,19 +763,40 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
+# class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
+#    """
+#    Сериализатор для отображения избранных проектов.
+#    """
+#
+#    class Meta:
+#        model = Project
+#        fields = (
+#            'id',
+#            'name',
+#            'picture',
+#            'organization',
+#        )
+
+
+class ProjectFavoriteSerializer(IsValidModifyErrorForFrontendMixin,
+                                serializers.ModelSerializer):
     """
     Сериализатор для отображения избранных проектов.
     """
 
     class Meta:
-        model = Project
+        model = ProjectFavorite
         fields = (
-            'id',
-            'name',
-            'picture',
-            'organization',
+            'user',
+            'project',
         )
+        validators = [
+            UniqueTogetherValidator(
+                ProjectFavorite.objects.all(),
+                fields=('user', 'project'),
+                message='Этот проект уже присутствует в избранном!',
+            )
+        ]
 
 
 class CurrentUserSerializer(UserSerializer):

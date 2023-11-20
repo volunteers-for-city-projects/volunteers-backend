@@ -58,7 +58,7 @@ from .serializers import (
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
-    ProjectFavoriteGetSerializer,
+    ProjectFavoriteSerializer,
     ProjectGetSerializer,
     ProjectIncomesGetSerializer,
     ProjectIncomesSerializer,
@@ -229,31 +229,31 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def create_favorite(self, user, project, errors):
+    def create_favorite(self, serializer_class, user, project):
         """
         Добавить проект в избранное.
         """
-        _, created = ProjectFavorite.objects.get_or_create(
-            user=user, project=project
+        serializer = serializer_class(
+            data={'user': user, 'project': project, }
         )
-        if not created:
-            return Response(
-                {'errors': errors},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        serializer = ProjectFavoriteGetSerializer(instance=project)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
 
-    def delete_favorite(self, user, project, errors):
+    def delete_favorite(self, model, user, project, error_message):
         """
         Удалить проект из избранного.
         """
-        cnt_deleted, _ = ProjectFavorite.objects.filter(
+        count_deleted, _ = model.objects.filter(
             user=user, project=project
         ).delete()
-        if cnt_deleted == 0:
+        if count_deleted == 0:
             return Response(
-                {'errors': errors},
+                {'errors': error_message},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -262,6 +262,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
         ['POST', 'DELETE'],
         detail=True,
         permission_classes=[IsVolunteer | IsOrganizer],
+        serializer_class=ProjectFavoriteSerializer,
     )
     def favorite(self, request, **kwargs):
         """
@@ -270,10 +271,15 @@ class ProjectViewSet(viewsets.ModelViewSet):
         project = get_object_or_404(Project, pk=kwargs.get('pk'))
         if request.method == 'POST':
             return self.create_favorite(
-                request.user, project, 'Данный проект уже есть в избранном!'
+                serializer_class=self.serializer_class,
+                user=request.user.pk,
+                project=project.pk
             )
         return self.delete_favorite(
-            request.user, project, 'Данного проекта нет в избранном!'
+            model=ProjectFavorite,
+            user=request.user.pk,
+            project=kwargs.get('pk'),
+            error_message='Данного проекта нет в избранном!',
         )
 
     @action(
