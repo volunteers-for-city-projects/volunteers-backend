@@ -11,12 +11,12 @@ from .utils import ImagePath
 from .validators import (
     LengthValidator,
     regex_string_validator,
-    validate_text_field,
     validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
     validate_title,
+    validate_text_field
 )
 
 
