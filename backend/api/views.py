@@ -238,24 +238,17 @@ class ProjectViewSet(viewsets.ModelViewSet):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         return Response(
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    def delete_favorite(self, model, user, project, error_message):
+    def delete_favorite(self, model, user, project):
         """
         Удалить проект из избранного.
         """
-        count_deleted, _ = model.objects.filter(
-            user=user, project=project
-        ).delete()
-        if count_deleted == 0:
-            return Response(
-                {'errors': error_message},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        model.objects.filter(user=user, project=project).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -279,7 +272,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             model=ProjectFavorite,
             user=request.user.pk,
             project=kwargs.get('pk'),
-            error_message='Данного проекта нет в избранном!',
         )
 
     @action(
