@@ -19,6 +19,7 @@ from projects.models import (
     Category,
     Organization,
     Project,
+    ProjectFavorite,
     ProjectIncomes,
     ProjectParticipants,
     Volunteer,
@@ -165,9 +166,18 @@ class ProjectGetSerializer(serializers.ModelSerializer):
 
     event_address = AddressSerializer(read_only=True)
     skills = SkillsSerializer(many=True, read_only=True)
-    is_favorited = serializers.BooleanField(default=False)
+    is_favorited = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     city = serializers.SlugRelatedField(slug_field='name', read_only=True)
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ProjectFavorite.objects.filter(
+                user=request.user,
+                project=obj,
+            ).exists()
+        return False
 
     def get_status(self, data):
         OPEN = 'open'
@@ -752,9 +762,9 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
+class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для отображения избранных проектов волонтера.
+    Сериализатор для отображения избранных проектов.
     """
 
     class Meta:

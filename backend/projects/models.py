@@ -532,21 +532,42 @@ class ProjectIncomes(models.Model):
         )
 
 
-class VolunteerFavorite(models.Model):
+class ProjectFavorite(models.Model):
     """
-    Модель избранных проектов волонтеров.
+    Модель избранных проектов пользователей.
+
+    При добавлении проекта в избранное все поля обязательны для заполнения.
+
+    Attributes:
+        user(int):
+            Поле ForeignKey на пользователя, у которого проект в избранном.
+        project(int):
+            Поле ForeignKey на проект, добавленный в избранное.
     """
 
-    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey(
+        Project,
+        verbose_name='Проект',
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
+        verbose_name = 'Избранный проект'
+        verbose_name_plural = 'Избранные проекты'
+        default_related_name = 'project_favorite'
         constraints = (
             models.UniqueConstraint(
-                fields=('volunteer', 'project'),
-                name='unique_volunteer_favorites',
+                fields=('user', 'project'),
+                name='%(app_label)s_%(class)s_unique_project_in_favorite',
             ),
         )
 
     def __str__(self):
-        return f'{self.volunteer} {self.project}'
+        return (
+            f'Проект {self.project.name} в избранном у {self.user}'
+        )

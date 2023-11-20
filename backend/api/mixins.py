@@ -53,4 +53,4 @@ class IsValidModifyErrorForFrontendMixin:
                     errors_db
                 }
             )
-        return bool(self._errors)
+        return not bool(self._errors)
