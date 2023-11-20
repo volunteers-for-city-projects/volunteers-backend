@@ -4,6 +4,7 @@ from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from taggit.models import Tag
 
 from api.utils import NonEmptyBase64ImageField, create_user
@@ -21,6 +22,7 @@ from projects.models import (
     Organization,
     Project,
     ProjectImage,
+    ProjectFavorite,
     ProjectIncomes,
     ProjectParticipants,
     Volunteer,
@@ -173,10 +175,19 @@ class ProjectGetSerializer(serializers.ModelSerializer):
 
     event_address = AddressSerializer(read_only=True)
     skills = SkillsSerializer(many=True, read_only=True)
-    is_favorited = serializers.BooleanField(default=False)
+    is_favorited = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     city = serializers.SlugRelatedField(slug_field='name', read_only=True)
     photos = ProjectImageSerializer(many=True, read_only=True)
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ProjectFavorite.objects.filter(
+                user=request.user,
+                project=obj,
+            ).exists()
+        return False
 
     def get_status(self, data):
         OPEN = 'open'
@@ -615,7 +626,16 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
+        fields = (
+            'id',
+            'project',
+            'volunteer',
+            'status_incomes',
+            'phone',
+            'telegram',
+            'cover_letter',
+            'created_at',
+        )
         read_only_fields = ('id', 'created_at')
 
     def create(self, validated_data):
@@ -639,6 +659,9 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             project=project,
             volunteer=volunteer,
             status_incomes=status_incomes,
+            phone=validated_data.get('phone', ''),
+            telegram=validated_data.get('telegram', ''),
+            cover_letter=validated_data.get('cover_letter', ''),
         )
         return project_income
 
@@ -782,19 +805,40 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
+# class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
+#    """
+#    Сериализатор для отображения избранных проектов.
+#    """
+#
+#    class Meta:
+#        model = Project
+#        fields = (
+#            'id',
+#            'name',
+#            'picture',
+#            'organization',
+#        )
+
+
+class ProjectFavoriteSerializer(IsValidModifyErrorForFrontendMixin,
+                                serializers.ModelSerializer):
     """
-    Сериализатор для отображения избранных проектов волонтера.
+    Сериализатор для отображения избранных проектов.
     """
 
     class Meta:
-        model = Project
+        model = ProjectFavorite
         fields = (
-            'id',
-            'name',
-            'picture',
-            'organization',
+            'user',
+            'project',
         )
+        validators = [
+            UniqueTogetherValidator(
+                ProjectFavorite.objects.all(),
+                fields=('user', 'project'),
+                message='Этот проект уже присутствует в избранном!',
+            )
+        ]
 
 
 class CurrentUserSerializer(UserSerializer):

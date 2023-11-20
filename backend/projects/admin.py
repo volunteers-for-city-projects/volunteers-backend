@@ -137,17 +137,26 @@ class ProjectAdmin(DjangoObjectActions, ModelAdmin):
             [volunteer.user.last_name for volunteer in obj.participants.all()]
         )
 
-    @action(label='Одобрить', description='Отправить проект на публикацию',)
+    @action(
+        label='Одобрить',
+        description='Отправить проект на публикацию',
+    )
     def approve_project(self, request, obj):
         obj.status_approve = Project.APPROVED
         obj.save()
 
-    @action(label='Отклонить', description='Отправить проект на доработку',)
+    @action(
+        label='Отклонить',
+        description='Отправить проект на доработку',
+    )
     def reject_project(self, request, obj):
         obj.status_approve = Project.REJECTED
         obj.save()
 
-    change_actions = ('approve_project', 'reject_project',)
+    change_actions = (
+        'approve_project',
+        'reject_project',
+    )
 
     @action(
         description='Отправить проект на публикацию',
@@ -165,7 +174,10 @@ class ProjectAdmin(DjangoObjectActions, ModelAdmin):
     def reject_projects(self, request, queryset):
         queryset.update(status_approve=Project.REJECTED)
 
-    actions = ('approve_projects', 'reject_projects',)
+    actions = (
+        'approve_projects',
+        'reject_projects',
+    )
 
 
 @register(ProjectParticipants)
@@ -189,6 +201,8 @@ class ProjectIncomesAdmin(ModelAdmin):
         'project',
         'volunteer',
         'status_incomes',
+        'phone',
+        'telegram',
         'cover_letter',
         'created_at',
     )

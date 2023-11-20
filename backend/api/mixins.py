@@ -32,6 +32,13 @@ class DestroyUserMixin:
 
 
 class IsValidModifyErrorForFrontendMixin:
+    """
+    Миксин для перехвата ошибок валидации и модификации их деталей.
+    Переопределен метод проверки данных на валидность. Детали перехваченных
+    ошибок анализируются, и формируется словарь деталей ошибок со структурой
+    более удобной для фронтов.
+    """
+
     def is_valid(self, *, raise_exception=False):
         try:
             super().is_valid(raise_exception=True)
@@ -46,4 +53,4 @@ class IsValidModifyErrorForFrontendMixin:
                     errors_db
                 }
             )
-        return bool(self._errors)
+        return not bool(self._errors)
