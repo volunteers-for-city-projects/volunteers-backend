@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
@@ -21,6 +22,7 @@ from projects.models import (
     Organization,
     Project,
     ProjectFavorite,
+    ProjectImage,
     ProjectIncomes,
     ProjectParticipants,
     Volunteer,
@@ -160,6 +162,12 @@ class SkillsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
+class ProjectImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectImage
+        fields = ('id', 'project', 'photo')
+
+
 class ProjectGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения данных проекта.
@@ -170,6 +178,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     city = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    photos = ProjectImageSerializer(many=True, read_only=True)
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -222,6 +231,7 @@ class ProjectGetSerializer(serializers.ModelSerializer):
         model = Project
         fields = (
             'id',
+            'created_at',
             'name',
             'description',
             'picture',
@@ -237,12 +247,12 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'photo_previous_event',
             'participants',
             'status_approve',
             'skills',
             'is_favorited',
             'status',
+            'photos'
         )
         read_only_fields = fields
 
@@ -252,12 +262,12 @@ class DraftProjectSerializer(serializers.ModelSerializer):
     Сериализатор для создания/редоктирования черновика - проекта.
     """
 
-    event_address = AddressSerializer(required=False)
+    event_address = AddressSerializer(required=False, allow_null=True)
     skills = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Skills.objects.all(), many=True
     )
     # picture = NonEmptyBase64ImageField(required=False)
-    picture = Base64ImageField(required=False)
+    picture = Base64ImageField(required=False, allow_null=True)
 
     def validate_status_approve(self, value):
         if value != Project.EDITING:
@@ -287,6 +297,9 @@ class DraftProjectSerializer(serializers.ModelSerializer):
                 for attr, value in address_data.items():
                     setattr(address, attr, value)
                 address.save()
+            else:
+                address = Address.objects.create(**address_data)
+                instance.event_address = address
         return super().update(instance, validated_data)
 
     class Meta:
@@ -307,7 +320,6 @@ class DraftProjectSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'photo_previous_event',
             'status_approve',
             'skills',
         )
@@ -356,14 +368,13 @@ class ProjectSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'photo_previous_event',
             'status_approve',
             'skills',
         )
         read_only_fields = ('organization',)
         extra_kwargs = {field: {'required': True} for field in fields}
         extra_kwargs = {
-            'photo_previous_event': {'required': False},
+            # 'photo_previous_event': {'required': False},
             'status_approve': {'required': False},
             'event_purpose': {'allow_blank': False, 'required': True},
             'project_tasks': {'allow_blank': False, 'required': True},
@@ -449,9 +460,40 @@ class ActiveProjectEditSerializer(ProjectSerializer):
             'organizer_provides',
             'city',
             'categories',
-            'photo_previous_event',
             'skills',
         )
+
+
+class ProjectCompleteSerializer(ProjectSerializer):
+    """
+    Сериализатор для добавления фото к Заверненным проектам.
+    """
+    photos = ProjectImageSerializer(many=True, read_only=True)
+    uploaded_photos = serializers.ListField(
+        max_length=settings.MAX_LEN_PHOTOS,
+        child=Base64ImageField(
+            max_length=20000000, allow_empty_file=False, use_url=False
+            ),
+        write_only=True,
+        required=False  # обязательное или нет не понятно
+    )
+
+    class Meta(ProjectSerializer.Meta):
+        fields = ProjectSerializer.Meta.fields + ('photos', 'uploaded_photos',)
+        read_only_fields = ProjectSerializer.Meta.fields
+
+# если зазгрузка фоток не обязательная, иначе убрать  if uploaded_data:
+
+    def update(self, instance, validated_data):
+        uploaded_data = validated_data.pop('uploaded_photos', None)
+        instance.photos.all().delete()
+        if uploaded_data:
+            for uploaded_photo in uploaded_data:
+                ProjectImage.objects.create(
+                    project=instance, photo=uploaded_photo
+                )
+
+        return super().update(instance, validated_data)
 
 
 class TagSerializer(serializers.ModelSerializer):

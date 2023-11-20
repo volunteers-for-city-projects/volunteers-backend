@@ -22,4 +22,9 @@ status_project_filter_params = [
         description=('Фильтрует проекты организатора в архиве. '
                      'Пример запроса /projects/me/?archive=true')
     ),
+    openapi.Parameter(
+        'moderation', openapi.IN_QUERY, type=openapi.TYPE_STRING,
+        description=('Фильтрует проекты организатора на модерации. '
+                     'Пример запроса /projects/me/?moderation=true')
+    ),
 ]

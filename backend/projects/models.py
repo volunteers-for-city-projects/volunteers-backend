@@ -7,14 +7,15 @@ from django.db import models
 from content.models import City, Skills
 from users.models import User
 
+from .utils import ImagePath
 from .validators import (
     LengthValidator,
     regex_string_validator,
-    validate_about,
     validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
+    validate_text_field,
     validate_title,
 )
 
@@ -50,10 +51,10 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        verbose_name='Об организации',
+        validators=[validate_text_field],
         max_length=settings.MAX_LEN_ABOUT_US,
         blank=True,
-        validators=[validate_about],
+        verbose_name='Об организации',
     )
     city = models.ForeignKey(
         City,
@@ -116,7 +117,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
+        #  help_text='Введите дату  "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
@@ -345,11 +346,11 @@ class Project(models.Model):
         # blank=True,  # добавила
         verbose_name='Категории',
     )
-    photo_previous_event = models.ImageField(
-        blank=True,
-        # null=True,
-        verbose_name='Фото с мероприятия',
-    )
+    # photo_previous_event = models.ImageField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Фото с мероприятия',
+    # )
     participants = models.ManyToManyField(
         'ProjectParticipants',
         blank=True,
@@ -369,6 +370,10 @@ class Project(models.Model):
         # blank=True,  # добавила
         verbose_name='Навыки',
     )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания проекта'
+    )
     admin_comments = models.TextField(
         blank=True,
         validators=[
@@ -382,7 +387,7 @@ class Project(models.Model):
     )
 
     class Meta:
-        ordering = ('start_datetime',)
+        ordering = ('start_datetime', 'id')
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
@@ -390,6 +395,18 @@ class Project(models.Model):
         return settings.PROJECT.format(
             self.name, self.organization, self.categories, self.city
         )
+
+
+class ProjectImage(models.Model):
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE,
+        related_name='photos'
+    )
+    photo = models.ImageField(
+        upload_to=ImagePath.project_image_path,
+        default='', null=True, blank=True,
+        verbose_name='Фото прошедшего мероприятия'
+    )
 
 
 class ProjectCategories(models.Model):
@@ -509,11 +526,11 @@ class ProjectIncomes(models.Model):
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[validate_about],
+        validators=[validate_text_field],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Статус заявки волонтера',
+        verbose_name='Дата заявки волонтера',
     )
 
     class Meta:

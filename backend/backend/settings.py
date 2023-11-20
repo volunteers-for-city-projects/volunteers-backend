@@ -112,7 +112,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -207,8 +206,6 @@ EMAIL_BACKEND = 'gmailapi_backend.mail.GmailBackend'
 GMAIL_API_CLIENT_ID = os.getenv('GMAIL_API_CLIENT_ID', '')
 GMAIL_API_CLIENT_SECRET = os.getenv('GMAIL_API_CLIENT_SECRET', '')
 GMAIL_API_REFRESH_TOKEN = os.getenv('GMAIL_API_REFRESH_TOKEN', '')
-
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
@@ -315,3 +312,5 @@ MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
 MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
+
+MAX_LEN_PHOTOS = 10
