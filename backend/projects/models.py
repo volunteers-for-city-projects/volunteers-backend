@@ -236,7 +236,7 @@ class Project(models.Model):
         max_length=settings.MAX_LEN_NAME_PROJECT,
         validators=[validate_name],
         verbose_name='Название',
-        unique=True
+        unique=True,
     )
     description = models.TextField(
         blank=True,  # добавила
@@ -255,27 +255,27 @@ class Project(models.Model):
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -287,13 +287,13 @@ class Project(models.Model):
     )
     event_address = models.ForeignKey(
         Address,
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         null=True,  # добавила
         on_delete=models.CASCADE,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -304,7 +304,7 @@ class Project(models.Model):
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        blank=True,   # добавилено для черновика
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -510,17 +510,23 @@ class ProjectIncomes(models.Model):
         default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
     )
+    phone = models.CharField(
+        validators=[validate_phone_number],
+        max_length=settings.LEN_PHONE,
+        blank=True,
+        verbose_name='Телефон',
+    )
+    telegram = models.CharField(
+        max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
+        validators=[validate_telegram],
+        verbose_name='Телеграм',
+    )
     cover_letter = models.TextField(
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
+        validators=[validate_about],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -543,21 +549,42 @@ class ProjectIncomes(models.Model):
         )
 
 
-class VolunteerFavorite(models.Model):
+class ProjectFavorite(models.Model):
     """
-    Модель избранных проектов волонтеров.
+    Модель избранных проектов пользователей.
+
+    При добавлении проекта в избранное все поля обязательны для заполнения.
+
+    Attributes:
+        user(int):
+            Поле ForeignKey на пользователя, у которого проект в избранном.
+        project(int):
+            Поле ForeignKey на проект, добавленный в избранное.
     """
 
-    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey(
+        Project,
+        verbose_name='Проект',
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
+        verbose_name = 'Избранный проект'
+        verbose_name_plural = 'Избранные проекты'
+        default_related_name = 'project_favorite'
         constraints = (
             models.UniqueConstraint(
-                fields=('volunteer', 'project'),
-                name='unique_volunteer_favorites',
+                fields=('user', 'project'),
+                name='%(app_label)s_%(class)s_unique_project_in_favorite',
             ),
         )
 
     def __str__(self):
-        return f'{self.volunteer} {self.project}'
+        return (
+            f'Проект {self.project.name} в избранном у {self.user}'
+        )

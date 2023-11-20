@@ -7,6 +7,11 @@ from projects.models import Project
 
 
 def create_user(self, serializer, data):
+    """
+    Функция создания объекта пользователя с отправкой ссылки для активации
+    аккаунта и подтверждения завершения процедуры подтверждения email-а.
+    """
+
     user_serializer = serializer(data=data)
     if user_serializer.is_valid():
         user = user_serializer.save()
@@ -52,6 +57,12 @@ class NonEmptyBase64ImageField(Base64ImageField):
 
 
 def modify_errors(details, errors_valid):
+    """
+    Функция модификации деталей ошибок валидации в отдельные словари:
+    errors_valid - ошибки валидации, errors_db - ошибки БД.
+    """
+
+    errors_db_codes = ['unique', 'not_exist', 'wrong']
     keys = details.keys()
     errors_db = {}
     for key in keys:
@@ -65,7 +76,7 @@ def modify_errors(details, errors_valid):
                 ).append(inner_details.get(key_in)[0])
         else:
             for i in range(len(details.get(key))):
-                if details.get(key)[i]['code'] in ['unique', 'not_exist']:
+                if details.get(key)[i]['code'] in errors_db_codes:
                     errors_db.setdefault(
                         key,
                         []

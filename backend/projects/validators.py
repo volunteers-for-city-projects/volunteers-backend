@@ -104,7 +104,7 @@ def validate_title(value):
     Валидирует длину и символы в Названии организации.
     """
     regex_validator = RegexValidator(
-        regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!]+$',
+        regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!\«\»]+$',
         message=settings.MESSAGE_TITLE_CYRILLIC,
     )
     min_length_validator = MinLengthValidator(
