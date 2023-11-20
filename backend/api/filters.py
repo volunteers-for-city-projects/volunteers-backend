@@ -106,12 +106,14 @@ class StatusProjectFilter(django_filters.FilterSet):
     Волонтер может фильтровать проекты по одному из фильтров:
     по фильтру "Активен" /projects/me/?active=true
     по фильтру "Завершен" /projects/me/?completed=true.
+    по фильтру "На модерации" /projects/me/?moderation=true.
     """
 
     draft = django_filters.CharFilter(method='filter_draft')
     active = django_filters.CharFilter(method='filter_active')
     completed = django_filters.CharFilter(method='filter_completed')
     archive = django_filters.CharFilter(method='filter_archive')
+    moderation = django_filters.CharFilter(method='filter_moderation')
 
     def filter_draft(self, queryset):
         """
@@ -122,7 +124,6 @@ class StatusProjectFilter(django_filters.FilterSet):
                 status_approve__in=[
                     Project.EDITING,
                     Project.REJECTED,
-                    Project.PENDING,
                 ]
             )
         )
@@ -151,6 +152,13 @@ class StatusProjectFilter(django_filters.FilterSet):
         """
 
         return queryset.filter(Q(status_approve=Project.CANCELED_BY_ORGANIZER))
+
+    def filter_moderation(self, queryset):
+        """
+        Фильтр для таба "На модерации".
+        """
+
+        return queryset.filter(Q(status_approve=Project.PENDING))
 
     #  TODO фильтры по статусам проекта в ЛК Волонтера
     #  Простой код для понимания и дополнения статусов волнтеров
@@ -186,6 +194,8 @@ class StatusProjectFilter(django_filters.FilterSet):
                 and self.filter_completed
                 or self.data.get("archive")
                 and self.filter_archive
+                or self.data.get("moderation")
+                and self.filter_moderation
             )
         elif user.is_volunteer:
             status_filter = (

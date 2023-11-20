@@ -1,4 +1,4 @@
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -58,6 +58,7 @@ from .serializers import (
     PlatformAboutSerializer,
     PreviewNewsSerializer,
     ProjectCategorySerializer,
+    ProjectCompleteSerializer,
     ProjectGetSerializer,
     ProjectIncomesGetSerializer,
     ProjectIncomesSerializer,
@@ -149,9 +150,22 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if (instance.status_approve == Project.APPROVED
                and instance.end_datetime > timezone.now()):
                 return ActiveProjectEditSerializer
+            if (instance.status_approve == Project.APPROVED
+               and instance.end_datetime < timezone.now()):
+                return ProjectCompleteSerializer
             # else:
             #     return ProjectSerializer
         return ProjectSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            if self.action == 'list':
+                return self.queryset.filter(status_approve=Project.APPROVED)
+            return self.queryset.filter(
+                Q(status_approve=Project.APPROVED) |
+                Q(organization__contact_person=self.request.user)
+            )
+        return self.queryset.filter(status_approve=Project.APPROVED)
 
     def perform_create(self, serializer):
         serializer.save(organization=self.request.user.organization)
@@ -164,14 +178,14 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        if (
-            instance.status_approve == Project.APPROVED
-            and instance.end_datetime < timezone.now()
-        ):
-            return Response(
-                {"detail": "Вы не можете редактировать завершенные проекты"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        # if (
+        #     instance.status_approve == Project.APPROVED
+        #     and instance.end_datetime < timezone.now()
+        # ):
+        #     return Response(
+        #         {"detail": "Вы не можете редактировать завершенные проекты"},
+        #         status=status.HTTP_400_BAD_REQUEST,
+        #     )
         status_before = instance.status_approve
         status_new = request.data.get("status_approve", status_before)
         allowed_statuses = dict(Project.STATUS_CHOICES).keys()
@@ -216,7 +230,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
         #  какие то статусы
         if instance.status_approve not in [
             Project.EDITING,
-            Project.CANCELED_BY_ORGANIZER,
+            Project.CANCELED_BY_ORGANIZER,  # под вопросом
+            Project.REJECTED
         ]:
             message = (
                 'Вы не можете удалить проекты, '
