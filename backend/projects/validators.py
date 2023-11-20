@@ -202,7 +202,7 @@ class LengthValidator:
             )
 
 
-def validate_text_field(value):
+def validate_about(value):
     """
     Валидирует длину и символы в информации об организации.
     """

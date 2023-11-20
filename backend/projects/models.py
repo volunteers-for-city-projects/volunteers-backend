@@ -11,11 +11,11 @@ from .utils import ImagePath
 from .validators import (
     LengthValidator,
     regex_string_validator,
+    validate_about,
     validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
-    validate_text_field,
     validate_title
 )
 
@@ -51,10 +51,10 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        verbose_name='Об организации',
-        validators=[validate_text_field],
+        validators=[validate_about],
         max_length=settings.MAX_LEN_ABOUT_US,
         blank=True,
+        verbose_name='Об организации',
     )
     city = models.ForeignKey(
         City,
