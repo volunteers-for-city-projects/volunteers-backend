@@ -30,7 +30,7 @@ jobs:
 
     - name: Run ruff
       run: |
-        python -m ruff --cache-clear check .
+        python -m ruff check -n .
 
     - name: Run isort
       run: |
