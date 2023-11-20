@@ -52,9 +52,9 @@ class Organization(models.Model):
     )
     about = models.TextField(
         verbose_name='Об организации',
+        validators=[validate_text_field],
         max_length=settings.MAX_LEN_ABOUT_US,
         blank=True,
-        validators=[validate_text_field],
     )
     city = models.ForeignKey(
         City,
@@ -117,7 +117,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        # help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
+        #  help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
