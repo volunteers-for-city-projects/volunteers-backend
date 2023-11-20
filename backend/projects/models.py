@@ -11,11 +11,11 @@ from .utils import ImagePath
 from .validators import (
     LengthValidator,
     regex_string_validator,
-    validate_about,
     validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
+    validate_text_field,
     validate_title
 )
 
@@ -51,7 +51,7 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        validators=[validate_about],
+        validators=[validate_text_field],
         max_length=settings.MAX_LEN_ABOUT_US,
         blank=True,
         verbose_name='Об организации',
@@ -526,7 +526,7 @@ class ProjectIncomes(models.Model):
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[validate_about],
+        validators=[validate_text_field],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
