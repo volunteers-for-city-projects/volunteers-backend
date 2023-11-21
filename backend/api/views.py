@@ -1,4 +1,3 @@
-from urllib import request
 from django.db.models import Exists, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
