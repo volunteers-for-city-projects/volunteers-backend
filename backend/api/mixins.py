@@ -1,3 +1,4 @@
+from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.validators import ValidationError
@@ -15,20 +16,19 @@ class DestroyUserMixin:
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        storage = instance.photo.storage
+        name = instance.photo.name
         self.perform_destroy(instance)
-        if isinstance(instance, Organization):
-            instance.contact_person.delete()
-        elif isinstance(instance, Volunteer):
-            instance.user.delete()
+        try:
+            with transaction.atomic():
+                if isinstance(instance, Organization):
+                    instance.contact_person.delete()
+                elif isinstance(instance, Volunteer):
+                    instance.user.delete()
+        finally:
+            if (name and storage.exists(name)):
+                storage.delete(name)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def perform_destroy(self, instance):
-        if (
-            instance.photo.name
-            and instance.photo.storage.exists(instance.photo.name)
-        ):
-            instance.photo.storage.delete(instance.photo.name)
-        instance.delete()
 
 
 class IsValidModifyErrorForFrontendMixin:

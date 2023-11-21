@@ -1,13 +1,13 @@
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from content.models import City, Skills
-from users.models import User
 
-from .utils import ImagePath
+from .utils import ImagePath, get_or_create_deleted_user
 from .validators import (
     LengthValidator,
     regex_string_validator,
@@ -18,6 +18,28 @@ from .validators import (
     validate_text_field,
     validate_title,
 )
+
+User = get_user_model()
+
+
+def get_deleted_volunteer():
+    deleted_user = get_or_create_deleted_user(User)
+    city, _ = City.objects.get_or_create(name='Отсутствует')
+    return Volunteer.objects.get_or_create(
+        user=deleted_user,
+        date_of_birth='1900-01-01',
+        city=city,
+    )[0]
+
+
+def get_deleted_organization():
+    deleted_user = get_or_create_deleted_user(User)
+    city, _ = City.objects.get_or_create(name='Отсутствует')
+    return Organization.objects.get_or_create(
+        contact_person=deleted_user,
+        title='Удаленная организация',
+        city=city,
+    )[0]
 
 
 class Organization(models.Model):
@@ -327,7 +349,7 @@ class Project(models.Model):
     )
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.CASCADE,
+        on_delete=models.SET(get_deleted_organization),
         related_name='projects',
         verbose_name='Организация',
     )
@@ -457,7 +479,10 @@ class ProjectParticipants(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name='participant'
     )
-    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(
+        Volunteer,
+        on_delete=models.SET(get_deleted_volunteer),
+    )
 
     class Meta:
         default_related_name = 'projects_volunteers'
@@ -500,7 +525,7 @@ class ProjectIncomes(models.Model):
     volunteer = models.ForeignKey(
         Volunteer,
         blank=False,
-        on_delete=models.CASCADE,
+        on_delete=models.SET(get_deleted_volunteer),
         related_name='project_incomes',
         verbose_name='Волонтер',
     )
