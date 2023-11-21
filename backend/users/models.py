@@ -39,11 +39,13 @@ class User(AbstractUser):
     ADMIN = 'admin'
     ORGANIZER = 'organizer'
     VOLUNTEER = 'volunteer'
+    DELETED = 'deleted'
 
     USER_ROLES = [
         (ADMIN, 'Администратор'),
         (ORGANIZER, 'Организатор'),
         (VOLUNTEER, 'Волонтер'),
+        (DELETED, 'Удаленный'),
     ]
 
     username = None
