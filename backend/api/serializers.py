@@ -783,11 +783,12 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
     """
     Сериализатор для списка участников.
     """
+    volunteer = VolunteerGetSerializer()
 
     class Meta:
         model = ProjectParticipants
         fields = (
-            'project',
+            # 'project',
             'volunteer',
         )
 

@@ -25,6 +25,7 @@ from projects.models import (
     Project,
     ProjectFavorite,
     ProjectIncomes,
+    ProjectParticipants,
     Volunteer,
 )
 
@@ -63,6 +64,7 @@ from .serializers import (
     ProjectGetSerializer,
     ProjectIncomesGetSerializer,
     ProjectIncomesSerializer,
+    ProjectParticipantSerializer,
     ProjectSerializer,
     SkillsSerializer,
     TagSerializer,
@@ -162,8 +164,8 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if self.action == 'list':
                 return self.queryset.filter(status_approve=Project.APPROVED)
             return self.queryset.filter(
-                Q(status_approve=Project.APPROVED) |
-                Q(organization__contact_person=self.request.user)
+                Q(status_approve=Project.APPROVED)
+                | Q(organization__contact_person=self.request.user)
             )
         return self.queryset.filter(status_approve=Project.APPROVED)
 
@@ -274,7 +276,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def favorite(self, request, **kwargs):
         """
-        Избранные проекты волонтера.
+        Избранные проекты волонтера / организатора.
+
+        ---
         """
         project = get_object_or_404(Project, pk=kwargs.get('pk'))
         if request.method == 'POST':
@@ -297,7 +301,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     )
     def save_draft(self, request):
         """
-        Сохранение черновика.
+        Сохранить проект как Черновик.
 
         ---
         """
@@ -313,6 +317,40 @@ class ProjectViewSet(viewsets.ModelViewSet):
         #     {'error': 'Неподдерживаемый метод запроса или статус проекта'},
         #     status=status.HTTP_400_BAD_REQUEST
         # )
+
+
+class ProjectParticipantsViewSet(mixins.DestroyModelMixin,
+                                 mixins.ListModelMixin,
+                                 viewsets.GenericViewSet):
+    """
+    Представление для участников проекта.
+
+    Позволяет получать и удалять волонтеров из проекта.
+    """
+    serializer_class = ProjectParticipantSerializer
+    permission_classes = [IsOrganizerOrReadOnly]
+
+    def get_queryset(self):
+        return ProjectParticipants.objects.filter(
+            project=self.kwargs.get('project_id')
+        )
+
+    def destroy(self, request, **kwargs):
+        """
+        Удалить из участников проекта конкретного волонетра
+        (доступно только Организатору этого проекта).
+
+        ---
+        """
+        project = get_object_or_404(Project, pk=kwargs.get('project_id'))
+        if project.organization.contact_person == request.user:
+            ProjectParticipants.objects.filter(
+                project=kwargs.get('project_id'),
+                volunteer=kwargs.get('pk')).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'error': 'Удалять участников проекта может только организатор'},
+            status=status.HTTP_403_FORBIDDEN)
 
 
 class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
@@ -540,7 +578,7 @@ class ProjectIncomesViewSet(
 
 class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
     """
-    Отображает проекты текущего пользователя.
+    Получить проекты текущего пользователя.
 
     Представление позволяет авторизованным пользователям с ролью
     Волонтер или Организатор просматривать свои проекты.
