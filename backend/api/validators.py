@@ -76,21 +76,21 @@ def validate_dates(
     #         'Дата окончания мероприятия должна быть позже начала и не более '
     #         'чем через год после текущей даты.'
         # )
-    if (
-        start_datetime.time().hour < MIN_TIME
-        or start_datetime.time().hour > (MAX_TIME - 2)
-    ):
-        errors.setdefault('start_datetime', []).append(
-            'Время начала мероприятия должно быть между 8:00 и 20:00.'
-        )
+    # if (
+    #     start_datetime.time().hour < MIN_TIME
+    #     or start_datetime.time().hour > (MAX_TIME - 2)
+    # ):
+    #     errors.setdefault('start_datetime', []).append(
+    #         'Время начала мероприятия должно быть между 8:00 и 20:00.'
+    #     )
 
-    if (
-        end_datetime.time().hour < (MIN_TIME + 2)
-        or end_datetime.time().hour > MAX_TIME
-    ):
-        errors.setdefault('end_datetime', []).append(
-            'Время окончания мероприятия должно быть между 10:00 и 22:00.'
-        )
+    # if (
+    #     end_datetime.time().hour < (MIN_TIME + 2)
+    #     or end_datetime.time().hour > MAX_TIME
+    # ):
+    #     errors.setdefault('end_datetime', []).append(
+    #         'Время окончания мероприятия должно быть между 10:00 и 22:00.'
+    #     )
 
     if not (
         start_datetime + MIN_DURATION_TIME
@@ -102,13 +102,13 @@ def validate_dates(
             'не позже года от текущей даты'
         )
 
-    if not (
-        MIN_DURATION_TIME <= end_datetime - start_datetime <= MAX_DURATION_TIME
-    ):
-        errors.setdefault('end_date', []).append(
-            'Длительность мероприятия должна быть не менее '
-            '2 часов и не более 9 часов.'
-        )
+    # if not (
+    #     MIN_DURATION_TIME <= end_datetime - start_datetime <= MAX_DURATION_TIME
+    # ):
+    #     errors.setdefault('end_date', []).append(
+    #         'Длительность мероприятия должна быть не менее '
+    #         '2 часов и не более 9 часов.'
+    #     )
 
     if errors:
         raise serializers.ValidationError(errors)
