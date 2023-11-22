@@ -65,7 +65,7 @@ def validate_dates(
             'а также не позже года от текущей даты.'
         )
     if not (end_date_application <= start_datetime <= MAX_ALLOWED_DATE):
-        errors.setdefault('start_date', []).append(
+        errors.setdefault('start_datetime', []).append(
             # 'Начало мероприятия должно быть в будущем после окончания подачи '
             # 'заявок и не более чем через год после текущей даты.'
             'Дата начала мероприятия должна быть поздее даты окончания '
@@ -103,9 +103,11 @@ def validate_dates(
         )
 
     if not (
-        MIN_DURATION_TIME <= end_datetime - start_datetime <= MAX_DURATION_TIME
+        MIN_DURATION_TIME.seconds
+        <= (end_datetime - start_datetime).seconds
+        <= MAX_DURATION_TIME.seconds
     ):
-        errors.setdefault('end_date', []).append(
+        errors.setdefault('end_datetime', []).append(
             'Длительность мероприятия должна быть не менее '
             '2 часов и не более 9 часов.'
         )
