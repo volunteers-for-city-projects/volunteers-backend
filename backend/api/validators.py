@@ -33,10 +33,10 @@ def validate_dates(
     # MIN_DURATION = timezone.timedelta(minutes=10)
     MAX_DURATION = timezone.timedelta(days=21)
     MIN_DURATION_APPLICATION = timezone.timedelta(days=7)
-    MIN_TIME = 8,
-    MAX_TIME = 22,
-    MIN_DURATION_TIME = timezone.timedelta(hours=2),
-    MAX_DURATION_TIME = timezone.timedelta(hours=9),
+    MIN_TIME = 8
+    MAX_TIME = 22
+    MIN_DURATION_TIME = timezone.timedelta(hours=2)
+    MAX_DURATION_TIME = timezone.timedelta(hours=9)
     errors = {}
 
     if not (NOW <= start_date_application <= MAX_ALLOWED_DATE):
