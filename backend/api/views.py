@@ -342,11 +342,13 @@ class ProjectParticipantsViewSet(mixins.DestroyModelMixin,
 
         ---
         """
-        project = get_object_or_404(Project, pk=kwargs.get('project_id'))
-        if project.organization.contact_person == request.user:
-            ProjectParticipants.objects.filter(
-                project=kwargs.get('project_id'),
-                volunteer=kwargs.get('pk')).delete()
+        instance = get_object_or_404(
+            ProjectParticipants,
+            project=kwargs.get('project_id'),
+            volunteer=kwargs.get('pk')
+        )
+        if instance.project.organization.contact_person == request.user:
+            instance.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(
             {'error': 'Удалять участников проекта может только организатор'},
