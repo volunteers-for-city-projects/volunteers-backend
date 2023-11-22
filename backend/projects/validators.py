@@ -104,7 +104,7 @@ def validate_title(value):
     Валидирует длину и символы в Названии организации.
     """
     regex_validator = RegexValidator(
-        regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!]+$',
+        regex=r'^[а-яА-ЯёЁ\d\s\-\.\,\&\+\№\!\«\»]+$',
         message=settings.MESSAGE_TITLE_CYRILLIC,
     )
     min_length_validator = MinLengthValidator(
@@ -125,8 +125,8 @@ def validate_name(value):
     """
     Валидация названия проекта.
     """
-    MIN_LEN = 2
-    MAX_LEN = 150
+    MIN_LEN = settings.MIN_LEN_NAME_PROJECT
+    MAX_LEN = settings.MAX_LEN_NAME_PROJECT
     NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
     min_length_validator = MinLengthValidator(
@@ -137,13 +137,11 @@ def validate_name(value):
         MAX_LEN,
         message=f'Максимальная длина поля должна быть: {MAX_LEN}.',
     )
-
     regex_validator = RegexValidator(
         regex=NAME_REGEX,
         message='Недопустимые символы в названии проекта. Разрешены латинские '
         'и кириллические буквы, цифры и спецсимволы.',
     )
-
     min_length_validator(value)
     max_length_validator(value)
     regex_validator(value)
@@ -204,12 +202,12 @@ class LengthValidator:
             )
 
 
-def validate_about(value):
+def validate_text_field(value):
     """
     Валидирует длину и символы в информации об организации.
     """
     regex_validator = RegexValidator(
-        regex=r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ\s]+)\Z",
+        regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
         flags=re.I,
     )

@@ -13,39 +13,62 @@ def validate_status_incomes(value):
     return value
 
 
-def validate_dates(event_start_date, event_end_date, application_date):
+def validate_dates(
+    start_date,
+    end_date,
+    start_date_application,
+    end_date_application,
+):
     """
     Проверяет корректность дат для мероприятия.
 
     param event_start_date: Дата начала мероприятия.
     param event_end_date: Дата окончания мероприятия.
-    param application_date: Дата подачи заявки.
+    param start_date_application: Дата начало подачи заявки.
+    param end_date_application: Дата окончания подачи заявки.
     raises: serializers.ValidationError, если даты не соответствуют условиям.
     """
-    now = timezone.now()
-    validation_rules = [
-        (
-            event_start_date <= now,
-            'Дата начала мероприятия должна быть в будущем.',
-        ),
-        (
-            event_end_date <= event_start_date,
-            'Дата окончания мероприятия должна быть позже даты начала.',
-        ),
-        (
-            not (application_date <= event_start_date <= event_end_date),
-            'Дата подачи заявки должна быть позже или равна дате начала '
-            'мероприятия и позже даты начала и раньше даты окончания.',
-        ),
-    ]
+    NOW = timezone.now()
+    MAX_ALLOWED_DATE = NOW + timezone.timedelta(days=365)
+    MIN_DURATION = timezone.timedelta(minutes=10)
+    errors = {}
 
-    for condition, error_message in validation_rules:
-        if condition:
-            raise serializers.ValidationError(error_message)
-    return event_start_date, event_end_date, application_date
+    if not (NOW <= start_date_application <= MAX_ALLOWED_DATE):
+        errors.setdefault('start_date_application', []).append(
+            'Начало подачи заявки должно быть в пределах от текущей даты и '
+            'времени до года вперед.'
+        )
+    if not (
+        start_date_application + MIN_DURATION
+        <= end_date_application
+        <= MAX_ALLOWED_DATE
+    ):
+        errors.setdefault('end_date_application', []).append(
+            'Окончание подачи заявки должно быть позже начала подачи заявок и '
+            'не более чем через год после текущей даты.'
+        )
+    if not (end_date_application <= start_date <= MAX_ALLOWED_DATE):
+        errors.setdefault('start_date', []).append(
+            'Начало мероприятия должно быть в будущем после окончания подачи '
+            'заявок и не более чем через год после текущей даты.'
+        )
+    if not (start_date + MIN_DURATION <= end_date <= MAX_ALLOWED_DATE):
+        errors.setdefault('end_date', []).append(
+            'Дата окончания мероприятия должна быть позже начала и не более '
+            'чем через год после текущей даты.'
+        )
+    if errors:
+        raise serializers.ValidationError(errors)
+
+    return (
+        start_date,
+        end_date,
+        start_date_application,
+        end_date_application,
+    )
 
 
-# нужно передалть с учетом, изменений реализации статусов.
+# TODO нужно передалть с учетом, изменений реализации статусов.
 # def validate_reception_status(
 #     status_project, application_date, start_datetime, end_datetime
 # ):

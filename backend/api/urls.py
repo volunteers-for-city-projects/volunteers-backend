@@ -2,7 +2,7 @@ from django.urls import include, path
 from djoser.views import UserViewSet
 from rest_framework.routers import DefaultRouter
 
-from api.views import (  # VolunteerProfileView,
+from api.views import (
     CityViewSet,
     FeedbackCreateView,
     NewsViewSet,
@@ -11,6 +11,7 @@ from api.views import (  # VolunteerProfileView,
     ProjectCategoryViewSet,
     ProjectIncomesViewSet,
     ProjectMeViewSet,
+    ProjectParticipantsViewSet,
     ProjectViewSet,
     SearchListView,
     SkillsViewSet,
@@ -22,6 +23,8 @@ router = DefaultRouter()
 router.register(r'news', NewsViewSet, basename='news')
 router.register(r'projects/me', ProjectMeViewSet, basename='my_projects')
 router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'projects/(?P<project_id>\d+)/participants',
+                ProjectParticipantsViewSet, basename='project_participants')
 router.register(r'project_categories', ProjectCategoryViewSet)
 router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
 router.register(
@@ -30,9 +33,7 @@ router.register(
 router.register(r'cities', CityViewSet)
 router.register(r'skills', SkillsViewSet)
 router.register(r'tags', TagViewSet)
-router.register(
-    r'incomes', ProjectIncomesViewSet, basename='project_incomes'
-)
+router.register(r'incomes', ProjectIncomesViewSet, basename='project_incomes')
 
 urlpatterns = [
     path('', include(router.urls)),

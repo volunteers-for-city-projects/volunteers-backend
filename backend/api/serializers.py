@@ -1,11 +1,13 @@
+from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from taggit.models import Tag
 
-from api.utils import create_user
+from api.utils import NonEmptyBase64ImageField, create_user
 from content.models import (
     City,
     Feedback,
@@ -19,6 +21,8 @@ from projects.models import (
     Category,
     Organization,
     Project,
+    ProjectFavorite,
+    ProjectImage,
     ProjectIncomes,
     ProjectParticipants,
     Volunteer,
@@ -26,7 +30,8 @@ from projects.models import (
 )
 from users.models import User
 
-from .validators import validate_status_incomes
+from .mixins import IsValidModifyErrorForFrontendMixin
+from .validators import validate_dates, validate_status_incomes
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -157,6 +162,12 @@ class SkillsSerializer(serializers.ModelSerializer):
         fields = ('id', 'name')
 
 
+class ProjectImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectImage
+        fields = ('id', 'project', 'photo')
+
+
 class ProjectGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения данных проекта.
@@ -164,8 +175,19 @@ class ProjectGetSerializer(serializers.ModelSerializer):
 
     event_address = AddressSerializer(read_only=True)
     skills = SkillsSerializer(many=True, read_only=True)
-    is_favorited = serializers.BooleanField(default=False)
+    is_favorited = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
+    city = serializers.SlugRelatedField(slug_field='name', read_only=True)
+    photos = ProjectImageSerializer(many=True, read_only=True)
+
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return ProjectFavorite.objects.filter(
+                user=request.user,
+                project=obj,
+            ).exists()
+        return False
 
     def get_status(self, data):
         OPEN = 'open'
@@ -173,25 +195,29 @@ class ProjectGetSerializer(serializers.ModelSerializer):
         CLOSED = 'reception_of_responses_closed'
         COMPLETED = 'project_completed'
         CANCELED = 'canceled_by_organizer'
+        EDITING = 'editing'
 
-        now = timezone.now()
         if data.status_approve == Project.CANCELED_BY_ORGANIZER:
             return CANCELED
-        elif data.start_datetime <= now < data.start_date_application:
-            return OPEN
-        elif data.start_date_application <= now < data.end_date_application:
-            return READY
-        elif data.end_date_application <= now < data.end_datetime:
-            return CLOSED
-        elif data.end_datetime <= now:
-            return COMPLETED
-        else:
-            return 'Статус проекта не определен'
+        elif data.status_approve == Project.APPROVED:
+            now = timezone.now()
+            if data.start_datetime <= now < data.start_date_application:
+                return OPEN
+            elif (
+                data.start_date_application <= now < data.end_date_application
+            ):
+                return READY
+            elif data.end_date_application <= now < data.end_datetime:
+                return CLOSED
+            elif data.end_datetime <= now:
+                return COMPLETED
+        return EDITING
 
     class Meta:
         model = Project
         fields = (
             'id',
+            'created_at',
             'name',
             'description',
             'picture',
@@ -207,45 +233,182 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             'organization',
             'city',
             'categories',
-            'photo_previous_event',
             'participants',
+            'admin_comments',
             'status_approve',
             'skills',
             'is_favorited',
             'status',
+            'photos'
         )
         read_only_fields = fields
 
 
-class ProjectSerializer(serializers.ModelSerializer):
+class DraftProjectSerializer(serializers.ModelSerializer):
     """
-    Сериализатор для проекта.
+    Сериализатор для создания/редоктирования черновика - проекта.
+    """
+
+    event_address = AddressSerializer(required=False, allow_null=True)
+    skills = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=Skills.objects.all(), many=True
+    )
+    # picture = NonEmptyBase64ImageField(required=False)
+    picture = Base64ImageField(required=False, allow_null=True)
+
+    def validate_status_approve(self, value):
+        if value != Project.EDITING:
+            raise serializers.ValidationError(
+                'Вы передаете невверный статус для черновика.'
+            )
+        return value
+
+    def create(self, validated_data):
+        project_instance = super().create(validated_data)
+        project_instance.status_approve = Project.EDITING
+        project_instance.save()
+
+        return project_instance
+
+    def update(self, instance, validated_data):
+        status_approve = instance.status_approve
+        if status_approve not in (Project.EDITING, Project.REJECTED):
+            raise serializers.ValidationError(
+                'Сохранять как черновик можно проекты  '
+                f'со статусом {Project.EDITING} или {Project.REJECTED}.'
+            )
+        address_data = validated_data.pop('event_address', None)
+        if address_data:
+            address = instance.event_address
+            if address:
+                for attr, value in address_data.items():
+                    setattr(address, attr, value)
+                address.save()
+            else:
+                address = Address.objects.create(**address_data)
+                instance.event_address = address
+        return super().update(instance, validated_data)
+
+    class Meta:
+        model = Project
+        fields = (
+            'name',
+            'description',
+            'picture',
+            'start_datetime',
+            'end_datetime',
+            'start_date_application',
+            'end_date_application',
+            'event_purpose',
+            'event_address',
+            'project_tasks',
+            'project_events',
+            'organizer_provides',
+            'organization',
+            'city',
+            'categories',
+            'status_approve',
+            'skills',
+        )
+        read_only_fields = ('organization',)
+        extra_kwargs = {
+            'status_approve': {'required': False},
+            'categories': {'required': False, 'allow_empty': True},
+            'event_address': {'required': False, 'allow_empty': True},
+        }
+
+
+class ProjectSerializer(serializers.ModelSerializer):
+
+    """
+    Сериализатор для создания/редактирования проекта.
     """
 
     event_address = AddressSerializer()
     skills = serializers.PrimaryKeyRelatedField(
-        queryset=Skills.objects.all(), many=True
+        queryset=Skills.objects.all(), many=True, allow_null=False
     )
-    picture = Base64ImageField()
+    picture = NonEmptyBase64ImageField()
+    city = serializers.PrimaryKeyRelatedField(
+        queryset=City.objects.all(),
+        required=True,
+        allow_null=False,  # Запретить отправку значения None. если удасться
+        # убрать из модели null=True и чтоб не ломалась админка то можно
+        #  удалить полностью city из сериализатор
+    )
 
-    # def validate(self, data):
-    #     start_datetime = data['start_datetime']
-    #     end_datetime = data['end_datetime']
-    #     application_date = data['application_date']
+    class Meta:
+        model = Project
+        fields = (
+            'name',
+            'description',
+            'picture',
+            'start_datetime',
+            'end_datetime',
+            'start_date_application',
+            'end_date_application',
+            'event_purpose',
+            'event_address',
+            'project_tasks',
+            'project_events',
+            'organizer_provides',
+            'organization',
+            'city',
+            'categories',
+            'status_approve',
+            'skills',
+        )
+        read_only_fields = ('organization',)
+        extra_kwargs = {field: {'required': True} for field in fields}
+        extra_kwargs = {
+            # 'photo_previous_event': {'required': False},
+            'status_approve': {'required': False},
+            'event_purpose': {'allow_blank': False, 'required': True},
+            'project_tasks': {'allow_blank': False, 'required': True},
+            'project_events': {'allow_blank': False, 'required': True},
+            'organizer_provides': {'allow_blank': True, 'required': False},
+            'description': {'allow_blank': False, 'required': True},
+        }
 
-    #     validate_dates(start_datetime, end_datetime, application_date)
-    #     validate_reception_status(
-    #         application_date, start_datetime, end_datetime
-    #     )
-    #     return data
+    def validate_skills(self, value):
+        if not value:
+            raise serializers.ValidationError("Выберите хоть один навык.")
+        return value
+
+    def validate(self, data):
+        start_datetime = data['start_datetime']
+        end_datetime = data['end_datetime']
+        start_date_application = data['start_date_application']
+        end_date_application = data['end_date_application']
+        try:
+            validate_dates(
+                start_datetime,
+                end_datetime,
+                start_date_application,
+                end_date_application,
+            )
+        except serializers.ValidationError as errors:
+            raise serializers.ValidationError(
+                {self.__class__.__name__: errors.detail}
+            )
+        # validate_reception_status(
+        #     application_date, start_datetime, end_datetime
+        # )
+        return data
+
+    def validate_status_approve(self, value):
+        allowed_statuses = dict(Project.STATUS_CHOICES).keys()
+        if value not in allowed_statuses:
+            raise serializers.ValidationError(
+                f"Вы передаете неподдерживаемый статус: {value}"
+            )
+        if self.instance is None and value != Project.PENDING:
+            raise serializers.ValidationError(
+                'Вы передаете неверный статус для создания проекта.'
+            )
+        return value
 
     def create(self, validated_data):
-        status_approve = validated_data.get('status_approve')
-        if status_approve is not None and status_approve not in (
-            Project.EDITING,
-            Project.PENDING,
-        ):
-            validated_data.pop('status_approve')
         categories = validated_data.pop('categories')
         skills = validated_data.pop('skills')
         with transaction.atomic():
@@ -259,29 +422,65 @@ class ProjectSerializer(serializers.ModelSerializer):
             project_instanse.categories.set(categories)
         return project_instanse
 
-    class Meta:
-        model = Project
-        fields = (
-            'name',
+    def update(self, instance, validated_data):
+        address_data = validated_data.pop('event_address', None)
+        if address_data:
+            address = instance.event_address
+            for attr, value in address_data.items():
+                setattr(address, attr, value)
+            address.save()
+        return super(ProjectSerializer, self).update(instance, validated_data)
+
+
+class ActiveProjectEditSerializer(ProjectSerializer):
+    """
+    Сериализатор для частичного редактирования Активного проекта.
+    """
+
+    class Meta(ProjectSerializer.Meta):
+        read_only_fields = ProjectSerializer.Meta.read_only_fields + (
             'description',
-            'picture',
-            'start_datetime',
-            'end_datetime',
-            'start_date_application',
-            'end_date_application',
             'event_purpose',
             'event_address',
             'project_tasks',
             'project_events',
             'organizer_provides',
-            'organization',
             'city',
             'categories',
-            'photo_previous_event',
-            'status_approve',
             'skills',
         )
-        read_only_fields = ('organization',)
+
+
+class ProjectCompleteSerializer(ProjectSerializer):
+    """
+    Сериализатор для добавления фото к Заверненным проектам.
+    """
+    photos = ProjectImageSerializer(many=True, read_only=True)
+    uploaded_photos = serializers.ListField(
+        max_length=settings.MAX_LEN_PHOTOS,
+        child=Base64ImageField(
+            max_length=20000000, allow_empty_file=False, use_url=False
+            ),
+        write_only=True,
+        required=False  # обязательное или нет не понятно
+    )
+
+    class Meta(ProjectSerializer.Meta):
+        fields = ProjectSerializer.Meta.fields + ('photos', 'uploaded_photos',)
+        read_only_fields = ProjectSerializer.Meta.fields
+
+# если зазгрузка фоток не обязательная, иначе убрать  if uploaded_data:
+
+    def update(self, instance, validated_data):
+        uploaded_data = validated_data.pop('uploaded_photos', None)
+        instance.photos.all().delete()
+        if uploaded_data:
+            for uploaded_photo in uploaded_data:
+                ProjectImage.objects.create(
+                    project=instance, photo=uploaded_photo
+                )
+
+        return super().update(instance, validated_data)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -319,7 +518,9 @@ class VolunteerGetSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerCreateSerializer(serializers.ModelSerializer):
+class VolunteerCreateSerializer(
+    IsValidModifyErrorForFrontendMixin, serializers.ModelSerializer
+):
     """
     Сериализатор для создания волонтера.
     """
@@ -412,7 +613,16 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProjectIncomes
-        fields = ('id', 'project', 'volunteer', 'status_incomes', 'created_at')
+        fields = (
+            'id',
+            'project',
+            'volunteer',
+            'status_incomes',
+            'phone',
+            'telegram',
+            'cover_letter',
+            'created_at',
+        )
         read_only_fields = ('id', 'created_at')
 
     def create(self, validated_data):
@@ -436,6 +646,9 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             project=project,
             volunteer=volunteer,
             status_incomes=status_incomes,
+            phone=validated_data.get('phone', ''),
+            telegram=validated_data.get('telegram', ''),
+            cover_letter=validated_data.get('cover_letter', ''),
         )
         return project_income
 
@@ -515,7 +728,9 @@ class OrganizationGetSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class OgranizationCreateSerializer(serializers.ModelSerializer):
+class OgranizationCreateSerializer(
+    IsValidModifyErrorForFrontendMixin, serializers.ModelSerializer
+):
     """
     Сериализатор для создания организации-организатора.
     """
@@ -568,28 +783,50 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
     """
     Сериализатор для списка участников.
     """
+    volunteer = VolunteerGetSerializer()
 
     class Meta:
         model = ProjectParticipants
         fields = (
-            'project',
+            # 'project',
             'volunteer',
         )
 
 
-class VolunteerFavoriteGetSerializer(serializers.ModelSerializer):
+# class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
+#    """
+#    Сериализатор для отображения избранных проектов.
+#    """
+#
+#    class Meta:
+#        model = Project
+#        fields = (
+#            'id',
+#            'name',
+#            'picture',
+#            'organization',
+#        )
+
+
+class ProjectFavoriteSerializer(IsValidModifyErrorForFrontendMixin,
+                                serializers.ModelSerializer):
     """
-    Сериализатор для отображения избранных проектов волонтера.
+    Сериализатор для отображения избранных проектов.
     """
 
     class Meta:
-        model = Project
+        model = ProjectFavorite
         fields = (
-            'id',
-            'name',
-            'picture',
-            'organization',
+            'user',
+            'project',
         )
+        validators = [
+            UniqueTogetherValidator(
+                ProjectFavorite.objects.all(),
+                fields=('user', 'project'),
+                message='Этот проект уже присутствует в избранном!',
+            )
+        ]
 
 
 class CurrentUserSerializer(UserSerializer):

@@ -1,22 +1,45 @@
 from datetime import date
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from content.models import City, Skills
-from users.models import User
 
+from .utils import ImagePath, get_or_create_deleted_user
 from .validators import (
     LengthValidator,
     regex_string_validator,
-    validate_about,
     validate_name,
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
+    validate_text_field,
     validate_title,
 )
+
+User = get_user_model()
+
+
+def get_deleted_volunteer():
+    deleted_user = get_or_create_deleted_user(User)
+    city, _ = City.objects.get_or_create(name='Отсутствует')
+    return Volunteer.objects.get_or_create(
+        user=deleted_user,
+        date_of_birth='1900-01-01',
+        city=city,
+    )[0]
+
+
+def get_deleted_organization():
+    deleted_user = get_or_create_deleted_user(User)
+    city, _ = City.objects.get_or_create(name='Отсутствует')
+    return Organization.objects.get_or_create(
+        contact_person=deleted_user,
+        title='Удаленная организация',
+        city=city,
+    )[0]
 
 
 class Organization(models.Model):
@@ -50,10 +73,10 @@ class Organization(models.Model):
         verbose_name='Телефон',
     )
     about = models.TextField(
-        verbose_name='Об организации',
+        validators=[validate_text_field],
         max_length=settings.MAX_LEN_ABOUT_US,
         blank=True,
-        validators=[validate_about],
+        verbose_name='Об организации',
     )
     city = models.ForeignKey(
         City,
@@ -116,7 +139,7 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        help_text='Введите дату в формате "ГГГГ-ММ-ДД", пример: "2000-01-01".',
+        #  help_text='Введите дату  "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
@@ -232,12 +255,13 @@ class Project(models.Model):
     ]
 
     name = models.CharField(
-        max_length=settings.MAX_LEN_NAME,
+        max_length=settings.MAX_LEN_NAME_PROJECT,
         validators=[validate_name],
         verbose_name='Название',
         unique=True,
     )
     description = models.TextField(
+        blank=True,  # добавила
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -248,21 +272,32 @@ class Project(models.Model):
         verbose_name='Описание',
     )
     picture = models.ImageField(
+        # blank=True,   #  добавилено для черновика
+        # null=True,   #  добавила
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
+        blank=True,  # добавилено для черновика
+        null=True,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
+        blank=True,  # добавилено для черновика
+        null=True,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
+        blank=True,  # добавилено для черновика
+        null=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
+        blank=True,  # добавилено для черновика
+        null=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -274,10 +309,13 @@ class Project(models.Model):
     )
     event_address = models.ForeignKey(
         Address,
+        blank=True,  # добавилено для черновика
+        null=True,  # добавила
         on_delete=models.CASCADE,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -288,6 +326,7 @@ class Project(models.Model):
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
+        blank=True,  # добавилено для черновика
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -310,7 +349,7 @@ class Project(models.Model):
     )
     organization = models.ForeignKey(
         Organization,
-        on_delete=models.CASCADE,
+        on_delete=models.SET(get_deleted_organization),
         related_name='projects',
         verbose_name='Организация',
     )
@@ -318,18 +357,22 @@ class Project(models.Model):
         City,
         on_delete=models.CASCADE,
         related_name='project',
+        blank=True,  # добавила
+        null=True,  # если убрать null=True,то админка не показывает
+        #  проект с пустым городами
         verbose_name='Город',
     )
     categories = models.ManyToManyField(
         Category,
         related_name='projects',
+        # blank=True,  # добавила
         verbose_name='Категории',
     )
-    photo_previous_event = models.ImageField(
-        blank=True,
-        null=True,
-        verbose_name='Фото с мероприятия',
-    )
+    # photo_previous_event = models.ImageField(
+    #     blank=True,
+    #     # null=True,
+    #     verbose_name='Фото с мероприятия',
+    # )
     participants = models.ManyToManyField(
         'ProjectParticipants',
         blank=True,
@@ -346,11 +389,27 @@ class Project(models.Model):
         Skills,
         through='ProjectSkills',
         related_name='projects',
+        # blank=True,  # добавила
         verbose_name='Навыки',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Дата создания проекта'
+    )
+    admin_comments = models.TextField(
+        blank=True,
+        validators=[
+            regex_string_validator,
+            LengthValidator(
+                min_length=settings.MIN_LEN_TEXT_FIELD_V1,
+                max_length=settings.MAX_LEN_TEXT_FIELD,
+            ),
+        ],
+        verbose_name='Комментарии администратора',
     )
 
     class Meta:
-        ordering = ('start_datetime',)
+        ordering = ('start_datetime', 'id')
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 
@@ -358,6 +417,18 @@ class Project(models.Model):
         return settings.PROJECT.format(
             self.name, self.organization, self.categories, self.city
         )
+
+
+class ProjectImage(models.Model):
+    project = models.ForeignKey(
+        Project, on_delete=models.CASCADE,
+        related_name='photos'
+    )
+    photo = models.ImageField(
+        upload_to=ImagePath.project_image_path,
+        default='', null=True, blank=True,
+        verbose_name='Фото прошедшего мероприятия'
+    )
 
 
 class ProjectCategories(models.Model):
@@ -408,7 +479,10 @@ class ProjectParticipants(models.Model):
     project = models.ForeignKey(
         Project, on_delete=models.CASCADE, related_name='participant'
     )
-    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
+    volunteer = models.ForeignKey(
+        Volunteer,
+        on_delete=models.SET(get_deleted_volunteer),
+    )
 
     class Meta:
         default_related_name = 'projects_volunteers'
@@ -451,7 +525,7 @@ class ProjectIncomes(models.Model):
     volunteer = models.ForeignKey(
         Volunteer,
         blank=False,
-        on_delete=models.CASCADE,
+        on_delete=models.SET(get_deleted_volunteer),
         related_name='project_incomes',
         verbose_name='Волонтер',
     )
@@ -461,21 +535,27 @@ class ProjectIncomes(models.Model):
         default=APPLICATION_SUBMITTED,
         verbose_name='Статус заявки волонтера',
     )
+    phone = models.CharField(
+        validators=[validate_phone_number],
+        max_length=settings.LEN_PHONE,
+        blank=True,
+        verbose_name='Телефон',
+    )
+    telegram = models.CharField(
+        max_length=settings.MAX_LEN_TELEGRAM,
+        blank=True,
+        validators=[validate_telegram],
+        verbose_name='Телеграм',
+    )
     cover_letter = models.TextField(
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[
-            regex_string_validator,
-            LengthValidator(
-                min_length=settings.MIN_LEN_TEXT_FIELD_V2,
-                max_length=settings.MAX_LEN_TEXT_FIELD,
-            ),
-        ],
+        validators=[validate_text_field],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name='Статус заявки волонтера',
+        verbose_name='Дата заявки волонтера',
     )
 
     class Meta:
@@ -494,21 +574,42 @@ class ProjectIncomes(models.Model):
         )
 
 
-class VolunteerFavorite(models.Model):
+class ProjectFavorite(models.Model):
     """
-    Модель избранных проектов волонтеров.
+    Модель избранных проектов пользователей.
+
+    При добавлении проекта в избранное все поля обязательны для заполнения.
+
+    Attributes:
+        user(int):
+            Поле ForeignKey на пользователя, у которого проект в избранном.
+        project(int):
+            Поле ForeignKey на проект, добавленный в избранное.
     """
 
-    volunteer = models.ForeignKey(Volunteer, on_delete=models.CASCADE)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User,
+        verbose_name='Пользователь',
+        on_delete=models.CASCADE,
+    )
+    project = models.ForeignKey(
+        Project,
+        verbose_name='Проект',
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
+        verbose_name = 'Избранный проект'
+        verbose_name_plural = 'Избранные проекты'
+        default_related_name = 'project_favorite'
         constraints = (
             models.UniqueConstraint(
-                fields=('volunteer', 'project'),
-                name='unique_volunteer_favorites',
+                fields=('user', 'project'),
+                name='%(app_label)s_%(class)s_unique_project_in_favorite',
             ),
         )
 
     def __str__(self):
-        return f'{self.volunteer} {self.project}'
+        return (
+            f'Проект {self.project.name} в избранном у {self.user}'
+        )

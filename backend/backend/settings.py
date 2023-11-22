@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'django_filters',
+    'django_object_actions',
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
@@ -112,7 +113,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -133,7 +133,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'users.validators.PasswordRegexValidator',
         'OPTIONS': {
-            'regex': r"(^[-!#$%&'*+/=?^_;():@,.<>`{}|~0-9A-ZА-ЯЁ]+)\Z",
+            'regex': r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ]+)\Z",
         },
     },
     # {
@@ -179,7 +179,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
@@ -195,9 +195,11 @@ DJOSER = {
     'ACTIVATION_URL': '#/login/password-activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
         'current_user': 'api.serializers.CurrentUserSerializer',
         'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
+        'password_reset': 'users.auth.serializers.CustomSendEmailResetSerializer',
     },
 }
 
@@ -223,12 +225,20 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
+            'description': 'Use your token in the following format: <strong>Token <em>&lt;your-token&gt;</em></strong> ',
         },
-        'Basic': {'type': 'basic'},  # базова авторизация
+
+        # 'Basic': {'type': 'basic'},  # базова авторизация
     },
     'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
     'JSON_EDITOR': True,
     'SHOW_REQUEST_HEADERS': True,
+    'DEFAULT_MODEL_RENDERING': 'model',  # Отображение моделей (model, example)
+    # Глубина отображения моделей (-1 - без ограничений)
+    'DEFAULT_MODEL_DEPTH': 2,
+    'DOC_EXPANSION': 'list',  # full, none
+    'OPERATIONS_SORTER': 'alpha',  # Сортировка операций (alpha, method)
+    'TAGS_SORTER': 'alpha',  # Сортировка тегов (alpha, order)
 }
 
 CELERY_BROKER_URL = 'redis://redis:6379/1'
@@ -256,6 +266,8 @@ LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 100
+MIN_LEN_NAME_PROJECT = 2
+MAX_LEN_NAME_PROJECT = 150
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = (
@@ -310,6 +322,6 @@ MAX_LEN_ABOUT_US = 750
 MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
-MESSAGE_ABOUT_US_REGEX_VALID = (
-    "Допускаются цифры, буквы пробелы и спецсимовлы -!#$%&'*+/=?^_;():@,.<>`{}"
-)
+MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
+
+MAX_LEN_PHOTOS = 10
