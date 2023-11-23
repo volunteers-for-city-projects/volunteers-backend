@@ -11,23 +11,16 @@ from .utils import modify_errors
 class DestroyUserMixin:
     """
     Удаление экземляра модели со взаимосвязанной сущностью пользователя.
-    Предварительно удаляется добавленное изображение.
     """
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        storage = instance.photo.storage
-        name = instance.photo.name
-        self.perform_destroy(instance)
-        try:
-            with transaction.atomic():
-                if isinstance(instance, Organization):
-                    instance.contact_person.delete()
-                elif isinstance(instance, Volunteer):
-                    instance.user.delete()
-        finally:
-            if (name and storage.exists(name)):
-                storage.delete(name)
+        with transaction.atomic():
+            self.perform_destroy(instance)
+            if isinstance(instance, Organization):
+                instance.contact_person.delete()
+            elif isinstance(instance, Volunteer):
+                instance.user.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

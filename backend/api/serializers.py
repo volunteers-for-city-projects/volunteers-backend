@@ -460,7 +460,7 @@ class ProjectCompleteSerializer(ProjectSerializer):
         max_length=settings.MAX_LEN_PHOTOS,
         child=Base64ImageField(
             max_length=20000000, allow_empty_file=False, use_url=False
-            ),
+        ),
         write_only=True,
         required=False  # обязательное или нет не понятно
     )
