@@ -97,7 +97,7 @@ services:
     volumes:
       - static_data:/backend_static
       - media_data:/app/media
-    command: celery -A backend.celery_app worker -l info
+    command: celery -A backend.celery_app worker -l info -E
     restart: unless-stopped
     depends_on:
       backend:
