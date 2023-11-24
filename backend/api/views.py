@@ -1,4 +1,4 @@
-from django.db.models import Exists, OuterRef, Q
+from django.db.models import Q  # Exists, OuterRef,
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -518,6 +518,9 @@ class ProjectIncomesViewSet(
             self.action, [IsOrganizerOfProject]
         )
         return [permission() for permission in permission_classes]
+    #  добавлено попытка создать пользователя
+    # def perform_create(self, serializer):
+    #     serializer.save(volunteer=self.request.user.volunteers)
 
     @action(
         detail=True,
@@ -593,23 +596,43 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     def get_queryset(self):
         if self.request.user.is_volunteer:
-            volunteer = get_object_or_404(Volunteer, user=self.request.user.id)
-            from_volunteer_favorite = ProjectFavorite.objects.filter(
-                project=OuterRef('pk'), volunteer=volunteer
+            # volunteer = get_object_or_404(Volunteer, user=self.request.user.id)
+            # from_volunteer_favorite = ProjectFavorite.objects.filter(
+            #     project=OuterRef('pk'), volunteer=volunteer
+            # )
+            # return (
+            #     Project.objects.filter(participant__volunteer=volunteer)
+            #     # .select_related('organization')
+            #     # .prefetch_related('categories', 'skills')
+            #     .annotate(
+            #         is_favorited=Exists(from_volunteer_favorite),
+            #     )
+            # )
+
+            # volunteer = Volunteer.objects.get(user=self.request.user)
+            volunteer = self.request.user.volunteers
+            volunteer_in_projects = Project.objects.filter(
+                participants__volunteer=volunteer
             )
-            return (
-                Project.objects.filter(participant__volunteer=volunteer)
-                # .select_related('organization')
-                # .prefetch_related('categories', 'skills')
-                .annotate(
-                    is_favorited=Exists(from_volunteer_favorite),
-                )
+            favorite_projects = Project.objects.filter(
+                Q(project_favorite__user=self.request.user)
             )
+            return (favorite_projects | volunteer_in_projects).distinct()
+
+        # if self.request.user.is_organizer:
+        #     return Project.objects.filter(
+        #         organization__contact_person=self.request.user
+        #     )
 
         if self.request.user.is_organizer:
-            return Project.objects.filter(
+            favorite_projects = Project.objects.filter(
+                Q(project_favorite__user=self.request.user)
+            )
+            organizer_projects = Project.objects.filter(
                 organization__contact_person=self.request.user
             )
+            return (favorite_projects | organizer_projects).distinct()
+
             # organization = get_object_or_404(
             #     Organization,
             #     contact_person=self.request.user.id

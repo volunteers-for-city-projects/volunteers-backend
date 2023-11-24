@@ -19,12 +19,18 @@ status_project_filter_params = [
     ),
     openapi.Parameter(
         'archive', openapi.IN_QUERY, type=openapi.TYPE_STRING,
-        description=('Фильтрует проекты организатора в архиве. '
+        description=('Фильтрует проекты организатора/волонтера в архиве'
+                     '(отменненые организатором). '
                      'Пример запроса /projects/me/?archive=true')
     ),
     openapi.Parameter(
         'moderation', openapi.IN_QUERY, type=openapi.TYPE_STRING,
         description=('Фильтрует проекты организатора на модерации. '
                      'Пример запроса /projects/me/?moderation=true')
+    ),
+    openapi.Parameter(
+        'is_favorited', openapi.IN_QUERY, type=openapi.TYPE_STRING,
+        description=('Фильтрует избранные проекты организатора/волонтера. '
+                     'Пример запроса /projects/me/?is_favorited=true')
     ),
 ]

@@ -76,7 +76,7 @@ class PlatformAboutSerializer(serializers.ModelSerializer):
         )
 
     def get_projects_count(self, obj):
-        return Project.objects.count()
+        return Project.objects.filter(status_approve=Project.APPROVED).count()
 
     def get_volunteers_count(self, obj):
         return Volunteer.objects.count()
@@ -263,11 +263,23 @@ class DraftProjectSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def create(self, validated_data):
-        project_instance = super().create(validated_data)
-        project_instance.status_approve = Project.EDITING
-        project_instance.save()
+    # def create(self, validated_data):
+    #     project_instance = super().create(validated_data)
+    #     project_instance.status_approve = Project.EDITING
+    #     project_instance.save()
 
+    #     return project_instance
+
+    def create(self, validated_data):
+        address_data = validated_data.pop('event_address', None)
+        with transaction.atomic():
+            project_instance = super().create(validated_data)
+            project_instance.status_approve = Project.EDITING
+            project_instance.save()
+            if address_data:
+                address, _ = Address.objects.get_or_create(**address_data)
+                project_instance.event_address = address
+                project_instance.save()
         return project_instance
 
     def update(self, instance, validated_data):
@@ -603,6 +615,9 @@ class ProjectIncomesGetSerializer(serializers.ModelSerializer):
             'volunteer',
             'status_incomes',
             'created_at',
+            'phone',
+            'telegram',
+            'cover_letter',
         )
 
 
@@ -623,24 +638,72 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             'cover_letter',
             'created_at',
         )
-        read_only_fields = ('id', 'created_at')
+        # read_only_fields = ('id', 'created_at')
+        read_only_fields = ('id', 'created_at', 'volunteer')
+
+    # def create(self, validated_data):
+    #     """
+    #     Создает заявку волонтера.
+    #     """
+    #     project = validated_data['project']
+    #     volunteer = validated_data['volunteer']
+    #     status_incomes = validated_data.get(
+    #         'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
+    #     )
+    #     # if (
+    #     #     ProjectIncomes.objects.filter(project=project, volunteer=volunteer)
+    #     #     .exclude(status_incomes=ProjectIncomes.REJECTED)
+    #     #     .exists()
+    #     # ):
+    #         #  проверить работу чере релейтед нейм
+    #     if (
+    #         project.project_incomes.filter(volunteer=volunteer)
+    #         .exclude(status_incomes=ProjectIncomes.REJECTED).exists()
+    #     ):
+    #         raise serializers.ValidationError(
+    #             'Заявка волонтера на этот проект уже существует.'
+    #         )
+    #     if (project.project_incomes.filter(
+    #         volunteer=volunteer, status_incomes=ProjectIncomes.REJECTED
+    #         ).exists()
+    #     ):
+    #         raise serializers.ValidationError(
+    #             'Вы не можете повторно подать завку, ваша заявка ранее была отклонена'
+    #         )
+    #     project_income = ProjectIncomes.objects.create(
+    #         project=project,
+    #         volunteer=volunteer,
+    #         status_incomes=status_incomes,
+    #         phone=validated_data.get('phone', ''),
+    #         telegram=validated_data.get('telegram', ''),
+    #         cover_letter=validated_data.get('cover_letter', ''),
+    #     )
+    #     return project_income
 
     def create(self, validated_data):
         """
         Создает заявку волонтера.
         """
         project = validated_data['project']
-        volunteer = validated_data['volunteer']
+        volunteer = self.context['request'].user.volunteers
         status_incomes = validated_data.get(
             'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
         )
         if (
-            ProjectIncomes.objects.filter(project=project, volunteer=volunteer)
-            .exclude(status_incomes=ProjectIncomes.REJECTED)
-            .exists()
+            project.project_incomes.filter(volunteer=volunteer)
+            .exclude(status_incomes=ProjectIncomes.REJECTED).exists()
         ):
             raise serializers.ValidationError(
                 'Заявка волонтера на этот проект уже существует.'
+            )
+        if (
+            project.project_incomes.filter(
+                volunteer=volunteer, status_incomes=ProjectIncomes.REJECTED
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                'Вы не можете повторно подать завку, '
+                'ваша заявка ранее была отклонена'
             )
         project_income = ProjectIncomes.objects.create(
             project=project,
@@ -712,7 +775,7 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         if user.role == User.ORGANIZER:
             return super().to_representation(instance)
         data = super().to_representation(instance)
-        data['volunteer'] = {'id': instance.volunteer.id}
+        # data['volunteer'] = {'id': instance.volunteer.id}
         return data
 
 
