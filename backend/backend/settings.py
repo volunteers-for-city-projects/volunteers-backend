@@ -247,7 +247,7 @@ CELERY_RESULT_BACKEND = 'redis://redis:6379/2'
 CELERY_BEAT_SCHEDULE = {
     'delete_not_active_users': {
         'task': 'users.tasks.delete_not_active_users',
-        'schedule': crontab(hour='*/24'),
+        'schedule': crontab(hour=20, minute=45),
     },
 }
 
