@@ -72,7 +72,7 @@ from .serializers import (
     VolunteerGetSerializer,
     VolunteerUpdateSerializer,
 )
-from .utils import is_correct_status_change
+from .utils import get_instance, is_correct_status_change
 
 # from taggit.serializers import TaggitSerializer
 
@@ -246,28 +246,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
         instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def create_favorite(self, serializer_class, user, project):
-        """
-        Добавить проект в избранное.
-        """
-        serializer = serializer_class(
-            data={'user': user, 'project': project, }
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(
-            serializer.errors,
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    def delete_favorite(self, model, user, project):
-        """
-        Удалить проект из избранного.
-        """
-        model.objects.filter(user=user, project=project).delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     @action(
         ['POST', 'DELETE'],
         detail=True,
@@ -280,18 +258,20 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         ---
         """
-        project = get_object_or_404(Project, pk=kwargs.get('pk'))
-        if request.method == 'POST':
-            return self.create_favorite(
-                serializer_class=self.serializer_class,
-                user=request.user.pk,
-                project=project.pk
-            )
-        return self.delete_favorite(
-            model=ProjectFavorite,
-            user=request.user.pk,
-            project=kwargs.get('pk'),
+        serializer = self.serializer_class(
+            data={'user': request.user.pk, 'project': kwargs.get('pk'), }
         )
+        if request.method == 'POST' and serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        instance = get_instance(
+            ProjectFavorite,
+            request.user.pk,
+            kwargs.get('pk'),
+            serializer.__class__.__name__,
+        )
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         methods=['POST'],
@@ -596,7 +576,9 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     def get_queryset(self):
         if self.request.user.is_volunteer:
-            # volunteer = get_object_or_404(Volunteer, user=self.request.user.id)
+            # volunteer = get_object_or_404(
+            #    Volunteer, user=self.request.user.id,
+            # )
             # from_volunteer_favorite = ProjectFavorite.objects.filter(
             #     project=OuterRef('pk'), volunteer=volunteer
             # )

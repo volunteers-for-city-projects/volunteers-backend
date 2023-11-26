@@ -5,7 +5,7 @@ from rest_framework.validators import ValidationError
 
 from projects.models import Organization, Volunteer
 
-from .utils import modify_errors
+from .utils import get_modify_validation_errors
 
 
 class DestroyUserMixin:
@@ -36,14 +36,9 @@ class IsValidModifyErrorForFrontendMixin:
         try:
             super().is_valid(raise_exception=True)
         except ValidationError as error:
-            errors_db, errors_valid = modify_errors(
-                error.get_full_details(), {}
-            )
-            errors_db.update({'ValidationErrors': errors_valid})
-            raise ValidationError(
-                {
-                    self.__class__.__name__:
-                    errors_db
-                }
+            raise get_modify_validation_errors(
+                self.__class__.__name__,
+                error.get_full_details(),
+                {},
             )
         return not bool(self._errors)
