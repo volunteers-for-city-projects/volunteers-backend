@@ -200,6 +200,7 @@ DJOSER = {
         'current_user': 'api.serializers.CurrentUserSerializer',
         'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
         'password_reset': 'users.auth.serializers.CustomSendEmailResetSerializer',
+        'set_password': 'users.auth.serializers.CustomSetPasswordSerializer',
     },
 }
 

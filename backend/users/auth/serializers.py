@@ -1,7 +1,10 @@
-
 from django.contrib.auth import authenticate, get_user_model
 from djoser.conf import settings
-from djoser.serializers import SendEmailResetSerializer, TokenCreateSerializer
+from djoser.serializers import (
+    SendEmailResetSerializer,
+    SetPasswordSerializer,
+    TokenCreateSerializer,
+)
 from rest_framework.validators import ValidationError
 
 from api.mixins import IsValidModifyErrorForFrontendMixin
@@ -96,3 +99,9 @@ class CustomSendEmailResetSerializer(IsValidModifyErrorForFrontendMixin,
                     },
                 }
             )
+
+
+class CustomSetPasswordSerializer(SetPasswordSerializer):
+    default_error_messages = {
+        "invalid_password": "Неправильный старый пароль."
+    }
