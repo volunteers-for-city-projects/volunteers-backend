@@ -129,6 +129,13 @@ class StatusProjectFilter(django_filters.FilterSet):
     # moderation = django_filters.CharFilter(method='filter_moderation')
     # is_favorited = django_filters.CharFilter(method='filter_is_favorited')
 
+    # draft = django_filters.BooleanFilter(method='filter_draft')
+    # active = django_filters.BooleanFilter(method='filter_active')
+    # completed = django_filters.BooleanFilter(method='filter_completed')
+    # archive = django_filters.BooleanFilter(method='filter_archive')
+    # moderation = django_filters.BooleanFilter(method='filter_moderation')
+    # is_favorited = django_filters.BooleanFilter(method='filter_is_favorited')
+
     def filter_draft(self, queryset):
         """
         Фильтр для таба "Черновик".
@@ -137,6 +144,20 @@ class StatusProjectFilter(django_filters.FilterSet):
             Q(status_approve__in=[Project.EDITING, Project.REJECTED,]),
             organization__contact_person=self.request.user
         )
+    # вариант если чтобы фильтровался на 'true'
+    # def filter_draft(self, queryset, name, value):
+    #     """
+    #     Фильтр для таба "Черновик".
+    #     """
+    #     if value == 'true':
+    #         return queryset.filter(
+    #             Q(status_approve__in=[Project.EDITING, Project.REJECTED,]),
+    #             organization__contact_person=self.request.user
+    #         )
+    #     else:
+    #         return HttpResponseBadRequest('Неверно указан фильтр')
+    #     #     queryset = None
+    #     # return queryset
 
     def filter_active(self, queryset):
         """
@@ -266,6 +287,7 @@ class StatusProjectFilter(django_filters.FilterSet):
 
         if status_filter:
             queryset = status_filter(queryset).distinct()
+            # queryset = status_filter(queryset, name, value).distinct()
 
         return queryset
 

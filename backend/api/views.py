@@ -479,6 +479,7 @@ class ProjectIncomesViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
+    mixins.DestroyModelMixin,
 ):
     """
     Представление для заявок волонтеров в рамках проектов.
@@ -495,6 +496,8 @@ class ProjectIncomesViewSet(
             return ProjectIncomes.objects.filter(
                 project__organization__contact_person=user
             )
+        if user.is_authenticated and user.is_volunteer:
+            return user.volunteers.project_incomes.all()
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
@@ -507,38 +510,50 @@ class ProjectIncomesViewSet(
         Метод для установки разрешений в зависимости от действия.
         """
         permission_classes_by_action = {
-            'list': [IsOrganizerOfProject],
+            'list': [IsOrganizerOfProject | IsVolunteerOfIncomes],
             'create': [IsVolunteer],
             'accept_incomes': [IsOrganizerOfProject],
             'reject_incomes': [IsOrganizerOfProject],
-            'delete_incomes': [IsVolunteerOfIncomes],
+            # 'delete_incomes': [IsVolunteerOfIncomes],
+            'destroy': [IsVolunteerOfIncomes],
             'retrieve': [IsOrganizerOfProject | IsVolunteerOfIncomes],
         }
         permission_classes = permission_classes_by_action.get(
             self.action, [IsOrganizerOfProject]
         )
         return [permission() for permission in permission_classes]
-    #  добавлено попытка создать пользователя
-    # def perform_create(self, serializer):
-    #     serializer.save(volunteer=self.request.user.volunteers)
 
-    @action(
-        detail=True,
-        methods=['delete'],
-        permission_classes=[IsVolunteerOfIncomes],
-    )
-    def delete_incomes(self, request, pk):
-        """
-        Удаляет заявку волонтера на участие в проекте.
-
-        Parameters: pk (int): Идентификатор заявки волонтера.
-        Возвращает успешный ответ с сообщением о том, что заявка удалена.
-        Если удалить не получилось, возвращает исключение.
-        """
+    def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        response_data = serializer.delete(instance)
-        return Response(response_data, status=status.HTTP_200_OK)
+        if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
+            instance.delete()
+            return Response(
+                {'message': 'Заявка волонтера удалена.'},
+                status=status.HTTP_204_NO_CONTENT
+            )
+        return Response(
+            {'error': (
+                'Нельзя удалить заявку, если статус не "Заявка подана".'
+            )},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    # @action(
+    #     detail=True,
+    #     methods=['delete'],
+    #     permission_classes=[IsVolunteerOfIncomes],
+    # )
+    # def delete_incomes(self, request, pk):
+    #     """
+    #     Удаляет заявку волонтера на участие в проекте.
+
+    #     Parameters: pk (int): Идентификатор заявки волонтера.
+    #     Возвращает успешный ответ с сообщением о том, что заявка удалена.
+    #     Если удалить не получилось, возвращает исключение.
+    #     """
+    #     instance = self.get_object()
+    #     serializer = self.get_serializer(instance)
+    #     response_data = serializer.delete(instance)
+    #     return Response(response_data, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
