@@ -1,3 +1,4 @@
+from django.contrib.sites.shortcuts import get_current_site
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from djoser.compat import get_user_email
@@ -132,3 +133,18 @@ def get_instance(model, user, project, serializer_name):
             {},
         )
     return instance
+
+
+def get_site_data(request):
+    site_data = {}
+    if request:
+        site = get_current_site(request)
+        domain = (getattr(settings, 'DOMAIN', '') or site.domain)
+        protocol = ('https' if request.is_secure() else 'http')
+        site_name = (getattr(settings, 'SITE_NAME', '') or site.name)
+        site_data.update({
+            'domain': domain,
+            'protocol': protocol,
+            'site_name': site_name,
+        })
+    return site_data
