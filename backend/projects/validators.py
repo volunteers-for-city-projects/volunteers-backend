@@ -244,7 +244,7 @@ def validate_address(value):
     regex_validator = RegexValidator(
         regex=NAME_REGEX,
         message='Недопустимые символы в адресе. Разрешены латинские '
-        'и кириллические буквы, цифры, запятая, точка, пробел и тире.',
+        'и кириллические буквы, цифры, пробел, запятая, точка и тире.',
     )
     min_length_validator(value)
     max_length_validator(value)
