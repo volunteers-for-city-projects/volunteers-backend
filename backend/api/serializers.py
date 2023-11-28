@@ -1,3 +1,5 @@
+import re
+
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
@@ -430,6 +432,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             address, _ = Address.objects.get_or_create(
                 **validated_data.pop('event_address')
             )
+            address.address_line = re.sub(' +', ' ', address.address_line)
             project_instanse = Project.objects.create(
                 event_address=address, **validated_data
             )
@@ -443,6 +446,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             address = instance.event_address
             for attr, value in address_data.items():
                 setattr(address, attr, value)
+            address.address_line = re.sub(' +', ' ', address.address_line)
             address.save()
         return super(ProjectSerializer, self).update(instance, validated_data)
 
