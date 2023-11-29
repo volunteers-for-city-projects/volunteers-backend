@@ -33,6 +33,7 @@ from .filters import (
     CityFilter,
     ProjectCategoryFilter,
     ProjectFilter,
+    ProjectIncomesFilter,
     SkillsFilter,
     StatusProjectFilter,
     TagFilter,
@@ -469,6 +470,7 @@ class ProjectIncomesViewSet(
 
     queryset = ProjectIncomes.objects.all()
     permission_classes = [IsVolunteer]
+    filterset_class = ProjectIncomesFilter
 
     def get_queryset(self):
         user = self.request.user
@@ -574,6 +576,12 @@ class ProjectIncomesViewSet(
         serializer = self.get_serializer(instance)
         response_data = serializer.reject_incomes(instance)
         return Response(response_data, status=status.HTTP_200_OK)
+
+    @swagger_auto_schema(
+        manual_parameters=[schemas.project_incomes_filter_params]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):

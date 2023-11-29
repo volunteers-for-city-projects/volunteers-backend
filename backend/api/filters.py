@@ -6,7 +6,7 @@ from rest_framework.exceptions import ParseError
 from taggit.models import Tag
 
 from content.models import City, Skills
-from projects.models import Category, Project
+from projects.models import Category, Project, ProjectIncomes
 
 
 class ProjectCategoryFilter(FilterSet):
@@ -69,12 +69,25 @@ class ProjectFilter(FilterSet):
     - /projects/?end_datetime=31.12.2023
     """
 
-    categories = django_filters.CharFilter(
-        field_name='categories', lookup_expr='exact'
+    categories = filters.ModelMultipleChoiceFilter(
+        queryset=Category.objects.all(),
+        field_name='categories',
+        to_field_name='id',
+        # conjoined=True
     )
-    skills = django_filters.CharFilter(
-        field_name='skills', lookup_expr='exact'
+
+    skills = filters.ModelMultipleChoiceFilter(
+        queryset=Skills.objects.all(),
+        field_name='skills',
+        to_field_name='id',
+        # conjoined=True,  # все указанные навыки должны быть одновременно в проекте
     )
+
+    # city = filters.ModelMultipleChoiceFilter(
+    #     queryset=City.objects.all(),
+    #     field_name='city__name', !!!!!!!! поиск указан по имени, исправить на id если надо.
+    #     to_field_name='name'
+    # )
     city = django_filters.CharFilter(field_name='city', lookup_expr='exact')
     start_datetime = django_filters.DateTimeFilter(
         field_name='start_datetime', lookup_expr='gte'
@@ -294,3 +307,17 @@ class StatusProjectFilter(django_filters.FilterSet):
     class Meta:
         model = Project
         fields = []
+
+
+class ProjectIncomesFilter(django_filters.FilterSet):
+    """
+    Фильтр заявок по id Проекта.
+
+    Пример фильтра /api/incomes/?project_id=1
+    """
+
+    project_id = django_filters.NumberFilter(field_name='project__id')
+
+    class Meta:
+        model = ProjectIncomes
+        fields = ['project_id']

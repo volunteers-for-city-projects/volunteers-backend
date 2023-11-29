@@ -612,7 +612,7 @@ class ProjectIncomesGetSerializer(serializers.ModelSerializer):
     """
 
     volunteer = VolunteerGetSerializer(read_only=True)
-    project = ProjectSerializer(read_only=True)
+    project = ProjectGetSerializer(read_only=True)
 
     class Meta:
         model = ProjectIncomes

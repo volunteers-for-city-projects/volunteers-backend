@@ -34,3 +34,9 @@ status_project_filter_params = [
                      'Пример запроса /projects/me/?is_favorited=true')
     ),
 ]
+
+project_incomes_filter_params = openapi.Parameter(
+        'project_id', openapi.IN_QUERY, type=openapi.TYPE_STRING,
+        description=('Фильтрует заявки по id проекта. '
+                     'Пример запроса /api/incomes/?project_id=1')
+    )
