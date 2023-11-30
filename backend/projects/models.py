@@ -15,6 +15,7 @@ from .validators import (
     validate_ogrn,
     validate_phone_number,
     validate_telegram,
+    validate_text_cover_letter,
     validate_text_field,
     validate_title,
 )
@@ -551,7 +552,7 @@ class ProjectIncomes(models.Model):
         verbose_name='Сопроводительное письмо',
         blank=True,
         null=True,
-        validators=[validate_text_field],
+        validators=[validate_text_cover_letter],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,

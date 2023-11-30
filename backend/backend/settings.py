@@ -306,7 +306,7 @@ MAX_LENGTH_ROLE = 50
 MIN_LEN_TELEGRAM = 5
 MAX_LEN_TELEGRAM = 32
 TELEGRAM_ERROR_MESSAGE = (
-    f'Ник в Telegram должен начинаться с @ и содержать только буквы, цифры и знаки подчеркивания. '
+    f'Ник в Telegram должен начинаться с @ и содержать только латинские буквы, цифры и знаки подчеркивания. '
     f'Длина поля от {MIN_LEN_TELEGRAM} до {MAX_LEN_TELEGRAM} символов.'
 )
 
@@ -325,3 +325,8 @@ MESSAGE_ABOUT_US_VALID = (
 MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимовлы: %%!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
 
 MAX_LEN_PHOTOS = 10
+MIN_LEN_COVER_LETTER = 10
+MAX_LEN_COVER_LETTER = 530
+MESSAGE_COVER_LETTER_VALID = (
+    f'Длина поля от {MIN_LEN_COVER_LETTER} до {MAX_LEN_COVER_LETTER} символов'
+)
