@@ -1,3 +1,6 @@
+from django.contrib.sites.shortcuts import get_current_site
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from djoser.compat import get_user_email
 from djoser.conf import settings
 from drf_extra_fields.fields import Base64ImageField
@@ -87,3 +90,61 @@ def modify_errors(details, errors_valid):
                         []
                     ).append(str(details.get(key)[i].get('message')))
     return errors_db, errors_valid
+
+
+def get_modify_validation_errors(class_name, details, errors_db):
+    errors_db, errors_valid = modify_errors(details, {})
+    errors_db.update(
+        {'ValidationErrors': errors_valid},
+    )
+    return ValidationError(
+        {class_name: errors_db},
+    )
+
+
+def get_instance(model, user, project, serializer_name):
+    try:
+        instance = get_object_or_404(model, user=user, project=project)
+    except ValueError as error:
+        raise get_modify_validation_errors(
+            serializer_name,
+            {
+                'id': ValidationError(error.args[0]).get_full_details()
+            },
+            {},
+        )
+    except Http404 as error:
+        raise get_modify_validation_errors(
+            serializer_name,
+            {
+                'not_exist':
+                ValidationError(
+                    error.args[0], code='not_exist',
+                ).get_full_details()
+            },
+            {},
+        )
+    except Exception as error:
+        raise get_modify_validation_errors(
+            serializer_name,
+            {
+                'error': ValidationError(error.args[0]).get_full_details()
+            },
+            {},
+        )
+    return instance
+
+
+def get_site_data(request):
+    site_data = {}
+    if request:
+        site = get_current_site(request)
+        domain = (getattr(settings, 'DOMAIN', '') or site.domain)
+        protocol = ('https' if request.is_secure() else 'http')
+        site_name = (getattr(settings, 'SITE_NAME', '') or site.name)
+        site_data.update({
+            'domain': domain,
+            'protocol': protocol,
+            'site_name': site_name,
+        })
+    return site_data

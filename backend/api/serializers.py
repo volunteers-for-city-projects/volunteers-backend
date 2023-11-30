@@ -1,4 +1,7 @@
+import re
+
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from djoser.serializers import UserCreateSerializer, UserSerializer
@@ -7,7 +10,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from taggit.models import Tag
 
-from api.utils import NonEmptyBase64ImageField, create_user
+from api.utils import NonEmptyBase64ImageField, create_user, get_site_data
 from content.models import (
     City,
     Feedback,
@@ -16,6 +19,7 @@ from content.models import (
     Skills,
     Valuation,
 )
+from notifications.tasks import incomes_approve_send_email
 from projects.models import (
     Address,
     Category,
@@ -28,10 +32,11 @@ from projects.models import (
     Volunteer,
     VolunteerSkills,
 )
-from users.models import User
 
 from .mixins import IsValidModifyErrorForFrontendMixin
 from .validators import validate_dates, validate_status_incomes
+
+User = get_user_model()
 
 
 class AddressSerializer(serializers.ModelSerializer):
@@ -432,6 +437,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             address, _ = Address.objects.get_or_create(
                 **validated_data.pop('event_address')
             )
+            address.address_line = re.sub(' +', ' ', address.address_line)
             project_instanse = Project.objects.create(
                 event_address=address, **validated_data
             )
@@ -445,6 +451,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             address = instance.event_address
             for attr, value in address_data.items():
                 setattr(address, attr, value)
+            address.address_line = re.sub(' +', ' ', address.address_line)
             address.save()
         return super(ProjectSerializer, self).update(instance, validated_data)
 
@@ -655,44 +662,46 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         # read_only_fields = ('id', 'created_at')
         read_only_fields = ('id', 'created_at', 'volunteer')
 
-    # def create(self, validated_data):
-    #     """
-    #     Создает заявку волонтера.
-    #     """
-    #     project = validated_data['project']
-    #     volunteer = validated_data['volunteer']
-    #     status_incomes = validated_data.get(
-    #         'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
-    #     )
-    #     # if (
-    #     #     ProjectIncomes.objects.filter(project=project, volunteer=volunteer)
-    #     #     .exclude(status_incomes=ProjectIncomes.REJECTED)
-    #     #     .exists()
-    #     # ):
-    #         #  проверить работу чере релейтед нейм
-    #     if (
-    #         project.project_incomes.filter(volunteer=volunteer)
-    #         .exclude(status_incomes=ProjectIncomes.REJECTED).exists()
-    #     ):
-    #         raise serializers.ValidationError(
-    #             'Заявка волонтера на этот проект уже существует.'
-    #         )
-    #     if (project.project_incomes.filter(
-    #         volunteer=volunteer, status_incomes=ProjectIncomes.REJECTED
-    #         ).exists()
-    #     ):
-    #         raise serializers.ValidationError(
-    #             'Вы не можете повторно подать завку, ваша заявка ранее была отклонена'
-    #         )
-    #     project_income = ProjectIncomes.objects.create(
-    #         project=project,
-    #         volunteer=volunteer,
-    #         status_incomes=status_incomes,
-    #         phone=validated_data.get('phone', ''),
-    #         telegram=validated_data.get('telegram', ''),
-    #         cover_letter=validated_data.get('cover_letter', ''),
-    #     )
-    #     return project_income
+#    def create(self, validated_data):
+#        """
+#        Создает заявку волонтера.
+#        """
+#        project = validated_data['project']
+#        volunteer = validated_data['volunteer']
+#        status_incomes = validated_data.get(
+#            'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
+#        )
+#        if (
+#            ProjectIncomes.objects.filter(
+#                project=project,
+#                volunteer=volunteer
+#            ).exclude(status_incomes=ProjectIncomes.REJECTED).exists()
+#        ):
+#            # TODO:  проверить работу через релейтед нейм
+#            if (
+#                project.project_incomes.filter(volunteer=volunteer)
+#                .exclude(status_incomes=ProjectIncomes.REJECTED).exists()
+#            ):
+#                raise serializers.ValidationError(
+#                    'Заявка волонтера на этот проект уже существует.'
+#                )
+#        if (project.project_incomes.filter(
+#            volunteer=volunteer, status_incomes=ProjectIncomes.REJECTED
+#            ).exists()
+#        ):
+#            raise serializers.ValidationError(
+#                'Вы не можете повторно подать завку, ваша заявка '
+#                'ранее была отклонена'
+#            )
+#        project_income = ProjectIncomes.objects.create(
+#            project=project,
+#            volunteer=volunteer,
+#            status_incomes=status_incomes,
+#            phone=validated_data.get('phone', ''),
+#            telegram=validated_data.get('telegram', ''),
+#            cover_letter=validated_data.get('cover_letter', ''),
+#        )
+#        return project_income
 
     def create(self, validated_data):
         """
@@ -767,8 +776,11 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             )
         instance.status_incomes = ProjectIncomes.ACCEPTED
         instance.save()
-        ProjectParticipants.objects.create(
+        participiants = ProjectParticipants.objects.create(
             project=instance.project, volunteer=instance.volunteer
+        )
+        incomes_approve_send_email.delay(
+            participiants.pk, get_site_data(self.context.get('request', {}))
         )
         return {
             'message': 'Заявка волонтера принята и добавлена в '

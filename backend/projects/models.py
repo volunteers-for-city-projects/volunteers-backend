@@ -11,6 +11,7 @@ from .utils import ImagePath, get_or_create_deleted_user
 from .validators import (
     LengthValidator,
     regex_string_validator,
+    validate_address,
     validate_name,
     validate_ogrn,
     validate_phone_number,
@@ -213,7 +214,8 @@ class Address(models.Model):
     """
 
     address_line = models.CharField(
-        max_length=100, verbose_name='Адрес в одну строчку'
+        max_length=100, verbose_name='Адрес в одну строчку',
+        validators=[validate_address]
     )
     street = models.CharField(max_length=75, verbose_name='Улица')
     house = models.CharField(max_length=5, verbose_name='Дом')
