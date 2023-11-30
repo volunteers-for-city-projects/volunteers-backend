@@ -393,10 +393,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, data):
-        start_datetime = data['start_datetime']
-        end_datetime = data['end_datetime']
-        start_date_application = data['start_date_application']
-        end_date_application = data['end_date_application']
+        try:
+            start_datetime = data['start_datetime']
+            end_datetime = data['end_datetime']
+            start_date_application = data['start_date_application']
+            end_date_application = data['end_date_application']
+        except KeyError as field:
+            raise serializers.ValidationError(
+                f'{self.__class__.__name__}: Передайте в запросе поле {field}'
+            )
         try:
             validate_dates(
                 start_datetime,
@@ -469,6 +474,13 @@ class ActiveProjectEditSerializer(ProjectSerializer):
             'skills',
         )
 
+    def validate(self, data):
+        status_approve = data.get('status_approve')
+        if status_approve == 'canceled_by_organizer':
+            return data
+        else:
+            return super().validate(data)
+
 
 class ProjectCompleteSerializer(ProjectSerializer):
     """
@@ -488,8 +500,10 @@ class ProjectCompleteSerializer(ProjectSerializer):
         fields = ProjectSerializer.Meta.fields + ('photos', 'uploaded_photos',)
         read_only_fields = ProjectSerializer.Meta.fields
 
-# если зазгрузка фоток не обязательная, иначе убрать  if uploaded_data:
+    def validate(self, data):
+        return data
 
+# если зазгрузка фоток не обязательная, иначе убрать  if uploaded_data:
     def update(self, instance, validated_data):
         uploaded_data = validated_data.pop('uploaded_photos', None)
         instance.photos.all().delete()
