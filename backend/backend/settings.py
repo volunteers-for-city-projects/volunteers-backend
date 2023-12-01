@@ -272,7 +272,7 @@ MAX_LEN_NAME_PROJECT = 150
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
 MESSAGE_PHONE_REGEX = (
-    f'Номер должен начинаться с +7 и содержать {LEN_PHONE} символов.'
+    f'Номер должен начинаться с +7, и содержать {LEN_PHONE} символов. Вторая цифра в номере не может быть 0'
 )
 MESSAGE_EMAIL_VALID = (
     f'Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов'
@@ -323,7 +323,7 @@ MAX_LEN_ABOUT_US = 750
 MESSAGE_ABOUT_US_VALID = (
     f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
 )
-MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимволы: %% №\!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
+MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимволы: %% №\\!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
 
 MAX_LEN_PHOTOS = 10
 MIN_LEN_COVER_LETTER = 10

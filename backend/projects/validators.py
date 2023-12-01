@@ -12,7 +12,7 @@ from django.utils.deconstruct import deconstructible
 ERROR_MESSAGE_REGEX = 'Недопустимые символы. Разрешены латинские '
 'и кириллические буквы, цифры и спецсимволы.',
 # REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@\[\]^_`{|}~]+$'
-REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
+REGEX_PATTERN = r'^[A-Za-zА-Яа-яЁё0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
 
 def validate_ogrn(value):
@@ -52,7 +52,8 @@ def validate_phone_number(value):
     None
     """
     regex_validator = RegexValidator(
-        regex=r'^\+7\d{10}$',
+        # regex=r'^\+7\d{10}$',
+        regex=r'^\+7[1-9]\d{9}$',
         message=settings.MESSAGE_PHONE_REGEX,
     )
     # phone_max_length = MaxLengthValidator(
@@ -83,7 +84,8 @@ def validate_telegram(value):
     None
     """
     regex_validator = RegexValidator(
-        regex=r'^@[\w]+$',
+        # regex=r'^@[\w]+$',
+        regex=r'^@[A-Za-z0-9_]*[A-Za-z0-9][A-Za-z0-9_]*$',
         message=settings.TELEGRAM_ERROR_MESSAGE,
     )
     min_length_validator = MinLengthValidator(
@@ -129,7 +131,7 @@ def validate_name(value):
     MIN_LEN = settings.MIN_LEN_NAME_PROJECT
     MAX_LEN = settings.MAX_LEN_NAME_PROJECT
     # NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
-    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
+    NAME_REGEX = r'^[A-Za-zА-Яа-яЁё0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
     min_length_validator = MinLengthValidator(
         MIN_LEN,
@@ -210,7 +212,7 @@ def validate_text_field(value):
     """
     regex_validator = RegexValidator(
         # regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
-        regex=r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
+        regex=r'^[A-Za-zА-Яа-яЁё0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
         flags=re.I,
     )
@@ -234,7 +236,7 @@ def validate_address(value):
     """
     MIN_LEN = 2
     MAX_LEN = 100
-    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 ,-.]+$'
+    NAME_REGEX = r'^[A-Za-zА-Яа-яЁё0-9 ,-.]+$'
 
     min_length_validator = MinLengthValidator(
         MIN_LEN,
@@ -259,7 +261,7 @@ def validate_text_cover_letter(value):
     Валидирует длину и символы в информации об организации.
     """
     regex_validator = RegexValidator(
-        regex=r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
+        regex=r'^[A-Za-zА-Яа-яЁё0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
         # regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
         flags=re.I,
