@@ -11,7 +11,8 @@ from django.utils.deconstruct import deconstructible
 
 ERROR_MESSAGE_REGEX = 'Недопустимые символы. Разрешены латинские '
 'и кириллические буквы, цифры и спецсимволы.',
-REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@\[\]^_`{|}~]+$'
+# REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,\-./:;<=>?@\[\]^_`{|}~]+$'
+REGEX_PATTERN = r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
 
 def validate_ogrn(value):
@@ -127,7 +128,8 @@ def validate_name(value):
     """
     MIN_LEN = settings.MIN_LEN_NAME_PROJECT
     MAX_LEN = settings.MAX_LEN_NAME_PROJECT
-    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
+    # NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 !"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
+    NAME_REGEX = r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$'
 
     min_length_validator = MinLengthValidator(
         MIN_LEN,
@@ -207,7 +209,8 @@ def validate_text_field(value):
     Валидирует длину и символы в информации об организации.
     """
     regex_validator = RegexValidator(
-        regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
+        # regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
+        regex=r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
         message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
         flags=re.I,
     )
@@ -246,6 +249,30 @@ def validate_address(value):
         message='Недопустимые символы в адресе. Разрешены латинские '
         'и кириллические буквы, цифры, пробел, запятая, точка и тире.',
     )
+    min_length_validator(value)
+    max_length_validator(value)
+    regex_validator(value)
+
+
+def validate_text_cover_letter(value):
+    """
+    Валидирует длину и символы в информации об организации.
+    """
+    regex_validator = RegexValidator(
+        regex=r'^[A-Za-zА-Яа-я0-9 №«»\\!"#$%&\'()*+,-./:;<=>?@\[\]^_`{|}~]+$',
+        # regex=r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ\s]+)\Z",
+        message=settings.MESSAGE_ABOUT_US_REGEX_VALID,
+        flags=re.I,
+    )
+    min_length_validator = MinLengthValidator(
+        settings.MIN_LEN_COVER_LETTER,
+        message=settings.MESSAGE_COVER_LETTER_VALID,
+    )
+    max_length_validator = MaxLengthValidator(
+        settings.MAX_LEN_COVER_LETTER,
+        message=settings.MESSAGE_COVER_LETTER_VALID,
+    )
+
     min_length_validator(value)
     max_length_validator(value)
     regex_validator(value)
