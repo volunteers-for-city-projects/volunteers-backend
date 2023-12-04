@@ -1,0 +1,26 @@
+{% load i18n %}
+
+{% block subject %}
+Заявка принята на {{ site_name }}
+{% endblock subject %}
+
+{% block text_body %}
+Уважаемый {% if user.get_full_name %} {{ user.get_full_name }} {% else %} Волонтер {% endif %},
+уведомляем, что ваша заявка на участие в проекте: {{ project.name }} отклонена
+организатором.
+
+{% trans "Thanks for using our site!" %}
+
+{% blocktrans %}The {{ site_name }} team{% endblocktrans %}
+{% endblock text_body %}
+
+{% block html_body %}
+<p>Уважаемый {% if user.get_full_name %} {{ user.get_full_name }} {% else %} Волонтер {% endif %},
+    уведомляем, что ваша заявка на участие в проекте: {{ project.name }} отклонена
+    организатором.
+
+<p>{% trans "Thanks for using our site!" %}</p>
+
+<p>{% blocktrans %}The {{ site_name }} team{% endblocktrans %}</p>
+
+{% endblock html_body %}

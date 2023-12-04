@@ -19,7 +19,10 @@ from content.models import (
     Skills,
     Valuation,
 )
-from notifications.tasks import incomes_approve_send_email
+from notifications.tasks import (
+    incomes_approve_send_email,
+    incomes_reject_send_email,
+)
 from projects.models import (
     Address,
     Category,
@@ -793,9 +796,18 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         """
         if instance.status_incomes == ProjectIncomes.REJECTED:
             raise serializers.ValidationError('Вы уже отклоняли данную заявку')
+        elif instance.status_incomes == ProjectIncomes.ACCEPTED:
+            existing_participant = ProjectParticipants.objects.get(
+                project=instance.project, volunteer=instance.volunteer
+            )
+            incomes_reject_send_email.delay(
+                existing_participant.pk,
+                get_site_data(self.context.get('request', {}))
+            )
+            existing_participant.delete()
         instance.status_incomes = ProjectIncomes.REJECTED
         instance.save()
-        return {'message': 'Заявка волонтера отклонена.'}
+        return {'message': 'Заявка волонтера отклонена организатором.'}
 
     def to_representation(self, instance):
         return ProjectIncomesGetSerializer(instance).data

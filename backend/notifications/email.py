@@ -16,3 +16,7 @@ class IncomesApproveEmail(BaseEmailMessage):
             'date_time': date_time,
         })
         return context
+
+
+class IncomesRejectEmail(IncomesApproveEmail):
+    template_name = 'email/incomes_reject.html'
