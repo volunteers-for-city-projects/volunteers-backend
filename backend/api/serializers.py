@@ -176,6 +176,43 @@ class ProjectImageSerializer(serializers.ModelSerializer):
         fields = ('id', 'project', 'photo')
 
 
+class VolunteerGetSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для отображения волонтера.
+    """
+
+    user = UserSerializer(read_only=True)
+    skills = SkillsSerializer(many=True)
+
+    class Meta:
+        model = Volunteer
+        fields = (
+            'id',
+            'user',
+            'city',
+            'telegram',
+            'skills',
+            'photo',
+            'date_of_birth',
+            'phone',
+        )
+
+
+class ProjectParticipantSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для списка участников.
+    """
+    volunteer = VolunteerGetSerializer()
+
+    class Meta:
+        model = ProjectParticipants
+        fields = (
+            # 'project',
+            'id',
+            'volunteer',
+        )
+
+
 class ProjectGetSerializer(serializers.ModelSerializer):
     """
     Сериализатор для чтения данных проекта.
@@ -187,6 +224,8 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     city = serializers.SlugRelatedField(slug_field='name', read_only=True)
     photos = ProjectImageSerializer(many=True, read_only=True)
+    # participants = ProjectParticipantSerializer(read_only=True, many=True)
+    participants = serializers.SerializerMethodField()
 
     def get_is_favorited(self, obj):
         request = self.context.get('request')
@@ -220,6 +259,23 @@ class ProjectGetSerializer(serializers.ModelSerializer):
             elif data.end_datetime <= now:
                 return COMPLETED
         return EDITING
+
+    def get_participants(self, obj):
+        participants_data = ProjectParticipantSerializer(
+            obj.participants.all(), many=True
+        ).data
+        return [
+            {
+                'id': participant.get('id'),
+                'volunteer_id': participant['volunteer']['id'],
+                'full_name': (
+                    f'{participant["volunteer"]["user"]["last_name"]} '
+                    f'{participant["volunteer"]["user"]["first_name"]} '
+                    f'{participant["volunteer"]["user"]["second_name"]}'
+                )
+            }
+            for participant in participants_data
+        ]
 
     class Meta:
         model = Project
@@ -532,26 +588,26 @@ class TagSerializer(serializers.ModelSerializer):
         )
 
 
-class VolunteerGetSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для отображения волонтера.
-    """
+# class VolunteerGetSerializer(serializers.ModelSerializer):
+#     """
+#     Сериализатор для отображения волонтера.
+#     """
 
-    user = UserSerializer(read_only=True)
-    skills = SkillsSerializer(many=True)
+#     user = UserSerializer(read_only=True)
+#     skills = SkillsSerializer(many=True)
 
-    class Meta:
-        model = Volunteer
-        fields = (
-            'id',
-            'user',
-            'city',
-            'telegram',
-            'skills',
-            'photo',
-            'date_of_birth',
-            'phone',
-        )
+#     class Meta:
+#         model = Volunteer
+#         fields = (
+#             'id',
+#             'user',
+#             'city',
+#             'telegram',
+#             'skills',
+#             'photo',
+#             'date_of_birth',
+#             'phone',
+#         )
 
 
 class VolunteerCreateSerializer(
@@ -782,6 +838,7 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         participiants = ProjectParticipants.objects.create(
             project=instance.project, volunteer=instance.volunteer
         )
+        instance.project.participants.add(participiants)   # добавила
         incomes_approve_send_email.delay(
             participiants.pk, get_site_data(self.context.get('request', {}))
         )
@@ -896,18 +953,18 @@ class OgranizationUpdateSerializer(OgranizationCreateSerializer):
         return instance
 
 
-class ProjectParticipantSerializer(serializers.ModelSerializer):
-    """
-    Сериализатор для списка участников.
-    """
-    volunteer = VolunteerGetSerializer()
+# class ProjectParticipantSerializer(serializers.ModelSerializer):
+#     """
+#     Сериализатор для списка участников.
+#     """
+#     volunteer = VolunteerGetSerializer()
 
-    class Meta:
-        model = ProjectParticipants
-        fields = (
-            # 'project',
-            'volunteer',
-        )
+#     class Meta:
+#         model = ProjectParticipants
+#         fields = (
+#             # 'project',
+#             'volunteer',
+#         )
 
 
 # class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
