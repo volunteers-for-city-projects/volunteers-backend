@@ -1,4 +1,4 @@
-from django.db.models import Q  # Exists, OuterRef,
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -74,8 +74,6 @@ from .serializers import (
     VolunteerUpdateSerializer,
 )
 from .utils import get_instance, is_correct_status_change
-
-# from taggit.serializers import TaggitSerializer
 
 
 class PlatformAboutView(generics.RetrieveAPIView):
@@ -156,8 +154,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             if (instance.status_approve == Project.APPROVED
                and instance.end_datetime < timezone.now()):
                 return ProjectCompleteSerializer
-            # else:
-            #     return ProjectSerializer
         return ProjectSerializer
 
     def get_queryset(self):
@@ -181,14 +177,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        # if (
-        #     instance.status_approve == Project.APPROVED
-        #     and instance.end_datetime < timezone.now()
-        # ):
-        #     return Response(
-        #         {"detail": "Вы не можете редактировать завершенные проекты"},
-        #         status=status.HTTP_400_BAD_REQUEST,
-        #     )
+
         status_before = instance.status_approve
         status_new = request.data.get("status_approve", status_before)
         allowed_statuses = dict(Project.STATUS_CHOICES).keys()
@@ -229,11 +218,9 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 {"detail": message}, status=status.HTTP_403_FORBIDDEN
             )
-        #  Проверяем статус проекта возможно нужно еще добавить
-        #  какие то статусы
         if instance.status_approve not in [
             Project.EDITING,
-            Project.CANCELED_BY_ORGANIZER,  # под вопросом
+            Project.CANCELED_BY_ORGANIZER,
             Project.REJECTED
         ]:
             message = (
@@ -294,10 +281,6 @@ class ProjectViewSet(viewsets.ModelViewSet):
             return Response(
                 serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
-        # return Response(
-        #     {'error': 'Неподдерживаемый метод запроса или статус проекта'},
-        #     status=status.HTTP_400_BAD_REQUEST
-        # )
 
 
 class ProjectParticipantsViewSet(mixins.DestroyModelMixin,
@@ -343,7 +326,6 @@ class VolunteerViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     Позволяет получать, создавать, редактировать, удалять участника-волонтера.
     """
 
-    # permission_classes = (AllowAny,)
     queryset = Volunteer.objects.all()
 
     def get_serializer_class(self):
@@ -370,7 +352,6 @@ class OrganizationViewSet(DestroyUserMixin, viewsets.ModelViewSet):
     удалять организацию-организатора проекта.
     """
 
-    # permission_classes = (AllowAny,)
     queryset = Organization.objects.all()
 
     def get_serializer_class(self):
@@ -451,7 +432,6 @@ class SearchListView(generics.ListAPIView):
     queryset = Project.objects.all()
     serializer_class = ProjectSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
-    # filterset_class = SearchFilter
     search_fields = ['name', 'description', 'event_purpose']
 
 
@@ -486,7 +466,6 @@ class ProjectIncomesViewSet(
             return ProjectIncomesGetSerializer
         return ProjectIncomesSerializer
 
-    # данную функцию скорее всего будем переделывать в будущем.
     def get_permissions(self):
         """
         Метод для установки разрешений в зависимости от действия.
@@ -496,7 +475,6 @@ class ProjectIncomesViewSet(
             'create': [IsVolunteer],
             'accept_incomes': [IsOrganizerOfProject],
             'reject_incomes': [IsOrganizerOfProject],
-            # 'delete_incomes': [IsVolunteerOfIncomes],
             'destroy': [IsVolunteerOfIncomes],
             'retrieve': [IsOrganizerOfProject | IsVolunteerOfIncomes],
         }
@@ -519,23 +497,6 @@ class ProjectIncomesViewSet(
             )},
             status=status.HTTP_400_BAD_REQUEST
         )
-    # @action(
-    #     detail=True,
-    #     methods=['delete'],
-    #     permission_classes=[IsVolunteerOfIncomes],
-    # )
-    # def delete_incomes(self, request, pk):
-    #     """
-    #     Удаляет заявку волонтера на участие в проекте.
-
-    #     Parameters: pk (int): Идентификатор заявки волонтера.
-    #     Возвращает успешный ответ с сообщением о том, что заявка удалена.
-    #     Если удалить не получилось, возвращает исключение.
-    #     """
-    #     instance = self.get_object()
-    #     serializer = self.get_serializer(instance)
-    #     response_data = serializer.delete(instance)
-    #     return Response(response_data, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
@@ -599,22 +560,6 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
     def get_queryset(self):
         if self.request.user.is_volunteer:
-            # volunteer = get_object_or_404(
-            #    Volunteer, user=self.request.user.id,
-            # )
-            # from_volunteer_favorite = ProjectFavorite.objects.filter(
-            #     project=OuterRef('pk'), volunteer=volunteer
-            # )
-            # return (
-            #     Project.objects.filter(participant__volunteer=volunteer)
-            #     # .select_related('organization')
-            #     # .prefetch_related('categories', 'skills')
-            #     .annotate(
-            #         is_favorited=Exists(from_volunteer_favorite),
-            #     )
-            # )
-
-            # volunteer = Volunteer.objects.get(user=self.request.user)
             volunteer = self.request.user.volunteers
             volunteer_in_projects = Project.objects.filter(
                 participants__volunteer=volunteer
@@ -622,13 +567,7 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             favorite_projects = Project.objects.filter(
                 Q(project_favorite__user=self.request.user)
             )
-            # return (volunteer_in_projects).distinct()
             return (favorite_projects | volunteer_in_projects).distinct()
-
-        # if self.request.user.is_organizer:
-        #     return Project.objects.filter(
-        #         organization__contact_person=self.request.user
-        #     )
 
         if self.request.user.is_organizer:
             favorite_projects = Project.objects.filter(
@@ -638,17 +577,6 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 organization__contact_person=self.request.user
             )
             return (favorite_projects | organizer_projects).distinct()
-
-            # organization = get_object_or_404(
-            #     Organization,
-            #     contact_person=self.request.user.id
-            # )
-            # return Project.objects.filter(organization=organization)
-
-        #  добавила иначе ошибка если заходить администратором
-        # raise PermissionDenied(
-        #     detail='Вы не являетесь волонтером или организатором'
-        # )
 
     @swagger_auto_schema(
         manual_parameters=schemas.status_project_filter_params

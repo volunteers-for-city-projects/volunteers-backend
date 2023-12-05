@@ -4,14 +4,7 @@ from django.utils.safestring import mark_safe
 
 from backend.settings import MAX_LEN_TEXT_IN_ADMIN
 
-from .models import (  # Activities,
-    City,
-    Feedback,
-    News,
-    PlatformAbout,
-    Skills,
-    Valuation,
-)
+from .models import City, Feedback, News, PlatformAbout, Skills, Valuation
 
 admin.site.site_title = 'Админка BETTER-TOGETHER'
 admin.site.site_header = 'Администрирование сайта BETTER-TOGETHER'
@@ -145,11 +138,3 @@ class SkillsAdmin(admin.ModelAdmin):
     """
 
     list_display = ('name',)
-
-
-#  возможно активносетй не будет на проекте
-# @admin.register(Activities)
-# class ActivitiesAdmin(admin.ModelAdmin):
-#     '''Администрирование справочника активностей волонтера.'''
-
-#     list_display = ('name', 'description')
