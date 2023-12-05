@@ -622,6 +622,7 @@ class ProjectMeViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             favorite_projects = Project.objects.filter(
                 Q(project_favorite__user=self.request.user)
             )
+            # return (volunteer_in_projects).distinct()
             return (favorite_projects | volunteer_in_projects).distinct()
 
         # if self.request.user.is_organizer:
