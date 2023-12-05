@@ -52,22 +52,11 @@ def validate_phone_number(value):
     None
     """
     regex_validator = RegexValidator(
-        # regex=r'^\+7\d{10}$',
         regex=r'^\+7[1-9]\d{9}$',
         message=settings.MESSAGE_PHONE_REGEX,
     )
-    # phone_max_length = MaxLengthValidator(
-    #     settings.LEN_PHONE,
-    #     message=settings.MESSAGE_PHONE_REGEX,
-    # )
-    # phone_min_length = MinLengthValidator(
-    #     settings.LEN_PHONE,
-    #     message=settings.MESSAGE_PHONE_REGEX,
-    # )
 
     regex_validator(value)
-    # phone_max_length(value)
-    # phone_min_length(value)
 
 
 def validate_telegram(value):

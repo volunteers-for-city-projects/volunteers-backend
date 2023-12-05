@@ -41,19 +41,8 @@ def validate_dates(
 
     if not (NOW <= start_date_application <= MAX_ALLOWED_DATE):
         errors.setdefault('start_date_application', []).append(
-            # 'Начало подачи заявки должно быть в пределах от текущей даты и '
-            # 'времени до года вперед.'
             'Заявку можно подать в течение года, начиная от текущей даты'
         )
-    # if not (
-    #     start_date_application + MIN_DURATION
-    #     <= end_date_application
-    #     <= MAX_ALLOWED_DATE
-    # ):
-    #     errors.setdefault('end_date_application', []).append(
-    #         'Окончание подачи заявки должно быть позже начала подачи заявок и '
-    #         'не более чем через год после текущей даты.'
-    #     )
     if not (
         start_date_application + MIN_DURATION_APPLICATION
         <= end_date_application <= start_date_application + MAX_DURATION
@@ -66,16 +55,9 @@ def validate_dates(
         )
     if not (end_date_application <= start_datetime <= MAX_ALLOWED_DATE):
         errors.setdefault('start_datetime', []).append(
-            # 'Начало мероприятия должно быть в будущем после окончания подачи '
-            # 'заявок и не более чем через год после текущей даты.'
             'Дата начала мероприятия должна быть поздее даты окончания '
             'приема заявок и не позднее года от текущей даты'
         )
-    # if not (start_date + MIN_DURATION <= end_date <= MAX_ALLOWED_DATE):
-    #     errors.setdefault('end_date', []).append(
-    #         'Дата окончания мероприятия должна быть позже начала и не более '
-    #         'чем через год после текущей даты.'
-        # )
     if (
         start_datetime.time().hour < MIN_TIME
         or start_datetime.time().hour > (MAX_TIME - 2)
@@ -121,38 +103,3 @@ def validate_dates(
         start_date_application,
         end_date_application,
     )
-
-
-# TODO нужно передалть с учетом, изменений реализации статусов.
-# def validate_reception_status(
-#     status_project, application_date, start_datetime, end_datetime
-# ):
-#     """
-#     Проверяет, что статус можно устанавливать
-#     только после указанной даты.
-#     """
-#     now = timezone.now()
-#     validation_rules = [
-#         (
-#             Project.RECEPTION_OF_RESPONSES_CLOSED,
-#             application_date > now,
-#             'Статус проекта "Прием откликов окончен" можно установить '
-#             'только после окончания подачи заявок.',
-#         ),
-#         (
-#             Project.READY_FOR_FEEDBACK,
-#             now < start_datetime or now < application_date,
-#             'Статус проекта "Готов к откликам" можно установить до начала '
-#             'мероприятия и до даты подачи заявки.',
-#         ),
-#         (
-#             Project.PROJECT_COMPLETED,
-#             now < end_datetime,
-#             'Статус проекта "Проект завершен" можно установить только '
-#             'после окончания мероприятия.',
-#         ),
-#     ]
-
-#     for project_status, condition, error_message in validation_rules:
-#         if status_project == project_status and condition:
-#             raise serializers.ValidationError(error_message)

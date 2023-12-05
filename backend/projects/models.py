@@ -141,7 +141,6 @@ class Volunteer(models.Model):
             MaxValueValidator(limit_value=date.today()),
         ],
         verbose_name='Дата рождения',
-        #  help_text='Введите дату  "ГГГГ-ММ-ДД", пример: "2000-01-01".',
     )
     phone = models.CharField(
         validators=[validate_phone_number],
@@ -264,7 +263,7 @@ class Project(models.Model):
         unique=True,
     )
     description = models.TextField(
-        blank=True,  # добавила
+        blank=True,
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -275,32 +274,30 @@ class Project(models.Model):
         verbose_name='Описание',
     )
     picture = models.ImageField(
-        # blank=True,   #  добавилено для черновика
-        # null=True,   #  добавила
         verbose_name='Картинка',
     )
     start_datetime = models.DateTimeField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         null=True,
         verbose_name='Дата и время, начало мероприятия',
     )
     end_datetime = models.DateTimeField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         null=True,
         verbose_name='Дата и время, окончания мероприятия',
     )
     start_date_application = models.DateTimeField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         null=True,
         verbose_name='Дата и время, начало подачи заявок',
     )
     end_date_application = models.DateTimeField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         null=True,
         verbose_name='Дата и время, окончания подачи заявок',
     )
     event_purpose = models.TextField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -312,13 +309,13 @@ class Project(models.Model):
     )
     event_address = models.ForeignKey(
         Address,
-        blank=True,  # добавилено для черновика
-        null=True,  # добавила
+        blank=True,
+        null=True,
         on_delete=models.CASCADE,
         verbose_name='Адрес проведения проекта',
     )
     project_tasks = models.TextField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -329,7 +326,7 @@ class Project(models.Model):
         verbose_name='Задачи проекта',
     )
     project_events = models.TextField(
-        blank=True,  # добавилено для черновика
+        blank=True,
         validators=[
             regex_string_validator,
             LengthValidator(
@@ -360,7 +357,7 @@ class Project(models.Model):
         City,
         on_delete=models.CASCADE,
         related_name='project',
-        blank=True,  # добавила
+        blank=True,
         null=True,  # если убрать null=True,то админка не показывает
         #  проект с пустым городами
         verbose_name='Город',
@@ -368,14 +365,8 @@ class Project(models.Model):
     categories = models.ManyToManyField(
         Category,
         related_name='projects',
-        # blank=True,  # добавила
         verbose_name='Категории',
     )
-    # photo_previous_event = models.ImageField(
-    #     blank=True,
-    #     # null=True,
-    #     verbose_name='Фото с мероприятия',
-    # )
     participants = models.ManyToManyField(
         'ProjectParticipants',
         blank=True,
@@ -392,7 +383,6 @@ class Project(models.Model):
         Skills,
         through='ProjectSkills',
         related_name='projects',
-        # blank=True,  # добавила
         verbose_name='Навыки',
     )
     created_at = models.DateTimeField(
@@ -412,7 +402,7 @@ class Project(models.Model):
     )
 
     class Meta:
-        ordering = ('start_datetime', 'id')
+        ordering = ('-start_date_application', 'id')
         verbose_name = 'Проект'
         verbose_name_plural = 'Проекты'
 

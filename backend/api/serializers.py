@@ -207,7 +207,6 @@ class ProjectParticipantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectParticipants
         fields = (
-            # 'project',
             'id',
             'volunteer',
         )
@@ -224,7 +223,6 @@ class ProjectGetSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField()
     city = serializers.SlugRelatedField(slug_field='name', read_only=True)
     photos = ProjectImageSerializer(many=True, read_only=True)
-    # participants = ProjectParticipantSerializer(read_only=True, many=True)
     participants = serializers.SerializerMethodField()
 
     def get_is_favorited(self, obj):
@@ -317,7 +315,6 @@ class DraftProjectSerializer(serializers.ModelSerializer):
     skills = serializers.PrimaryKeyRelatedField(
         required=False, queryset=Skills.objects.all(), many=True
     )
-    # picture = NonEmptyBase64ImageField(required=False)
     picture = Base64ImageField(required=False, allow_null=True)
 
     def validate_status_approve(self, value):
@@ -326,13 +323,6 @@ class DraftProjectSerializer(serializers.ModelSerializer):
                 'Вы передаете невверный статус для черновика.'
             )
         return value
-
-    # def create(self, validated_data):
-    #     project_instance = super().create(validated_data)
-    #     project_instance.status_approve = Project.EDITING
-    #     project_instance.save()
-
-    #     return project_instance
 
     def create(self, validated_data):
         address_data = validated_data.pop('event_address', None)
@@ -437,7 +427,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         read_only_fields = ('organization',)
         extra_kwargs = {field: {'required': True} for field in fields}
         extra_kwargs = {
-            # 'photo_previous_event': {'required': False},
             'status_approve': {'required': False},
             'event_purpose': {'allow_blank': False, 'required': True},
             'project_tasks': {'allow_blank': False, 'required': True},
@@ -472,9 +461,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {self.__class__.__name__: errors.detail}
             )
-        # validate_reception_status(
-        #     application_date, start_datetime, end_datetime
-        # )
         return data
 
     def validate_status_approve(self, value):
@@ -552,7 +538,7 @@ class ProjectCompleteSerializer(ProjectSerializer):
             max_length=20000000, allow_empty_file=False, use_url=False
         ),
         write_only=True,
-        required=False  # обязательное или нет не понятно
+        required=False
     )
 
     class Meta(ProjectSerializer.Meta):
@@ -586,28 +572,6 @@ class TagSerializer(serializers.ModelSerializer):
             'name',
             'slug',
         )
-
-
-# class VolunteerGetSerializer(serializers.ModelSerializer):
-#     """
-#     Сериализатор для отображения волонтера.
-#     """
-
-#     user = UserSerializer(read_only=True)
-#     skills = SkillsSerializer(many=True)
-
-#     class Meta:
-#         model = Volunteer
-#         fields = (
-#             'id',
-#             'user',
-#             'city',
-#             'telegram',
-#             'skills',
-#             'photo',
-#             'date_of_birth',
-#             'phone',
-#         )
 
 
 class VolunteerCreateSerializer(
@@ -718,49 +682,7 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             'cover_letter',
             'created_at',
         )
-        # read_only_fields = ('id', 'created_at')
         read_only_fields = ('id', 'created_at', 'volunteer')
-
-#    def create(self, validated_data):
-#        """
-#        Создает заявку волонтера.
-#        """
-#        project = validated_data['project']
-#        volunteer = validated_data['volunteer']
-#        status_incomes = validated_data.get(
-#            'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
-#        )
-#        if (
-#            ProjectIncomes.objects.filter(
-#                project=project,
-#                volunteer=volunteer
-#            ).exclude(status_incomes=ProjectIncomes.REJECTED).exists()
-#        ):
-#            # TODO:  проверить работу через релейтед нейм
-#            if (
-#                project.project_incomes.filter(volunteer=volunteer)
-#                .exclude(status_incomes=ProjectIncomes.REJECTED).exists()
-#            ):
-#                raise serializers.ValidationError(
-#                    'Заявка волонтера на этот проект уже существует.'
-#                )
-#        if (project.project_incomes.filter(
-#            volunteer=volunteer, status_incomes=ProjectIncomes.REJECTED
-#            ).exists()
-#        ):
-#            raise serializers.ValidationError(
-#                'Вы не можете повторно подать завку, ваша заявка '
-#                'ранее была отклонена'
-#            )
-#        project_income = ProjectIncomes.objects.create(
-#            project=project,
-#            volunteer=volunteer,
-#            status_incomes=status_incomes,
-#            phone=validated_data.get('phone', ''),
-#            telegram=validated_data.get('telegram', ''),
-#            cover_letter=validated_data.get('cover_letter', ''),
-#        )
-#        return project_income
 
     def create(self, validated_data):
         """
@@ -768,7 +690,6 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
         """
 
         project = validated_data.get('project')
-        # project = validated_data['project']
         volunteer = self.context['request'].user.volunteers
         status_incomes = validated_data.get(
             'status_incomes', ProjectIncomes.APPLICATION_SUBMITTED
@@ -807,17 +728,6 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
             cover_letter=validated_data.get('cover_letter', ''),
         )
         return project_income
-
-    # def delete(self, instance):
-    #     """
-    #     Удаляет заявку волонтера только если статус APPLICATION_SUBMITTED.
-    #     """
-    #     if instance.status_incomes == ProjectIncomes.APPLICATION_SUBMITTED:
-    #         instance.delete()
-    #         return 'Заявка волонтера удалена.'
-    #     raise serializers.ValidationError(
-    #         'Невозможно удалить заявку, если статус не "Заявка подана".'
-    #     )
 
     def validate_status_incomes(self, value):
         return validate_status_incomes(value)
@@ -868,26 +778,6 @@ class ProjectIncomesSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return ProjectIncomesGetSerializer(instance).data
-
-    # def to_representation(self, instance):
-    #     request = self.context.get('request')
-    #     user = request.user
-    #     if (
-    #         user.role == User.VOLUNTEER
-    #         and hasattr(user, 'volunteer')
-    #         and instance.volunteer != user.volunteer
-    #     ):
-    #         return {}
-    #     if (
-    #         user.role == User.ORGANIZER
-    #         and instance.project.organizer != user.organizer
-    #     ):
-    #         return {}
-    #     if user.role == User.ORGANIZER:
-    #         return super().to_representation(instance)
-    #     data = super().to_representation(instance)
-    #     # data['volunteer'] = {'id': instance.volunteer.id}
-    #     return data
 
 
 class OrganizationGetSerializer(serializers.ModelSerializer):
@@ -951,35 +841,6 @@ class OgranizationUpdateSerializer(OgranizationCreateSerializer):
 
         instance.save()
         return instance
-
-
-# class ProjectParticipantSerializer(serializers.ModelSerializer):
-#     """
-#     Сериализатор для списка участников.
-#     """
-#     volunteer = VolunteerGetSerializer()
-
-#     class Meta:
-#         model = ProjectParticipants
-#         fields = (
-#             # 'project',
-#             'volunteer',
-#         )
-
-
-# class ProjectFavoriteGetSerializer(serializers.ModelSerializer):
-#    """
-#    Сериализатор для отображения избранных проектов.
-#    """
-#
-#    class Meta:
-#        model = Project
-#        fields = (
-#            'id',
-#            'name',
-#            'picture',
-#            'organization',
-#        )
 
 
 class ProjectFavoriteSerializer(IsValidModifyErrorForFrontendMixin,

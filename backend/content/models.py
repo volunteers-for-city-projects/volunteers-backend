@@ -18,8 +18,6 @@ class PlatformAbout(models.Model):
     Информация о проекте Платформа.
     """
 
-    # photo = models.ImageField(upload_to='content/%Y/%m/%d/', blank=True)
-    # # еще не определились надо ли менять фото из админки
     about_us = models.TextField(
         verbose_name='Описание раздела "О нас"',
         max_length=settings.MAX_LEN_ABOUT_US,
@@ -84,7 +82,6 @@ class Feedback(models.Model):
     )
     processed_at = models.DateTimeField(
         verbose_name='Дата и время обработки',
-        # auto_now=True,
         null=True,
         blank=True,
     )
@@ -169,23 +166,3 @@ class Skills(models.Model):
 
     def __str__(self):
         return self.name
-
-
-# # Активности под вопросом, высока вероятность что не будет в проекте
-# class Activities(models.Model):
-#     '''Необходимые активности для реализации проекта.'''
-
-#     name = models.CharField(
-#         verbose_name='Активность',
-#         max_length=settings.MAX_LEN_CHAR
-#     )
-#     description = models.TextField(
-#         verbose_name='Описание активности'
-#     )
-
-#     class Meta:
-#         ordering = ('name',)
-#         verbose_name = 'Активность'
-#         verbose_name_plural = 'Активности'
-# def __str__(self):
-#     return self.name

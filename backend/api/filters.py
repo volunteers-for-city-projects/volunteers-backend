@@ -83,11 +83,6 @@ class ProjectFilter(FilterSet):
         # conjoined=True,  # все указанные навыки должны быть одновременно в проекте
     )
 
-    # city = filters.ModelMultipleChoiceFilter(
-    #     queryset=City.objects.all(),
-    #     field_name='city__name', !!!!!!!! поиск указан по имени, исправить на id если надо.
-    #     to_field_name='name'
-    # )
     city = django_filters.CharFilter(field_name='city', lookup_expr='exact')
     start_datetime = django_filters.DateTimeFilter(
         field_name='start_datetime', lookup_expr='gte'
@@ -135,20 +130,6 @@ class StatusProjectFilter(django_filters.FilterSet):
     по фильтру "Избранное" /projects/me/?is_favorited=true.
     """
 
-    # draft = django_filters.CharFilter(method='filter_draft')
-    # active = django_filters.CharFilter(method='filter_active')
-    # completed = django_filters.CharFilter(method='filter_completed')
-    # archive = django_filters.CharFilter(method='filter_archive')
-    # moderation = django_filters.CharFilter(method='filter_moderation')
-    # is_favorited = django_filters.CharFilter(method='filter_is_favorited')
-
-    # draft = django_filters.BooleanFilter(method='filter_draft')
-    # active = django_filters.BooleanFilter(method='filter_active')
-    # completed = django_filters.BooleanFilter(method='filter_completed')
-    # archive = django_filters.BooleanFilter(method='filter_archive')
-    # moderation = django_filters.BooleanFilter(method='filter_moderation')
-    # is_favorited = django_filters.BooleanFilter(method='filter_is_favorited')
-
     def filter_draft(self, queryset):
         """
         Фильтр для таба "Черновик".
@@ -157,20 +138,6 @@ class StatusProjectFilter(django_filters.FilterSet):
             Q(status_approve__in=[Project.EDITING, Project.REJECTED,]),
             organization__contact_person=self.request.user
         )
-    # вариант если чтобы фильтровался на 'true'
-    # def filter_draft(self, queryset, name, value):
-    #     """
-    #     Фильтр для таба "Черновик".
-    #     """
-    #     if value == 'true':
-    #         return queryset.filter(
-    #             Q(status_approve__in=[Project.EDITING, Project.REJECTED,]),
-    #             organization__contact_person=self.request.user
-    #         )
-    #     else:
-    #         return HttpResponseBadRequest('Неверно указан фильтр')
-    #     #     queryset = None
-    #     # return queryset
 
     def filter_active(self, queryset):
         """
@@ -239,7 +206,6 @@ class StatusProjectFilter(django_filters.FilterSet):
             participants__volunteer=self.request.user.volunteers
         )
 
-    # def filter_canseled(self, queryset):
     def filter_archive_volunteer(self, queryset):
         """
         Фильтр для таба "Архив".
@@ -249,26 +215,6 @@ class StatusProjectFilter(django_filters.FilterSet):
             Q(status_approve=Project.CANCELED_BY_ORGANIZER),
             participants__volunteer=self.request.user.volunteers
         )
-
-    #  TODO фильтры по статусам проекта в ЛК Волонтера
-    #  Простой код для понимания и дополнения статусов волнтеров
-    # def filter_queryset(self, queryset):
-    #     user = self.request.user
-    #     if user.is_organizer:
-    #         if self.data.get("draft"):
-    #             queryset = self.filter_draft(queryset)
-    #         elif self.data.get("active"):
-    #             queryset = self.filter_active(queryset)
-    #         elif self.data.get("completed"):
-    #             queryset = self.filter_completed(queryset)
-    #         elif self.data.get("archive"):
-    #             queryset = self.filter_archive(queryset)
-    #     elif user.is_volunteer:
-    #         if self.data.get("active"):
-    #             queryset = self.filter_active(queryset)
-    #         elif self.data.get("completed"):
-    #             queryset = self.filter_completed(queryset)
-    #     return queryset
 
     def filter_queryset(self, queryset):
         user = self.request.user
@@ -286,21 +232,17 @@ class StatusProjectFilter(django_filters.FilterSet):
         elif user.is_volunteer:
             status_filter = (
                 self.data.get('active')
-                # and self.filter_active
                 and self.filter_active_volunteer
                 or self.data.get('completed')
-                # and self.filter_completed
                 and self.filter_completed_volunteer
                 or self.data.get('archive')
                 and self.filter_archive_volunteer
-                # and self.filter_canseled
                 or self.data.get('is_favorited')
                 and self.filter_is_favorited
             )
 
         if status_filter:
             queryset = status_filter(queryset).distinct()
-            # queryset = status_filter(queryset, name, value).distinct()
 
         return queryset
 
