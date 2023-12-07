@@ -10,18 +10,21 @@ from api.views import (
     PlatformAboutView,
     ProjectCategoryViewSet,
     ProjectIncomesViewSet,
+    ProjectMeViewSet,
+    ProjectParticipantsViewSet,
     ProjectViewSet,
     SearchListView,
     SkillsViewSet,
     TagViewSet,
-    UserActivationView,
-    VolunteerProfileView,
     VolunteerViewSet,
 )
 
 router = DefaultRouter()
 router.register(r'news', NewsViewSet, basename='news')
+router.register(r'projects/me', ProjectMeViewSet, basename='my_projects')
 router.register(r'projects', ProjectViewSet, basename='projects')
+router.register(r'projects/(?P<project_id>\d+)/participants',
+                ProjectParticipantsViewSet, basename='project_participants')
 router.register(r'project_categories', ProjectCategoryViewSet)
 router.register(r'volunteers', VolunteerViewSet, basename='volunteers')
 router.register(
@@ -30,9 +33,7 @@ router.register(
 router.register(r'cities', CityViewSet)
 router.register(r'skills', SkillsViewSet)
 router.register(r'tags', TagViewSet)
-router.register(
-    r'projects/incomes', ProjectIncomesViewSet, basename='project_incomes'
-)
+router.register(r'incomes', ProjectIncomesViewSet, basename='project_incomes')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -56,14 +57,18 @@ urlpatterns = [
         name='password_reset_confirm',
     ),
     path(
-        r'auth/activation/<uid>/<token>/',
+        'auth/activation/',
         UserViewSet.as_view({'post': 'activation'}),
-        name='user-activation',
+        name='activation',
     ),
-    path(r'auth/activate/<uid>/<token>/', UserActivationView.as_view()),
+    path(
+        'auth/resend_activation/',
+        UserViewSet.as_view({'post': 'resend_activation'}),
+        name='resend_activation',
+    ),
     path('auth/', include('djoser.urls.authtoken')),
     path('platform_about/', PlatformAboutView.as_view()),
     path('feedback/', FeedbackCreateView.as_view()),
     path('search/', SearchListView.as_view()),
-    path('volunteers/<int:pk>/profile/', VolunteerProfileView.as_view()),
+    # path('volunteers/<int:pk>/profile/', VolunteerProfileView.as_view()),
 ]

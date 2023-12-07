@@ -3,8 +3,10 @@ from django.db import models
 from taggit.managers import TaggableManager
 
 from users.models import User
+from users.validators import EmailValidator
 
 from .validators import (
+    AboutUsValidator,
     NameFeedbackUserValidator,
     PhoneValidator,
     TextFeedbackValidator,
@@ -16,11 +18,15 @@ class PlatformAbout(models.Model):
     Информация о проекте Платформа.
     """
 
-    # photo = models.ImageField(upload_to='content/%Y/%m/%d/', blank=True)
-    # # еще не определились надо ли менять фото из админки
-    about_us = models.TextField(verbose_name='Описание раздела "О нас"')
+    about_us = models.TextField(
+        verbose_name='Описание раздела "О нас"',
+        max_length=settings.MAX_LEN_ABOUT_US,
+        validators=[AboutUsValidator.validate_about_us],
+    )
     platform_email = models.EmailField(
-        verbose_name='email Платформы', max_length=settings.MAX_LENGTH_EMAIL
+        verbose_name='email Платформы',
+        max_length=settings.MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email],
     )
 
     class Meta:
@@ -34,7 +40,7 @@ class Valuation(models.Model):
     """
 
     title = models.CharField(
-        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Заголовок', max_length=settings.MAX_LEN_CHAR, unique=True
     )
     description = models.TextField(verbose_name='Описание ценности')
 
@@ -61,7 +67,11 @@ class Feedback(models.Model):
         max_length=settings.LEN_PHONE,
         validators=[PhoneValidator.validate_phone],
     )
-    email = models.EmailField(max_length=settings.MAX_LENGTH_EMAIL)
+    email = models.EmailField(
+        verbose_name="Почтовый адрес",
+        max_length=settings.MAX_LENGTH_EMAIL,
+        validators=[EmailValidator.validate_email],
+    )
     text = models.CharField(
         verbose_name='Текст обращения',
         max_length=settings.MAX_LEN_TEXT_FEEDBACK,
@@ -72,7 +82,6 @@ class Feedback(models.Model):
     )
     processed_at = models.DateTimeField(
         verbose_name='Дата и время обработки',
-        # auto_now=True,
         null=True,
         blank=True,
     )
@@ -145,7 +154,9 @@ class Skills(models.Model):
     """
 
     name = models.CharField(
-        verbose_name='Навык', max_length=settings.MAX_LEN_CHAR
+        verbose_name='Навык',
+        max_length=settings.MAX_LEN_CHAR,
+        unique=True,
     )
 
     class Meta:
@@ -155,23 +166,3 @@ class Skills(models.Model):
 
     def __str__(self):
         return self.name
-
-
-# # Активности под вопросом, высока вероятность что не будет в проекте
-# class Activities(models.Model):
-#     '''Необходимые активности для реализации проекта.'''
-
-#     name = models.CharField(
-#         verbose_name='Активность',
-#         max_length=settings.MAX_LEN_CHAR
-#     )
-#     description = models.TextField(
-#         verbose_name='Описание активности'
-#     )
-
-#     class Meta:
-#         ordering = ('name',)
-#         verbose_name = 'Активность'
-#         verbose_name_plural = 'Активности'
-# def __str__(self):
-#     return self.name

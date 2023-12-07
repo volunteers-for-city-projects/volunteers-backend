@@ -24,7 +24,7 @@ services:
           "CMD-SHELL",
           "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"
         ]
-      interval: 3s
+      interval: 5s
       timeout: 3s
       retries: 5
 
@@ -54,6 +54,8 @@ services:
   frontend:
     build:
       context: https://github.com/volunteers-for-city-projects/volunteers-frontend.git#develop
+      args:
+        - SECRET_KEY=${REACT_APP_SECRET_KEY_RECAPTCHA}
     command:
       - /bin/sh
       - -c
@@ -73,3 +75,49 @@ services:
     depends_on:
       backend:
         condition: service_started
+
+  redis:
+    image: redis:alpine3.18
+    hostname: redis
+    expose:
+      - 6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  celery:
+    build:
+      context: ../backend/
+      args:
+          - PYTHON_VERSION_BUILD=${PYTHON_VERSION_BUILD}
+    env_file: .env
+    volumes:
+      - static_data:/backend_static
+      - media_data:/app/media
+    command: celery -A backend.celery_app worker -l info -E
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    build:
+      context: ../backend/
+      args:
+          - PYTHON_VERSION_BUILD=${PYTHON_VERSION_BUILD}
+    env_file: .env
+    volumes:
+      - static_data:/backend_static
+      - media_data:/app/media
+    command: celery -A backend beat -l info
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
