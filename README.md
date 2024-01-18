@@ -3,11 +3,11 @@ REST API для Проекта Платформа для волонтеров
 
 ![example workflow](https://github.com/volunteers-for-city-projects/volunteers-backend/actions/workflows/main.yml/badge.svg)
 
-[http://better-together.acceleratorpracticum.ru/](http://better-together.acceleratorpracticum.ru/)
+[http://better-together.acceleratorpracticum.ru/](https://2260993-dk30711.twc1.net/) 
 
-Админ панель доступна по ссылке [http://better-together.acceleratorpracticum.ru/admin/](http://better-together.acceleratorpracticum.ru/admin/)
+Админ панель доступна по ссылке [http://better-together.acceleratorpracticum.ru/admin/](https://2260993-dk30711.twc1.net/admin)  
 ### (в процессе разработки, может надо api)
-Документация доступна по ссылке [http://better-together.acceleratorpracticum.ru/swagger/](http://better-together.acceleratorpracticum.ru/swagger/)
+Документация доступна по ссылке [http://better-together.acceleratorpracticum.ru/swagger/](https://2260993-dk30711.twc1.net/admin/swagger/)
 
 ## Стек технологий:
 
