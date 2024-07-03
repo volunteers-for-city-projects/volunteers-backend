@@ -23,11 +23,11 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 CSRF_TRUSTED_ORIGINS = [
     'https://*.better-together.acceleratorpracticum.ru/',
     'https://*2260993-dk30711.twc1.net/',
-    'https://*.80.87.109.180',
+    'https://*.94.241.143.166',
     'https://*.127.0.0.1',
     'http://*.better-together.acceleratorpracticum.ru/',
     'http://*2260993-dk30711.twc1.net/',
-    'http://*.80.87.109.180',
+    'http://*.94.241.143.166',
     'http://*.127.0.0.1',
 ]
 
@@ -213,7 +213,7 @@ GMAIL_API_REFRESH_TOKEN = os.getenv('GMAIL_API_REFRESH_TOKEN', '')
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://80.87.109.180:3000',
+    'http://94.241.143.166:3000',
     'http://better-together.acceleratorpracticum.ru',
     'https://better-together.acceleratorpracticum.ru',
 ]
