@@ -21,12 +21,10 @@ DEBUG = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.better-together.acceleratorpracticum.ru/',
-    'https://*2260993-dk30711.twc1.net/',
+    'https://better-together.tw1.ru/',
     'https://*.94.241.143.166',
     'https://*.127.0.0.1',
-    'http://*.better-together.acceleratorpracticum.ru/',
-    'http://*2260993-dk30711.twc1.net/',
+    'http://better-together.tw1.ru/',
     'http://*.94.241.143.166',
     'http://*.127.0.0.1',
 ]
@@ -214,8 +212,8 @@ GMAIL_API_REFRESH_TOKEN = os.getenv('GMAIL_API_REFRESH_TOKEN', '')
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://94.241.143.166:3000',
-    'http://better-together.acceleratorpracticum.ru',
-    'https://better-together.acceleratorpracticum.ru',
+    'http://better-together.tw1.ru/',
+    'https://better-together.tw1.ru/',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
