@@ -34,9 +34,9 @@ jobs:
     uses: volunteers-for-city-projects/volunteers-backend/.github/workflows/deploy.yml@develop
     secrets: inherit
 
-  send_message:
-    name: Send message in Telegram
-    needs:
-      - call_deploy
-    uses: volunteers-for-city-projects/volunteers-backend/.github/workflows/send_message.yml@develop
-    secrets: inherit
+  # send_message:
+  #   name: Send message in Telegram
+  #   needs:
+  #     - call_deploy
+  #   uses: volunteers-for-city-projects/volunteers-backend/.github/workflows/send_message.yml@develop
+  #   secrets: inherit
