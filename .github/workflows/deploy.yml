@@ -1,6 +1,7 @@
 name: Deploy backend and gateway to production server
 
 on:
+    workflow_dispatch:
     workflow_call:
 
 jobs:
