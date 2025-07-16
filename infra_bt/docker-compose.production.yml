@@ -23,6 +23,18 @@ services:
       timeout: 3s
       retries: 5
 
+  redis:
+    image: redis:alpine3.18
+    hostname: redis
+    expose:
+      - 6379
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   backend:
     image: 1yunker/volunteers_backend
     env_file: .env
@@ -31,6 +43,34 @@ services:
       - media_data:/app/media
     depends_on:
       db:
+        condition: service_healthy
+
+  celery:
+    image: 1yunker/volunteers_backend
+    env_file: .env
+    volumes:
+      - static_data:/backend_static
+      - media_data:/app/media
+    command: celery -A backend.celery_app worker -l info -E
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
+  celery-beat:
+    image: 1yunker/volunteers_backend
+    env_file: .env
+    volumes:
+      - static_data:/backend_static
+      - media_data:/app/media
+    command: celery -A backend beat -l info
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
         condition: service_healthy
 
   frontend:

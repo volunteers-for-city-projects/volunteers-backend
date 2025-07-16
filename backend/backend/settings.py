@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,15 +21,10 @@ DEBUG = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.better-together.acceleratorpracticum.ru/',
-    'https://*.80.87.109.180',
-    'https://*.127.0.0.1',
-    'http://*.better-together.acceleratorpracticum.ru/',
-    'http://*.80.87.109.180',
-    'http://*.127.0.0.1',
+    'http://94.241.143.166',
+    'https://better-together.tw1.ru',
+    'http://localhost:8000',
 ]
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -39,10 +35,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'debug_toolbar',
     'django_filters',
+    'django_object_actions',
     'djoser',
     'rest_framework',
     'rest_framework.authtoken',
-    # 'rest_framework_swagger', # убираем
     'drf_yasg',
     'taggit',
     'gmailapi_backend',
@@ -114,7 +110,6 @@ DATABASES = {
     }
 }
 
-
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
@@ -126,6 +121,16 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
         'OPTIONS': {
             'min_length': 8,
+        },
+    },
+    {
+        'NAME': 'users.validators.PasswordMaximumLengthValidator',
+        'OPTIONS': {'max_length': 20},
+    },
+    {
+        'NAME': 'users.validators.PasswordRegexValidator',
+        'OPTIONS': {
+            'regex': r"(^[%!#$&*'+/=?^_;():@,.<>`{|}~-«»0-9A-ZА-ЯЁ]+)\Z",
         },
     },
     # {
@@ -165,13 +170,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 6,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
@@ -183,11 +188,16 @@ DJOSER = {
     'LOGIN_FIELD': 'email',
     'HIDE_USERS': False,
     'USER_CREATE_PASSWORD_RETYPE': True,
-    'PASSWORD_RESET_CONFIRM_URL': 'login/password-reset/{uid}/{token}',
-    'ACTIVATION_URL': 'api/auth/activate/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': '#/login/password-reset/{uid}/{token}',
+    'ACTIVATION_URL': '#/login/password-activate/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
     'SERIALIZERS': {
+        'current_user': 'api.serializers.CurrentUserSerializer',
+        'token_create': 'users.auth.serializers.CustomTokenCreateSerializer',
+        'password_reset': 'users.auth.serializers.CustomSendEmailResetSerializer',
+        'set_password': 'users.auth.serializers.CustomSetPasswordSerializer',
     },
 }
 
@@ -198,9 +208,9 @@ GMAIL_API_REFRESH_TOKEN = os.getenv('GMAIL_API_REFRESH_TOKEN', '')
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://80.87.109.180:3000',
-    'http://better-together.acceleratorpracticum.ru',
-    'https://better-together.acceleratorpracticum.ru',
+    'http://94.241.143.166:3000',
+    'http://better-together.tw1.ru/',
+    'https://better-together.tw1.ru/',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = os.getenv('DEBUG', 'FALSE').upper() == 'TRUE'
@@ -213,12 +223,30 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header',
+            'description': 'Use your token in the following format: <strong>Token <em>&lt;your-token&gt;</em></strong> ',
         },
-        'Basic': {'type': 'basic'},  # базова авторизация
+
+        # 'Basic': {'type': 'basic'},  # базова авторизация
     },
     'USE_SESSION_AUTH': True,  # кнопка джанго логин можно отключить поменяв False
     'JSON_EDITOR': True,
     'SHOW_REQUEST_HEADERS': True,
+    'DEFAULT_MODEL_RENDERING': 'model',  # Отображение моделей (model, example)
+    # Глубина отображения моделей (-1 - без ограничений)
+    'DEFAULT_MODEL_DEPTH': 2,
+    'DOC_EXPANSION': 'list',  # full, none
+    'OPERATIONS_SORTER': 'alpha',  # Сортировка операций (alpha, method)
+    'TAGS_SORTER': 'alpha',  # Сортировка тегов (alpha, order)
+}
+
+CELERY_BROKER_URL = 'redis://redis:6379/1'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/2'
+
+CELERY_BEAT_SCHEDULE = {
+    'delete_not_active_users': {
+        'task': 'users.tasks.delete_not_active_users',
+        'schedule': crontab(hour=20, minute=45),
+    },
 }
 
 # Constants
@@ -227,15 +255,22 @@ MAX_LENGTH_SLUG = 50
 MAX_LENGTH_PASSWORD = 20
 MAX_LENGTH_EMAIL = 256
 MIN_LENGTH_EMAIL = 6
+MAX_LENGTH_EMAIL_USER_PART = 64
+MESSAGE_EMAIL_NOT_VALID = 'Некорректный email!'
+MESSAGE_EMAIL_USER_PART_VALID = f'Максимальная длинна пользовательской части: {MAX_LENGTH_EMAIL_USER_PART} символа.'
 
 MAX_LEN_CHAR = 250
 LEN_PHONE = 12
 MAX_LEN_TEXT_IN_ADMIN = 50
 
 MAX_LEN_NAME = 100
+MIN_LEN_NAME_PROJECT = 2
+MAX_LEN_NAME_PROJECT = 150
 MAX_LEN_SLUG = 50
 LEN_OGRN = 13
-MESSAGE_PHONE_REGEX = f'Номер должен начинаться с +7 и содержать {LEN_PHONE} символов.'
+MESSAGE_PHONE_REGEX = (
+    f'Номер должен начинаться с +7, и содержать {LEN_PHONE} символов. Вторая цифра в номере не может быть 0'
+)
 MESSAGE_EMAIL_VALID = (
     f'Длина поля от {MIN_LENGTH_EMAIL} до {MAX_LENGTH_EMAIL} символов'
 )
@@ -274,3 +309,22 @@ TELEGRAM_ERROR_MESSAGE = (
 )
 
 VALUATIONS_ON_PAGE_ABOUT_US = 4
+
+
+MIN_LEN_TEXT_FIELD_V1 = 2
+MIN_LEN_TEXT_FIELD_V2 = 10
+MAX_LEN_TEXT_FIELD = 750
+
+MIN_LEN_ABOUT_US = 10
+MAX_LEN_ABOUT_US = 750
+MESSAGE_ABOUT_US_VALID = (
+    f'Длина поля от {MIN_LEN_ABOUT_US} до {MAX_LEN_ABOUT_US} символов'
+)
+MESSAGE_ABOUT_US_REGEX_VALID = """Допускаются цифры, буквы, пробелы и спецсимволы: %% №\\!#$&*'+/=?^_;():@,.<>`{|}[]~-«»"""
+
+MAX_LEN_PHOTOS = 10
+MIN_LEN_COVER_LETTER = 10
+MAX_LEN_COVER_LETTER = 530
+MESSAGE_COVER_LETTER_VALID = (
+    f'Длина поля от {MIN_LEN_COVER_LETTER} до {MAX_LEN_COVER_LETTER} символов'
+)
